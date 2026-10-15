@@ -1,0 +1,19 @@
+name: Draft Windows build
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  build:
+    runs-on: windows-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-dotnet@v6
+        with:
+          global-json-file: global.json
+      - name: Build and offline checks; no signing or publication
+        shell: powershell
+        run: .\Testing\Build-CI.ps1 -ResultsRoot "$env:RUNNER_TEMP\MediaMonkeyZidooSync"
