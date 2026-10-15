@@ -1,0 +1,31 @@
+{
+    "Application":  {
+                        "Version":  "v1.0.0",
+                        "ReportRoot":  ""
+                    },
+    "Zidoo":  {
+                  "IPAddress":  "",
+                  "ApiPort":  9529,
+                  "ExpectedModel":  "",
+                  "MacAddress":  "",
+                  "BroadcastAddress":  "",
+                  "WolPort":  9517,
+                  "PlaylistGridColumns":  5
+              },
+    "NAS":  {
+                "Host":  "",
+                "ShareName":  "",
+                "MusicFolderName":  "",
+                "PlaylistFolderName":  "",
+                "MusicRootUNC":  "",
+                "PlaylistFolderUNC":  ""
+            },
+    "MediaMonkey":  {
+                        "DatabasePath":  "",
+                        "PlaylistParent":  ""
+                    },
+    "Timing":  {
+                   "ZidooReadinessTimeoutSeconds":  120,
+                   "ColdBootUiStabilizationSeconds":  20
+               }
+}

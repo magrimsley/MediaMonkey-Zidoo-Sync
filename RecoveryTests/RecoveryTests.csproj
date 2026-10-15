@@ -1,0 +1,28 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net9.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="../MediaMonkeyZidooSync/Services/PlaylistTransactionJournalService.cs" Link="PlaylistTransactionJournalService.cs" />
+    <Compile Include="../MediaMonkeyZidooSync/Services/PlaylistRecoveryCoordinator.cs" Link="PlaylistRecoveryCoordinator.cs" />
+    <Compile Include="../MediaMonkeyZidooSync/Services/IsolatedPlaylistRollbackService.cs" Link="IsolatedPlaylistRollbackService.cs" />
+    <Compile Include="../MediaMonkeyZidooSync/Services/IsolatedJournalRecoveryCoordinator.cs" Link="IsolatedJournalRecoveryCoordinator.cs" />
+    <Compile Include="../MediaMonkeyZidooSync/Services/IsolatedRecoveryEvidenceStore.cs" Link="IsolatedRecoveryEvidenceStore.cs" />
+    <Compile Include="../MediaMonkeyZidooSync/Services/IsolatedRestartReconciliationService.cs" Link="IsolatedRestartReconciliationService.cs" />
+    <Compile Include="../MediaMonkeyZidooSync/Services/IsolatedRestartSafetyAuditService.cs" Link="IsolatedRestartSafetyAuditService.cs" />
+    <Compile Include="../MediaMonkeyZidooSync/Services/IsolatedTransactionSequenceStore.cs" Link="IsolatedTransactionSequenceStore.cs" />
+    <Compile Include="../MediaMonkeyZidooSync/Services/IsolatedJournalSequenceAuditService.cs" Link="IsolatedJournalSequenceAuditService.cs" />
+    <Compile Include="../MediaMonkeyZidooSync/Services/IsolatedRecoveryAuthorizationService.cs" Link="IsolatedRecoveryAuthorizationService.cs" />
+    <Compile Include="../MediaMonkeyZidooSync/Services/IsolatedRecoveryExecutionPlanner.cs" Link="IsolatedRecoveryExecutionPlanner.cs" />
+    <Compile Include="../MediaMonkeyZidooSync/Services/IsolatedRecoveryPlanReportStore.cs" Link="IsolatedRecoveryPlanReportStore.cs" />
+    <Compile Include="../MediaMonkeyZidooSync/Services/IsolatedRecoveryDiagnosticsService.cs" Link="IsolatedRecoveryDiagnosticsService.cs" />
+    <Compile Include="../MediaMonkeyZidooSync/Services/IsolatedRecoveryReportBrowserService.cs" Link="IsolatedRecoveryReportBrowserService.cs" />
+    <Compile Include="../MediaMonkeyZidooSync/Services/ApplicationVersionProvider.cs" Link="ApplicationVersionProvider.cs" />
+    <Compile Include="../MediaMonkeyZidooSync/Services/RecoveryReportDisplaySummary.cs" Link="RecoveryReportDisplaySummary.cs" />
+    <Compile Include="../MediaMonkeyZidooSync/Services/RecoveryFileReader.cs"
+         Link="RecoveryFileReader.cs" />
+  </ItemGroup>
+</Project>
