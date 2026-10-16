@@ -114,6 +114,12 @@ static class TransactionChecks
         catch(IOException){if(fake.Rows.Count!=1)throw;}
         await transaction.ApplyAsync(root,Path.Combine(root,"Evidence"),new("Jazz.m3u",null,0,hash),default);
         if(File.Exists(Path.Combine(root,"Jazz.m3u")) || fake.Rows.Count!=0)throw new Exception("Delete did not commit.");
+        var retained = new ZidooPlaylistRecord("existing", "AlreadyPresent", 1, 0);
+        fake.Rows.Add(retained);int beforeOperations=fake.Operations;
+        await transaction.ApplyAsync(root,Path.Combine(root,"Evidence"),new("AlreadyPresent.m3u",data,1,null),default);
+        if(fake.Operations!=beforeOperations || fake.Rows.Single()!=retained || !File.ReadAllBytes(Path.Combine(root,"AlreadyPresent.m3u")).SequenceEqual(data))
+            throw new Exception("Matching existing creation was destructively replaced.");
+        fake.Rows.Clear();
         fake.FailImport=true;
         try{await transaction.ApplyAsync(root,Path.Combine(root,"Evidence"),new("Jazz.m3u",data,1,null),default);throw new Exception("Device failure accepted.");}
         catch(NativeTransactionRolledBackException){if(File.Exists(Path.Combine(root,".mmzs-production-pending.json")) || File.Exists(Path.Combine(root,"Jazz.m3u")))throw new Exception("Rollback did not restore original absence.");}
@@ -125,14 +131,33 @@ static class TransactionChecks
         string currentHash=Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(data));
         try{await transaction.ApplyAsync(root,Path.Combine(root,"Evidence"),new("Jazz.m3u",data,1,currentHash),default);throw new Exception("Unresolved recovery gate ignored.");}
         catch(IOException){if(fake.Operations!=operations)throw new Exception("Device mutated with pending recovery.");}
-        Console.WriteLine("PASS: 9 native file/device transaction scenarios; disposable local folder, simulated device only. Evidence: "+root);
+        foreach(bool externalEdit in new[]{false,true})
+        {
+            string caseRoot=Path.Combine(root,"Collateral-"+externalEdit);Directory.CreateDirectory(caseRoot);
+            File.WriteAllBytes(Path.Combine(caseRoot,"Jazz.m3u"),data);
+            File.WriteAllBytes(Path.Combine(caseRoot,"Rock.m3u"),updated);
+            var collateral=new MemoryDevice();
+            var jazz=new ZidooPlaylistRecord("jazz","Jazz",1,0);var rock=new ZidooPlaylistRecord("rock","Rock",2,1);
+            collateral.Rows.AddRange(new[]{jazz,rock});
+            collateral.DeleteFailure=()=>{collateral.Rows.Remove(rock);if(externalEdit)File.AppendAllText(Path.Combine(caseRoot,"Rock.m3u"),"/external.flac\n");throw new IOException("Simulated wrong-target deletion");};
+            try{await new NativeProductionTransaction(collateral).ApplyAsync(caseRoot,Path.Combine(caseRoot,"Evidence"),new("Jazz.m3u",updated,2,Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(data))),default);throw new Exception("Collateral deletion accepted");}
+            catch(NativeTransactionRolledBackException) when(!externalEdit)
+            {
+                if(collateral.Rows.Single(x=>x.Name=="Rock").Count!=2 || collateral.Rows.Single(x=>x.Name=="Jazz")!=jazz || File.Exists(Path.Combine(caseRoot,".mmzs-production-pending.json")))throw new Exception("Collateral restoration did not verify original state");
+            }
+            catch(IOException) when(externalEdit)
+            {
+                if(!File.Exists(Path.Combine(caseRoot,".mmzs-production-pending.json")) || collateral.Rows.Any(x=>x.Name=="Rock"))throw new Exception("External edit did not block repair");
+            }
+        }
+        Console.WriteLine("PASS: 12 native file/device transaction scenarios; disposable local folder, simulated device only. Evidence: "+root);
     }
     private sealed class MemoryDevice:IProductionPlaylistDevice
     {
-        public List<ZidooPlaylistRecord> Rows=new();public bool FailImport,FailInventoryAfterImport;public int? FailImportForCount;private bool importFailed;public int Operations;
+        public List<ZidooPlaylistRecord> Rows=new();public bool FailImport,FailInventoryAfterImport;public int? FailImportForCount;private bool importFailed;public int Operations;public Action? DeleteFailure;
         public void ResetFailure()=>importFailed=false;
         public Task<IReadOnlyList<ZidooPlaylistRecord>> InventoryAsync(CancellationToken ct){if(FailInventoryAfterImport && importFailed)throw new IOException("Inventory unavailable");return Task.FromResult<IReadOnlyList<ZidooPlaylistRecord>>(Rows.ToArray());}
-        public Task DeleteExactAsync(ZidooPlaylistRecord row,CancellationToken ct){Operations++;Rows.Remove(row);return Task.CompletedTask;}
+        public Task DeleteExactAsync(ZidooPlaylistRecord row,CancellationToken ct){Operations++;if(DeleteFailure is not null){var failure=DeleteFailure;DeleteFailure=null;failure();}Rows.Remove(row);return Task.CompletedTask;}
         public Task ImportAsync(string filename,int count,CancellationToken ct){Operations++;if(FailImport||FailImportForCount==count){importFailed=true;throw new IOException("Simulated import failure");}Rows.Add(new(Guid.NewGuid().ToString(),Path.GetFileNameWithoutExtension(filename),count,Rows.Count));return Task.CompletedTask;}
     }
 }

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -48,6 +48,23 @@ internal static class Program
             window.Show(); Pump(400);
             var inspect = (Button)(typeof(MainWindow).GetMethod("FindInspectNativePlanButton", BindingFlags.Instance | BindingFlags.NonPublic)!.Invoke(window, null) ?? throw new Exception("Inspect button missing"));
             Check(!inspect.IsEnabled, "Inspect Plan initially disabled");
+            var validate=Field<Button>(window,"ValidateMediaMonkeyButton");
+            var verify=Field<Button>(window,"VerifyNativeExporterButton");
+            var review=Field<Button>(window,"ReviewSynchronizationButton");
+            var run=Field<Button>(window,"RunButton");
+            Check(validate.IsEnabled && !verify.IsEnabled && !review.IsEnabled && !run.IsEnabled,"Only validation is enabled at startup");
+            Check(typeof(MainWindow).GetField("RecoverSynchronizationButton",BindingFlags.Instance|BindingFlags.NonPublic) is null,"Unrequested recovery button removed");
+            var flow=Field<SynchronizationWorkflow>(window,"_workflow");
+            void Refresh()=>typeof(MainWindow).GetMethod("RefreshWorkflowControls",BindingFlags.Instance|BindingFlags.NonPublic)!.Invoke(window,null);
+            flow.BeginValidation();Refresh();
+            Check(!validate.IsEnabled && !verify.IsEnabled && !run.IsEnabled,"Busy validation disables later steps");
+            flow.EndValidation(true);Refresh();Check(verify.IsEnabled && !run.IsEnabled,"Validation enables verification only");
+            flow.BeginVerification();flow.EndVerification(true);
+            typeof(MainWindow).GetField("_preparedReview",BindingFlags.Instance|BindingFlags.NonPublic)!.SetValue(window,Array.Empty<NativeProductionSyncService.ReviewedChange>());
+            Refresh();Check(review.IsEnabled && !run.IsEnabled,"Verified exporter requires review before running");
+            flow.AcceptReview();Refresh();Check(run.IsEnabled,"Accepted review enables synchronization");
+            typeof(MainWindow).GetMethod("InvalidateWorkflow",BindingFlags.Instance|BindingFlags.NonPublic)!.Invoke(window,null);
+            Check(!verify.IsEnabled && !review.IsEnabled && !run.IsEnabled,"Configuration invalidation resets enabled buttons");
             var entries = new NativePlanInspectionItem[] {
                 new("WPF-Test-Only.m3u", PlaylistTransactionAction.Create, "Synthetic read-only UI fixture", false)
             };

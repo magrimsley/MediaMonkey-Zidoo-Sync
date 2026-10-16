@@ -14,6 +14,7 @@ public sealed class NativeProductionSyncService
 {
     public event Action<string>? Output;
     public bool LastRunVerifiedDevice {get;private set;}
+    public int LastRunCompletedChanges {get;private set;}
     private sealed record Work(string FileName, byte[]? Content, int Count, string? OldHash);
     private static string Hash(byte[] bytes) => Convert.ToHexString(SHA256.HashData(bytes));
     private static readonly UTF8Encoding M3uEncoding = new(true);
@@ -71,10 +72,33 @@ public sealed class NativeProductionSyncService
         }
         return review.AsReadOnly();
     }
+    public static async Task<IReadOnlyList<Exception>> ApplyTransactionsAsync(
+        IEnumerable<NativeProductionTransaction.Change> changes,
+        Func<NativeProductionTransaction.Change,CancellationToken,Task> apply,
+        Action<NativeProductionTransaction.Change> onStart,Action<NativeProductionTransaction.Change> onRestored,CancellationToken ct)
+    {
+        var failures=new List<Exception>();
+        foreach(var item in changes)
+        {
+            ct.ThrowIfCancellationRequested();onStart(item);
+            try{await apply(item,ct);}
+            catch(NativeTransactionRolledBackException error) when(!ct.IsCancellationRequested)
+            {failures.Add(error);onRestored(item);}
+        }
+        return failures.AsReadOnly();
+    }
+    public static IReadOnlyList<string> MissingManagedPlaylists(IEnumerable<(string FileName,int TrackCount)> expected,
+        IReadOnlyList<ZidooPlaylistRecord> inventory,IEnumerable<string> planned)
+    {
+        var scheduled=new HashSet<string>(planned,StringComparer.OrdinalIgnoreCase);
+        return expected.Where(item=>item.TrackCount>0 && !scheduled.Contains(item.FileName) &&
+            !inventory.Any(row=>row.Name==Path.GetFileNameWithoutExtension(item.FileName)))
+            .Select(item=>item.FileName).ToArray();
+    }
     public async Task<int> RunAsync(AppConfig config, CancellationToken ct = default,
         IReadOnlyList<ReviewedChange>? reviewed = null,IReadOnlyList<ZidooPlaylistRecord>? reviewedInventory = null)
     {
-        LastRunVerifiedDevice=false;
+        LastRunVerifiedDevice=false;LastRunCompletedChanges=0;
         ConfigurationService.Validate(config);
         string root = Path.GetFullPath(config.NAS.PlaylistFolderUNC);
         if (!Directory.Exists(root)) throw new DirectoryNotFoundException(root);
@@ -166,6 +190,15 @@ public sealed class NativeProductionSyncService
                 .SequenceEqual(reviewedInventory.Select(x=>(x.Id,x.Name,x.Count)).OrderBy(x=>x.Id,StringComparer.Ordinal)))
                 throw new InvalidDataException("Device inventory changed since review; no playlist mutation performed.");
             await device.PreflightDirectoriesAsync(ct);
+            // Match the preserved wrapper: only after a changed run has connected,
+            // repair populated managed playlists absent from the device.
+            foreach(string filename in MissingManagedPlaylists(prepared.PlaylistMap.Select(item=>(item.M3UFile,item.TrackCount)),initialInventory,changes.Select(item=>item.FileName)))
+            {
+                var playlist=prepared.PreparedPlaylists.Single(item=>item.M3UFile==filename);
+                byte[] old=await File.ReadAllBytesAsync(Path.Combine(root,filename),ct);
+                changes.Add(new(filename,ContentBytes(playlist.Lines),prepared.PlaylistMap.Single(item=>item.M3UFile==filename).TrackCount,Hash(old)));
+                Output?.Invoke("Restore missing playlist: "+filename);
+            }
             string baselineFolder=Path.Combine(evidence,"Baseline");Directory.CreateDirectory(baselineFolder);
             var baselineFiles=new List<object>();
             foreach(var entry in existing)
@@ -181,7 +214,7 @@ public sealed class NativeProductionSyncService
             foreach(var change in changes)
             {
                 var original=initialInventory.SingleOrDefault(x=>x.Name==Path.GetFileNameWithoutExtension(change.FileName));
-                if(original is not null)
+                if(original is not null && !(change.OldHash is null && change.Content is not null && change.Count > 0 && original.Count == change.Count))
                 {
                     var backup=Path.Combine(baselineFolder,change.FileName);
                     if(!File.Exists(backup) || File.ReadAllLines(backup).Count(line=>!string.IsNullOrWhiteSpace(line)&&!line.StartsWith('#'))!=original.Count)
@@ -189,13 +222,17 @@ public sealed class NativeProductionSyncService
                 }
             }
             var transaction=new NativeProductionTransaction(device);
-            foreach(var item in changes)
-            {
-                ct.ThrowIfCancellationRequested();
-                Output?.Invoke((item.Content is null?"Delete":item.OldHash is null?"Create":"Update")+": "+item.FileName);
-                await transaction.ApplyAsync(root,evidence,new(item.FileName,item.Content,item.Count,item.OldHash),ct);
-            }
+            var compensatedFailures=await ApplyTransactionsAsync(
+                changes.Select(item=>new NativeProductionTransaction.Change(item.FileName,item.Content,item.Count,item.OldHash)),
+                (item,token)=>transaction.ApplyAsync(root,evidence,item,token),
+                item=>Output?.Invoke((item.NewContent is null?"Delete":item.ExpectedOldSHA256 is null?"Create":"Update")+": "+item.FileName),
+                item=>Output?.Invoke("Could not synchronize "+item.FileName+". Its previous state was restored and verified. Continuing with the remaining playlists."),ct);
             var finalInventory=await device.InventoryAsync(ct);
+            if(compensatedFailures.Count>0)
+            {
+                await File.WriteAllTextAsync(Path.Combine(evidence,"partially-completed.json"),JsonSerializer.Serialize(new{Status="FAILED_WITH_VERIFIED_ROLLBACK",Failed=compensatedFailures.Count,Transactions=changes.Count,FinalInventory=finalInventory}),CancellationToken.None);
+                throw new NativeTransactionRolledBackException("Some playlists could not be synchronized and were restored. Other completed changes are kept.",new AggregateException(compensatedFailures));
+            }
             foreach(var item in prepared.PlaylistMap)
             {
                 var persistent=finalInventory.SingleOrDefault(x=>x.Name==Path.GetFileNameWithoutExtension(item.M3UFile));
@@ -227,13 +264,12 @@ public sealed class NativeProductionSyncService
                 catch(Exception error)
                 {
                     await File.WriteAllTextAsync(Path.Combine(evidence,"power-restore-failure.json"),JsonSerializer.Serialize(new{Error=error.ToString()}));
-                    if(operationFailure is null)throw new IOException("Playlist transactions finished but original power state was not verified.",error);
-                    Output?.Invoke("Power restoration also failed; see "+evidence);
+                    throw new IOException("Original power state could not be verified. Review the saved run details before continuing.", operationFailure is null ? error : new AggregateException(operationFailure,error));
                 }
             }
             Output?.Invoke("Run evidence: "+evidence);
         }
-        LastRunVerifiedDevice=true;
+        LastRunVerifiedDevice=true;LastRunCompletedChanges=changes.Count;
         return 0;
     }
 

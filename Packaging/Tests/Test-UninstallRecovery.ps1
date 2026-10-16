@@ -1,4 +1,4 @@
-﻿#requires -Version 5.1
+#requires -Version 5.1
 [CmdletBinding()]
 param([string]$ResultsRoot=(Join-Path ([IO.Path]::GetTempPath()) 'MediaMonkeyZidooSync-Tests'),[Parameter(Mandatory=$true)][string]$PayloadDirectory)
 $ErrorActionPreference='Stop'
@@ -82,7 +82,7 @@ try{
  }
 }finally{
  foreach($child in $children){if(!$child.Process.HasExited){$child.Process.Kill();$child.Process.WaitForExit()};$child.Process.Dispose()}
- [pscustomobject]@{SupportRevision=5;ApplicationVersion='1.1-alpha.60.17';Scope='FileOnly; real child termination at debugger-controlled boundaries after actual file deletion; corruption/edit fixtures; no app/device/real playlist writes; not power-loss proof';Checks=$results.ToArray()} | ConvertTo-Json -Depth 9 | Set-Content (Join-Path $lab 'summary.json') -Encoding UTF8
+ [pscustomobject]@{SupportRevision=5;ApplicationVersion='1.1-alpha.60.17.1';Scope='FileOnly; real child termination at debugger-controlled boundaries after actual file deletion; corruption/edit fixtures; no app/device/real playlist writes; not power-loss proof';Checks=$results.ToArray()} | ConvertTo-Json -Depth 9 | Set-Content (Join-Path $lab 'summary.json') -Encoding UTF8
 }
 $results | Format-Table Name,Status
 Write-Host "Evidence: $lab"

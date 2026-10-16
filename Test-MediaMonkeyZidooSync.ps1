@@ -1,4 +1,4 @@
-﻿#requires -Version 5.1
+#requires -Version 5.1
 <#
 .SYNOPSIS
   Build and run the safe, offline MediaMonkey Zidoo Sync regression suite.
@@ -16,7 +16,7 @@ param(
     [switch]$UiNavigation,
     [switch]$UiWorkflows,
     [switch]$UiDeep,
-    [string]$ExpectedVersion = '1.1-alpha.60.17'
+    [string]$ExpectedVersion = '1.1-alpha.60.17.1'
 )
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'

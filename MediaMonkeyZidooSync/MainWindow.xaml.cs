@@ -162,6 +162,8 @@ public partial class MainWindow : Window {
     private HelpWindow? _helpWindow;
     private Window? _nativePlanWindow;
     private readonly List<LogEvent> _events = new();
+    private readonly SynchronizationWorkflow _workflow = new();
+    private IReadOnlyList<NativeProductionSyncService.ReviewedChange>? _preparedReview, _approvedReview;
     private AppConfig? _config;
     private readonly DispatcherTimer _timer = new() { Interval = TimeSpan.FromSeconds(1) };
     private Stopwatch? _stopwatch;
@@ -177,6 +179,9 @@ public partial class MainWindow : Window {
     public MainWindow(string? isolatedConfigRoot) {
         _configService = new ConfigurationService(isolatedConfigRoot);
         InitializeComponent();
+        ConfigurationTab.AddHandler(System.Windows.Controls.Primitives.TextBoxBase.TextChangedEvent,
+            new TextChangedEventHandler((_,_) => InvalidateWorkflow()));
+        RefreshWorkflowControls();
         if (IsolatedStartupMode.Enabled)
         {
             // Explicit smoke mode: no assessment, discovery, configuration mutation or sync.
@@ -201,6 +206,49 @@ public partial class MainWindow : Window {
         _timer.Tick += (_,__) => ElapsedText.Text = $"Elapsed: {FormatElapsed(_stopwatch?.Elapsed)}";
     }
 
+    private void InvalidateWorkflow()
+    {
+        _workflow.Invalidate();_preparedReview=_approvedReview=null;
+        _lastNativePlanInspection=null;_nativePlanWindow?.Close();
+        RefreshWorkflowControls();
+    }
+
+    private void RefreshWorkflowControls()
+    {
+        if(RunButton is null || ReviewSynchronizationButton is null)return;
+        bool allowed=!IsolatedStartupMode.Enabled;
+        ValidateMediaMonkeyButton.IsEnabled=allowed && _workflow.CanValidate;
+        VerifyNativeExporterButton.IsEnabled=allowed && _workflow.CanVerify;
+        ReviewSynchronizationButton.IsEnabled=allowed && _workflow.CanReview && _preparedReview is not null;
+        RunButton.IsEnabled=allowed && (_syncCancellation is not null ? !_syncCancellation.IsCancellationRequested : _workflow.CanRun);
+        RunNativeAssessmentButton.IsEnabled=allowed && (_nativeAssessmentCancellation is not null || (_workflow.CanReview && _workflow.Verified));
+        InspectNativePlanButton.IsEnabled=allowed && !_workflow.Busy && _lastNativePlanInspection is not null;
+        ConfigurationTab.IsEnabled=!_workflow.Busy;
+        WorkflowHint.Text=_workflow.NextStep;
+    }
+
+    private void ReviewSynchronization_Click(object sender,RoutedEventArgs e)
+    {
+        if(IsolatedStartupMode.Enabled || !_workflow.CanReview || _preparedReview is null)return;
+        var review=_preparedReview;
+        var window=new Window{Title="Review Synchronization Changes",Owner=this,Width=760,Height=520,WindowStartupLocation=WindowStartupLocation.CenterOwner};
+        var layout=new DockPanel{Margin=new Thickness(16)};
+        var footer=new StackPanel{Orientation=Orientation.Horizontal,HorizontalAlignment=HorizontalAlignment.Right,Margin=new Thickness(0,12,0,0)};
+        var back=new Button{Content="Back",Padding=new Thickness(16,6,16,6)};
+        var accept=new Button{Content="Use Reviewed Plan",Padding=new Thickness(16,6,16,6),Margin=new Thickness(10,0,0,0)};
+        back.Click+=(_,_)=>window.DialogResult=false;accept.Click+=(_,_)=>window.DialogResult=true;
+        footer.Children.Add(back);footer.Children.Add(accept);DockPanel.SetDock(footer,Dock.Bottom);layout.Children.Add(footer);
+        var heading=new TextBlock{Text=review.Count==0?"No playlist changes are needed. This run will not contact or wake Zidoo.":
+            "Review the proposed playlist changes below. Missing playlists may also be restored from your playlist files. After accepting, use Run Synchronization.",TextWrapping=TextWrapping.Wrap,Margin=new Thickness(0,0,0,12)};
+        DockPanel.SetDock(heading,Dock.Top);layout.Children.Add(heading);
+        var details=review.Select(item=>(item.CandidateSHA256 is null?"Delete":item.OriginalSHA256 is null?"Create":"Update")+": "+
+            Path.GetFileNameWithoutExtension(item.FileName)+(item.CandidateSHA256 is null?"":" ("+item.ExpectedCount+" tracks)"));
+        layout.Children.Add(new TextBox{Text=string.Join(Environment.NewLine,details),IsReadOnly=true,AcceptsReturn=true,VerticalScrollBarVisibility=ScrollBarVisibility.Auto,TextWrapping=TextWrapping.Wrap,Padding=new Thickness(10)});
+        window.Content=layout;
+        if(window.ShowDialog()==true && ReferenceEquals(_preparedReview,review))
+        {_approvedReview=review;_workflow.AcceptReview();RefreshWorkflowControls();}
+    }
+
     /// <summary>Loads the current configuration and populates the Configuration tab.</summary>
     private async Task LoadConfigurationAsync() {
         try {
@@ -216,7 +264,7 @@ public partial class MainWindow : Window {
             _config = await _configService.LoadAsync(SeedConfig);
             ShowConfig();
             ConfigMessage.Text = "Configuration loaded.";
-        } catch (Exception ex) { ConfigMessage.Text = ex.Message; }
+        } catch (Exception ex) { ConfigMessage.Text = UserMessages.Explain(ex); }
     }
 
     /// <summary>Copies the in-memory configuration into all editable UI fields and refreshes archive history.</summary>
@@ -256,13 +304,13 @@ public partial class MainWindow : Window {
     private async void SaveConfig_Click(object sender, RoutedEventArgs e) {
         if (IsolatedStartupMode.Enabled) return;
         try { ReadConfigFromForm(); await _configService.SaveAsync(_config!); ConfigMessage.Text="Configuration validated, archived, and saved."; RefreshHistory(); }
-        catch(Exception ex) { ConfigMessage.Text=$"Configuration was not saved: {ex.Message}"; }
+        catch(Exception ex) { ConfigMessage.Text=$"Configuration was not saved: {UserMessages.Explain(ex)}"; }
     }
 
     /// <summary>Restores Last Known Good and reloads the Configuration form.</summary>
     private async void RestoreConfig_Click(object sender, RoutedEventArgs e) {
         try { _configService.RestoreLastKnownGood(); _config=await _configService.LoadAsync(SeedConfig); ShowConfig(); ConfigMessage.Text="Last Known Good configuration restored. Previous current configuration was archived."; RefreshHistory(); }
-        catch(Exception ex) { ConfigMessage.Text=$"Restore failed: {ex.Message}"; }
+        catch(Exception ex) { ConfigMessage.Text=$"Restore failed: {UserMessages.Explain(ex)}"; }
     }
 
     /// <summary>Displays only operations from the last completed read-only assessment.</summary>
@@ -428,6 +476,8 @@ public partial class MainWindow : Window {
             }
             return;
         }
+        if(_workflow.Busy || !_workflow.Verified)return;
+        _workflow.SetDiagnosticBusy(true);RefreshWorkflowControls();
         // Validate required UI dependencies before mutating assessment state.
         // A missing control is a recoverable initialization error, not a reason to crash.
         Button? inspectButton;
@@ -441,11 +491,12 @@ public partial class MainWindow : Window {
         }
         catch (Exception ex)
         {
+            _workflow.SetDiagnosticBusy(false);RefreshWorkflowControls();
             StatusText.Text = "Native assessment unavailable";
             _events.Add(new LogEvent(DateTime.Now, LogLevel.Red,
                 "Unable to start read-only native assessment: " + ex));
             RefreshOutput();
-            MessageBox.Show(this, ex.Message, "Native Assessment Unavailable",
+            MessageBox.Show(this, UserMessages.Explain(ex), "Native Assessment Unavailable",
                 MessageBoxButton.OK, MessageBoxImage.Error);
             return;
         }
@@ -456,7 +507,7 @@ public partial class MainWindow : Window {
         bool showCompletedPlan = false;
         _nativeAssessmentCancellation = new System.Threading.CancellationTokenSource();
         // Keep the token local so a closing window cannot replace the token mid-await.
-        var assessmentToken = _nativeAssessmentCancellation.Token;
+        var assessmentToken = _nativeAssessmentCancellation.Token;RefreshWorkflowControls();
         RunNativeAssessmentButton.Content = "Cancel Native Assessment";
         RunButton.IsEnabled = false;
         ValidateMediaMonkeyButton.IsEnabled = false;
@@ -509,6 +560,7 @@ public partial class MainWindow : Window {
             VerifyNativeExporterButton.IsEnabled = true;
             // A failed or cancelled assessment must not leave a stale inspect action enabled.
             inspectButton.IsEnabled = _lastNativePlanInspection is not null;
+            _workflow.SetDiagnosticBusy(false);RefreshWorkflowControls();
             RecordHistory(started, "Native Read-only Assessment", resultLabel);
         }
         // Present the validated proposal automatically, only after successful completion
@@ -528,43 +580,19 @@ public partial class MainWindow : Window {
                 RefreshOutput();
                 MessageBox.Show(this,
                     "The read-only assessment completed successfully, but its proposed-change window could not be displayed. " +
-                    "Use Inspect Plan to try again. Details: " + ex.Message,
+                    "Use Inspect Plan to try again. Details: " + UserMessages.Explain(ex),
                     "Plan Inspection Unavailable", MessageBoxButton.OK, MessageBoxImage.Warning);
             }
         }
     }
     /// <summary>Saves the current configuration, launches synchronization, updates status, and marks successful configuration Last Known Good.</summary>
-    private async void RecoverSynchronization_Click(object sender,RoutedEventArgs e)
-    {
-        if(IsolatedStartupMode.Enabled || _syncCancellation is not null || !RunButton.IsEnabled)return;
-        DateTime started=DateTime.Now;
-        _syncCancellation=new System.Threading.CancellationTokenSource();
-        RunButton.Content="Cancel Recovery";RecoverSynchronizationButton.IsEnabled=false;
-        ValidateMediaMonkeyButton.IsEnabled=false;VerifyNativeExporterButton.IsEnabled=false;RunNativeAssessmentButton.IsEnabled=false;
-        _events.Clear();RefreshOutput();_stopwatch=Stopwatch.StartNew();_timer.Start();StatusText.Text="Checking recovery";
-        try
-        {
-            ReadConfigFromForm();var config=_config??throw new InvalidOperationException("Configuration missing.");
-            bool recovered=await _runner.RecoverPendingAsync(config,message=>MessageBox.Show(this,message,"Restore Previous Playlist",MessageBoxButton.YesNo,MessageBoxImage.Question,MessageBoxResult.No)==MessageBoxResult.Yes,_syncCancellation.Token);
-            StatusText.Text=recovered?"Recovery completed":"No recovery performed";
-        }
-        catch(OperationCanceledException){StatusText.Text="Recovery cancelled; retained evidence preserved";}
-        catch(Exception error){StatusText.Text="Recovery requires review";_events.Add(new LogEvent(DateTime.Now,LogLevel.Red,error.ToString()));RefreshOutput();}
-        finally
-        {
-            _timer.Stop();_stopwatch?.Stop();_syncCancellation?.Dispose();_syncCancellation=null;
-            RunButton.Content="Run Synchronization";RunButton.IsEnabled=true;RecoverSynchronizationButton.IsEnabled=true;
-            ValidateMediaMonkeyButton.IsEnabled=true;VerifyNativeExporterButton.IsEnabled=true;RunNativeAssessmentButton.IsEnabled=true;
-            RecordHistory(started,"Synchronization Recovery",StatusText.Text);
-        }
-    }
-
     private async void Run_Click(object sender, RoutedEventArgs e) {
         if (IsolatedStartupMode.Enabled) return;
         if(_syncCancellation is not null){_syncCancellation.Cancel();RunButton.IsEnabled=false;StatusText.Text="Cancelling; finishing recovery";return;}
-        if(!RunButton.IsEnabled)return;
+        if(!RunButton.IsEnabled || !_workflow.CanRun || _approvedReview is null)return;
+        var review=_approvedReview;_workflow.BeginRun();RefreshWorkflowControls();
         _syncCancellation=new System.Threading.CancellationTokenSource();
-        var token=_syncCancellation.Token;
+        var token=_syncCancellation.Token;RefreshWorkflowControls();
         RunButton.Content="Cancel Synchronization"; StatusText.Text="Preparing changes"; _events.Clear(); RefreshOutput();
         ValidateMediaMonkeyButton.IsEnabled=false;VerifyNativeExporterButton.IsEnabled=false;RunNativeAssessmentButton.IsEnabled=false;
         DateTime runStarted = DateTime.Now;
@@ -573,33 +601,30 @@ public partial class MainWindow : Window {
             ReadConfigFromForm();
             var config = _config ?? throw new InvalidOperationException("Configuration was not created from the form.");
             await _configService.SaveAsync(config);
-            var review=await _runner.PrepareReviewAsync(config,token);
-            if(review.Count>0)
-            {
-                string details=string.Join(Environment.NewLine,review.Take(12).Select(item=>
-                    (item.CandidateSHA256 is null?"Delete":item.OriginalSHA256 is null?"Create":"Update")+": "+item.FileName+" ("+item.ExpectedCount+" tracks)"));
-                if(review.Count>12)details+=Environment.NewLine+"... and "+(review.Count-12)+" more.";
-                if(MessageBox.Show(this,"Apply "+review.Count+" playlist change(s) to the configured NAS and Zidoo?"+Environment.NewLine+Environment.NewLine+details+Environment.NewLine+Environment.NewLine+
-                    "Original files are backed up. Do not edit MediaMonkey or use the Zidoo remote during synchronization.","Confirm Synchronization",MessageBoxButton.YesNo,MessageBoxImage.Question,MessageBoxResult.No)!=MessageBoxResult.Yes)
-                {StatusText.Text="Cancelled before synchronization";return;}
-            }
             token.ThrowIfCancellationRequested();StatusText.Text="Running";
             int rc=await _runner.RunAsync(config,token,review);
             if(rc==0) {
                 StatusText.Text="Completed";
-                if(_runner.LastRunVerifiedDevice){_configService.MarkLastKnownGood();ConfigMessage.Text="Successful verified run: current configuration marked Last Known Good.";}
+                if(_runner.LastRunVerifiedDevice)
+                {
+                    try{_configService.MarkLastKnownGood();ConfigMessage.Text="Successful verified run: current configuration marked Last Known Good.";}
+                    catch(Exception backupError){ConfigMessage.Text="Playlists synchronized, but the configuration backup could not be saved.";_events.Add(new LogEvent(DateTime.Now,LogLevel.Yellow,ConfigMessage.Text){DiagnosticDetails=backupError.ToString()});}
+                }
                 else ConfigMessage.Text="No playlist changes; existing Last Known Good configuration retained.";
+                _events.Add(UserMessages.Completed(_runner.LastRunCompletedChanges));RefreshOutput();
             }
             else StatusText.Text=$"Failed ({rc})";
-        } catch(OperationCanceledException) {
+        } catch(OperationCanceledException error) when(token.IsCancellationRequested) {
             StatusText.Text="Cancelled";
+            _events.Add(UserMessages.Cancelled(error));RefreshOutput();
         } catch(Exception ex) {
-            StatusText.Text="Failed"; _events.Add(new LogEvent(DateTime.Now,LogLevel.Red,ex.Message)); RefreshOutput();
+            StatusText.Text="Failed"; _events.Add(UserMessages.Failure(ex)); RefreshOutput();
         } finally {
             _timer.Stop(); _stopwatch?.Stop();
             _syncCancellation?.Dispose();_syncCancellation=null;
-            RunButton.Content="Run Synchronization";RunButton.IsEnabled=true;
+            RunButton.Content="4. Run Synchronization";RunButton.IsEnabled=true;
             ValidateMediaMonkeyButton.IsEnabled=true;VerifyNativeExporterButton.IsEnabled=true;RunNativeAssessmentButton.IsEnabled=true;
+            _workflow.EndRun();_preparedReview=_approvedReview=null;RefreshWorkflowControls();
             RecordHistory(runStarted, "Synchronization", StatusText.Text);
         }
     }
@@ -613,6 +638,8 @@ public partial class MainWindow : Window {
     /// </summary>
     private async void ValidateMediaMonkey_Click(object sender, RoutedEventArgs e)
     {
+        if(IsolatedStartupMode.Enabled || !_workflow.CanValidate)return;
+        _workflow.BeginValidation();_preparedReview=_approvedReview=null;RefreshWorkflowControls();
         ValidateMediaMonkeyButton.IsEnabled = false;
         RunButton.IsEnabled = false;
         StatusText.Text = "Validating MediaMonkey playlists";
@@ -658,7 +685,7 @@ public partial class MainWindow : Window {
             StatusText.Text = "MediaMonkey validation failed";
             _events.Add(new LogEvent(DateTime.Now, LogLevel.Red,
                 "MediaMonkey playlist validation did not complete."));
-            _events.Add(new LogEvent(DateTime.Now, LogLevel.Red, ex.Message));
+            _events.Add(UserMessages.Failure(ex));
             RefreshOutput();
         }
         finally
@@ -668,6 +695,7 @@ public partial class MainWindow : Window {
             ElapsedText.Text = $"Elapsed: {FormatElapsed(_stopwatch?.Elapsed)}";
             ValidateMediaMonkeyButton.IsEnabled = true;
             RunButton.IsEnabled = true;
+            _workflow.EndValidation(failure is null && result is not null);RefreshWorkflowControls();
             RecordHistory(runStarted, "MediaMonkey Validation", StatusText.Text);
         }
 
@@ -686,7 +714,7 @@ public partial class MainWindow : Window {
         else if (failure is not null)
         {
             ShowCompletionNotification(
-                $"MediaMonkey playlist validation did not complete.\n\n{failure.Message}",
+                $"MediaMonkey playlist validation did not complete.\n\n{UserMessages.Explain(failure)}",
                 "MediaMonkey Validation",
                 MessageBoxImage.Error);
         }
@@ -699,6 +727,8 @@ public partial class MainWindow : Window {
     /// </summary>
     private async void VerifyNativeExporter_Click(object sender, RoutedEventArgs e)
     {
+        if(IsolatedStartupMode.Enabled || !_workflow.CanVerify)return;
+        _workflow.BeginVerification();_preparedReview=_approvedReview=null;RefreshWorkflowControls();
         VerifyNativeExporterButton.IsEnabled = false;
         ValidateMediaMonkeyButton.IsEnabled = false;
         RunButton.IsEnabled = false;
@@ -731,6 +761,7 @@ public partial class MainWindow : Window {
                 plan.UnchangedCount != result.MatchingPlaylistCount ||
                 plan.PendingZidooDeleteCount != System.Linq.Enumerable.Count(result.Differences, x => x.Problem == "Existing authoritative mirror contains an M3U that the native exporter does not expect."))
                 throw new InvalidDataException("The native transaction plan does not match the exporter comparison. No changes were made.");
+            _preparedReview = await _runner.PrepareReviewAsync(config);
             _events.Add(new LogEvent(DateTime.Now, LogLevel.Blue,
                 $"Transaction plan (read-only): Unchanged {plan.UnchangedCount:N0}  |  Create {plan.CreateCount:N0}  |  Update {plan.UpdateCount:N0}  |  Pending Zidoo deletion {plan.PendingZidooDeleteCount:N0}"));
 
@@ -744,8 +775,8 @@ public partial class MainWindow : Window {
             }
             else
             {
-                _events.Add(new LogEvent(DateTime.Now, LogLevel.Red,
-                    "Native exporter verification completed. Playlist differences were detected."));
+                _events.Add(new LogEvent(DateTime.Now, LogLevel.Yellow,
+                    "Exporter verification completed. Playlist changes are ready to review."));
                 _events.Add(new LogEvent(DateTime.Now, LogLevel.Red,
                     $"Expected playlists: {result.ExpectedPlaylistCount:N0}  |  Existing playlist files: {result.ExistingPlaylistCount:N0}  |  Playlists with differences: {result.PlaylistsWithDifferencesCount:N0}"));
                 _events.Add(new LogEvent(DateTime.Now, LogLevel.Blue,
@@ -763,7 +794,7 @@ public partial class MainWindow : Window {
             StatusText.Text = "Native exporter verification failed";
             _events.Add(new LogEvent(DateTime.Now, LogLevel.Red,
                 "Native exporter equivalence verification did not complete."));
-            _events.Add(new LogEvent(DateTime.Now, LogLevel.Red, ex.Message));
+            _events.Add(UserMessages.Failure(ex));
             RefreshOutput();
         }
         finally
@@ -774,6 +805,7 @@ public partial class MainWindow : Window {
             VerifyNativeExporterButton.IsEnabled = true;
             ValidateMediaMonkeyButton.IsEnabled = true;
             RunButton.IsEnabled = true;
+            _workflow.EndVerification(failure is null && result is not null && plan is not null && _preparedReview is not null);RefreshWorkflowControls();
             RecordHistory(runStarted, "Native Exporter Verification", StatusText.Text);
         }
 
@@ -809,7 +841,7 @@ public partial class MainWindow : Window {
         else if (failure is not null)
         {
             ShowCompletionNotification(
-                $"Native exporter verification did not complete.\n\n{failure.Message}",
+                $"Native exporter verification did not complete.\n\n{UserMessages.Explain(failure)}",
                 "Native Exporter Verification",
                 MessageBoxImage.Error);
         }
@@ -827,7 +859,7 @@ public partial class MainWindow : Window {
         catch (Exception ex)
         {
             _events.Add(new LogEvent(DateTime.Now, LogLevel.Yellow,
-                $"Run history could not be saved: {ex.Message}"));
+                $"Run history could not be saved: {UserMessages.Explain(ex)}"));
             RefreshOutput();
         }
     }
@@ -844,7 +876,7 @@ public partial class MainWindow : Window {
                 ? "No structured runs recorded yet. Validate or Verify to create the first entry."
                 : $"{records.Count} recorded runs (newest first).";
         }
-        catch (Exception ex) { RunHistoryStatus.Text = $"Could not read run history: {ex.Message}"; }
+        catch (Exception ex) { RunHistoryStatus.Text = $"Could not read run history: {UserMessages.Explain(ex)}"; }
     }
 
     private void RefreshRecoveryReports_Click(object sender, RoutedEventArgs e)
@@ -865,7 +897,7 @@ public partial class MainWindow : Window {
         {
             RecoveryReportGrid.ItemsSource = null;
             RecoveryReportSummary.Text = "Report counts unavailable";
-            RecoveryReportStatus.Text = $"Recovery report review unavailable: {ex.Message}. Read-only mode; recovery execution disabled.";
+            RecoveryReportStatus.Text = $"Recovery report review unavailable: {UserMessages.Explain(ex)}. Read-only mode; recovery execution disabled.";
         }
     }
 
@@ -891,7 +923,7 @@ public partial class MainWindow : Window {
                 throw new FileNotFoundException("The selected run log is unavailable.");
             Process.Start(new ProcessStartInfo(selected.LogPath) { UseShellExecute = true });
         }
-        catch (Exception ex) { RunHistoryStatus.Text = $"Could not open log: {ex.Message}"; }
+        catch (Exception ex) { RunHistoryStatus.Text = $"Could not open log: {UserMessages.Explain(ex)}"; }
     }
 
     /// <summary>Refreshes the Configuration Archive grid from persistent archive metadata.</summary>
@@ -915,7 +947,7 @@ public partial class MainWindow : Window {
             _config=await _configService.LoadAsync(SeedConfig);
             ShowConfig();
             ConfigMessage.Text=$"Archived configuration restored: {selected.Timestamp:g}. The previous current configuration was archived first.";
-        } catch(Exception ex) { ConfigMessage.Text=$"Archive restore failed: {ex.Message}"; }
+        } catch(Exception ex) { ConfigMessage.Text=$"Archive restore failed: {UserMessages.Explain(ex)}"; }
     }
 
     /// <summary>Selects Synchronization and invokes the same Run operation as the Run button.</summary>
@@ -958,7 +990,7 @@ public partial class MainWindow : Window {
         {
             // Help is optional UI; failure must not disrupt the main application.
             Debug.WriteLine($"Help window could not be opened: {ex}");
-            MessageBox.Show(this, $"Help could not be opened: {ex.Message}",
+            MessageBox.Show(this, $"Help could not be opened: {UserMessages.Explain(ex)}",
                 "Help Unavailable", MessageBoxButton.OK, MessageBoxImage.Warning);
         }
     }
@@ -1006,10 +1038,10 @@ public partial class MainWindow : Window {
         catch(Exception ex)
         {
             DiagnosticReportingService.Shared.Report("Discover Zidoo", ex);
-            _events.Add(new LogEvent(DateTime.Now, LogLevel.Red, $"Discover Zidoo failed: {ex.Message}"));
+            _events.Add(new LogEvent(DateTime.Now, LogLevel.Red, $"Discover Zidoo failed: {UserMessages.Explain(ex)}"));
             RefreshOutput();
-            DiscoveryStatus.Text=$"Discovery could not complete: {ex.Message}";
-            ShowCompletionNotification($"Discovery could not complete.\n\n{ex.Message}", "Zidoo Discovery Error", MessageBoxImage.Error);
+            DiscoveryStatus.Text=$"Discovery could not complete: {UserMessages.Explain(ex)}";
+            ShowCompletionNotification($"Discovery could not complete.\n\n{UserMessages.Explain(ex)}", "Zidoo Discovery Error", MessageBoxImage.Error);
         }
         finally { DiscoverZidooButton.IsEnabled=true; }
     }
@@ -1051,7 +1083,7 @@ public partial class MainWindow : Window {
         foreach (var entry in _events.Where(e => Visible(e.Level)))
         {
             var paragraph = new Paragraph { Margin = new Thickness(0, 0, 0, 5), TextAlignment = TextAlignment.Left };
-            var run = new Run($"[{entry.Timestamp:HH:mm:ss}] {entry.Message}")
+            var run = new Run($"[{entry.Timestamp:HH:mm:ss}] {UserMessages.ForDisplay(entry.Message)}")
             {
                 FontWeight = FontWeights.Bold,
                 Foreground = entry.Level switch
@@ -1160,7 +1192,7 @@ public partial class MainWindow : Window {
     private void CopyAllOutput_Click(object sender, RoutedEventArgs e)
     {
         var lines = _events.Where(entry => Visible(entry.Level))
-            .Select(entry => $"[{entry.Timestamp:HH:mm:ss}] {entry.Message}").ToArray();
+            .Select(entry => $"[{entry.Timestamp:HH:mm:ss}] {UserMessages.ForDisplay(entry.Message)}").ToArray();
         if (lines.Length > 0) Clipboard.SetText(string.Join(Environment.NewLine, lines));
     }
 
@@ -1179,7 +1211,7 @@ public partial class MainWindow : Window {
         }
         catch (Exception ex)
         {
-            MessageBox.Show(this, $"Could not open the latest log: {ex.Message}", "Open Latest Log", MessageBoxButton.OK, MessageBoxImage.Warning);
+            MessageBox.Show(this, $"Could not open the latest log: {UserMessages.Explain(ex)}", "Open Latest Log", MessageBoxButton.OK, MessageBoxImage.Warning);
         }
     }
     /// <summary>Restores per-user presentation state without changing synchronization configuration.</summary>

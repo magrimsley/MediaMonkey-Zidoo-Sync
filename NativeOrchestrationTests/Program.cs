@@ -1,3 +1,4 @@
+using System.IO;
 using MediaMonkeyZidooSync.Models;
 using MediaMonkeyZidooSync.Services;
 
@@ -117,6 +118,92 @@ Test("Plan inspection cannot authorize execution", () =>
     if (rows.Count != 1 || result.MayExecute) throw new Exception("Unsafe inspection");
     Throws<InvalidOperationException>(() => new SyncRunner(Orchestrator(new FakeProvider(Plan())))
         .RunAsync(config).GetAwaiter().GetResult());
+});
+Test("Cancellation is yellow and diagnostics stay out of visible output", () =>
+{
+    var entry=UserMessages.Cancelled(new TaskCanceledException("private technical detail"));
+    if(entry.Level!=LogLevel.Yellow || !entry.Message.Contains("cancelled") || entry.Message.Contains("Exception") ||
+       entry.Message.Contains("private technical detail") || !entry.DiagnosticDetails!.Contains("TaskCanceledException"))throw new Exception("Cancellation presentation leaked diagnostics");
+});
+Test("Successful changed and no-change runs have green completion messages", () =>
+{
+    foreach(int count in new[]{0,1,3}){var entry=UserMessages.Completed(count);if(entry.Level!=LogLevel.Green || !entry.Message.Contains("completed successfully"))throw new Exception("Success is not green");}
+});
+Test("Timeout is a failure rather than a user cancellation", () =>
+{
+    var entry=UserMessages.Failure(new TaskCanceledException("HTTP stack detail"));
+    if(entry.Level!=LogLevel.Red || !entry.Message.Contains("did not respond") || entry.Message.Contains("HTTP stack"))throw new Exception("Timeout misclassified");
+});
+Test("Unresolved recovery remains a failure even with nested cancellation", () =>
+{
+    var entry=UserMessages.Failure(new System.IO.IOException("pending journal technical detail",new OperationCanceledException()));
+    if(entry.Level!=LogLevel.Red || !entry.Message.Contains("recovery files") || entry.Message.Contains("technical detail"))throw new Exception("Unsafe cancellation result");
+});
+Test("Diagnostic log preserves details while display hides stack traces", () =>
+{
+    Exception failure;try{throw new InvalidOperationException("test diagnostic marker");}catch(Exception e){failure=e;}
+    var entry=UserMessages.Failure(failure);
+    string root=System.IO.Path.Combine(System.IO.Path.GetTempPath(),"MMZS-MessageTests-"+Guid.NewGuid().ToString("N"));
+    var record=new RunHistoryService().Save(root,DateTime.Now,"test","Failed",TimeSpan.Zero,new[]{entry});
+    if(!System.IO.File.ReadAllText(record.LogPath).Contains(failure.ToString()) || UserMessages.ForDisplay(failure.ToString()).Contains("InvalidOperationException"))throw new Exception("Diagnostic separation failed");
+});
+Test("Synchronization requires validation, exporter verification and review in order", () =>
+{
+    var flow=new SynchronizationWorkflow();
+    if(!flow.CanValidate || flow.CanVerify || flow.CanReview || flow.CanRun)throw new Exception("Unsafe initial state");
+    Throws<InvalidOperationException>(()=>flow.BeginRun());
+    Throws<InvalidOperationException>(()=>flow.BeginVerification());
+    Throws<InvalidOperationException>(()=>flow.AcceptReview());
+    flow.BeginValidation();
+    if(flow.CanValidate || flow.CanVerify || flow.CanReview || flow.CanRun)throw new Exception("Busy controls enabled");
+    flow.EndValidation(true);flow.BeginVerification();flow.EndVerification(true);
+    if(!flow.CanReview || flow.CanRun)throw new Exception("Review skipped");
+    flow.AcceptReview();flow.BeginRun();flow.EndRun();
+    if(flow.CanVerify || flow.CanReview || flow.CanRun)throw new Exception("Run did not reset sequence");
+});
+Test("Failed checks and changed configuration cannot authorize synchronization", () =>
+{
+    var flow=new SynchronizationWorkflow();flow.BeginValidation();flow.EndValidation(false);
+    if(flow.CanVerify)throw new Exception("Failed validation accepted");
+    flow.BeginValidation();flow.EndValidation(true);flow.BeginVerification();flow.EndVerification(false);
+    if(flow.CanReview)throw new Exception("Failed verification accepted");
+    flow.BeginVerification();flow.Invalidate();flow.EndVerification(true);
+    if(flow.CanReview || flow.CanVerify)throw new Exception("Stale verification accepted");
+    flow.BeginValidation();flow.Invalidate();flow.EndValidation(true);
+    if(flow.CanVerify)throw new Exception("Stale validation accepted");
+});
+Test("Optional diagnostics cannot authorize synchronization", () =>
+{
+    var flow=new SynchronizationWorkflow();flow.SetDiagnosticBusy(true);flow.SetDiagnosticBusy(false);
+    if(flow.CanRun || flow.CanReview || flow.CanVerify)throw new Exception("Diagnostics bypassed prerequisites");
+});
+Test("Missing managed repair excludes empty, existing and already planned playlists", () =>
+{
+    var missing=NativeProductionSyncService.MissingManagedPlaylists(new[]{("Missing.m3u",2),("Empty.m3u",0),("Existing.m3u",3),("Planned.m3u",1)},
+        new[]{new ZidooPlaylistRecord("existing","Existing",3,0)},new[]{"Planned.m3u"});
+    if(!missing.SequenceEqual(new[]{"Missing.m3u"}))throw new Exception("Unsafe repair selection");
+});
+Test("Verified rollback continues remaining transactions and records partial failure", () =>
+{
+    var changes=new[]{new NativeProductionTransaction.Change("one.m3u",null,0,null),new NativeProductionTransaction.Change("two.m3u",null,0,null)};
+    int calls=0,restored=0;
+    var failures=NativeProductionSyncService.ApplyTransactionsAsync(changes,(item,ct)=>
+        {calls++;if(calls==1)throw new NativeTransactionRolledBackException("Verified rollback",new IOException());return Task.CompletedTask;},_=>{},_=>restored++,default).GetAwaiter().GetResult();
+    if(calls!=2 || restored!=1 || failures.Count!=1)throw new Exception("Compensated batch semantics differ");
+});
+Test("Unverified recovery stops the batch before the next playlist", () =>
+{
+    var changes=new[]{new NativeProductionTransaction.Change("one.m3u",null,0,null),new NativeProductionTransaction.Change("two.m3u",null,0,null)};int calls=0;
+    Throws<IOException>(()=>NativeProductionSyncService.ApplyTransactionsAsync(changes,(item,ct)=>{calls++;throw new IOException("Unresolved recovery");},_=>{},_=>{},default).GetAwaiter().GetResult());
+    if(calls!=1)throw new Exception("Batch continued after unresolved recovery");
+});
+Test("User cancellation stops after compensation without attempting the next playlist", () =>
+{
+    using var cancellation=new CancellationTokenSource();int calls=0;
+    var changes=new[]{new NativeProductionTransaction.Change("one.m3u",null,0,null),new NativeProductionTransaction.Change("two.m3u",null,0,null)};
+    Throws<NativeTransactionRolledBackException>(()=>NativeProductionSyncService.ApplyTransactionsAsync(changes,(item,ct)=>
+        {calls++;cancellation.Cancel();throw new NativeTransactionRolledBackException("Cancelled after compensation",new OperationCanceledException(ct));},_=>{},_=>{},cancellation.Token).GetAwaiter().GetResult());
+    if(calls!=1)throw new Exception("Cancellation did not stop batch");
 });
 Console.WriteLine($"Results: {passed} passed; {failed} failed");
 return failed == 0 ? 0 : 1;

@@ -35,12 +35,20 @@
    <TabItem Header="Synchronization">
     <Grid Margin="14">
      <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="*"/></Grid.RowDefinitions>
-     <StackPanel Orientation="Horizontal">
-      <Button x:Name="RunButton" Content="Run Synchronization" Padding="18,8" Click="Run_Click"/>
-      <Button x:Name="ValidateMediaMonkeyButton" Content="Validate MediaMonkey Playlists" Padding="18,8" Margin="10,0,0,0" Click="ValidateMediaMonkey_Click"/>
-      <Button x:Name="VerifyNativeExporterButton" Content="Verify Native Exporter" Padding="18,8" Margin="10,0,0,0" Click="VerifyNativeExporter_Click"/>
-      <Button x:Name="RunNativeAssessmentButton" Content="Run Native Assessment (Read-only)" Padding="18,8" Margin="10,0,0,0" Click="RunNativeAssessment_Click"/>
-      <Button x:Name="InspectNativePlanButton" Content="Inspect Plan (Read-only)" Padding="14,8" Margin="10,0,0,0" IsEnabled="False" Click="InspectNativePlan_Click"/>
+     <StackPanel>
+      <WrapPanel>
+      <Button x:Name="ValidateMediaMonkeyButton" Content="1. Validate MediaMonkey Playlists" Padding="14,8" Click="ValidateMediaMonkey_Click"/>
+      <Button x:Name="VerifyNativeExporterButton" Content="2. Verify Native Exporter" IsEnabled="False" Padding="14,8" Margin="10,0,0,0" Click="VerifyNativeExporter_Click"/>
+      <Button x:Name="ReviewSynchronizationButton" Content="3. Review Changes" IsEnabled="False" Padding="14,8" Margin="10,0,0,0" Click="ReviewSynchronization_Click"/>
+      <Button x:Name="RunButton" Content="4. Run Synchronization" IsEnabled="False" Padding="14,8" Margin="10,0,0,0" Click="Run_Click"/>
+      </WrapPanel>
+      <TextBlock x:Name="WorkflowHint" Text="Step 1: Validate MediaMonkey playlists." Margin="0,8,0,4" TextWrapping="Wrap"/>
+      <Expander Header="Optional read-only diagnostics" Margin="0,4,0,0">
+       <StackPanel Orientation="Horizontal">
+        <Button x:Name="RunNativeAssessmentButton" Content="Run Native Assessment (Read-only)" IsEnabled="False" Padding="14,6" Click="RunNativeAssessment_Click"/>
+        <Button x:Name="InspectNativePlanButton" Content="Inspect Plan (Read-only)" Padding="14,6" Margin="10,0,0,0" IsEnabled="False" Click="InspectNativePlan_Click"/>
+       </StackPanel>
+      </Expander>
      </StackPanel>
      <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,14,0,8">
       <TextBlock Text="Show:" VerticalAlignment="Center" Margin="0,0,10,0"/>
@@ -52,7 +60,6 @@
      <DockPanel Grid.Row="2">
        <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Margin="0,0,0,8">
          <Button Content="Open Latest Log" Padding="12,5" Click="OpenLatestOutputLog_Click"/>
-         <Button x:Name="RecoverSynchronizationButton" Content="Recover Interrupted Synchronization" Padding="12,5" Margin="10,0,0,0" Click="RecoverSynchronization_Click"/>
          <TextBlock x:Name="ElapsedText" Text="Elapsed: 00:00:00" VerticalAlignment="Center" Margin="18,0,0,0"/>
        </StackPanel>
        <RichTextBox x:Name="OutputRichText" FontFamily="Consolas" FontSize="14"
@@ -73,7 +80,7 @@
     </Grid>
    </TabItem>
 
-   <TabItem Header="Configuration">
+   <TabItem x:Name="ConfigurationTab" Header="Configuration">
     <ScrollViewer VerticalScrollBarVisibility="Auto">
      <StackPanel Margin="16">
       <Expander x:Name="ZidooSection" Header="Zidoo" IsExpanded="True" Margin="0,18,0,0">
