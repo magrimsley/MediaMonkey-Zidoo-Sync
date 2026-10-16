@@ -54,8 +54,11 @@ public sealed class NativeProductionTransaction
         var original = before.SingleOrDefault(x => x.Name == name);
         if(change.NewContent is not null && TrackCount(change.NewContent)!=change.ExpectedCount)
             throw new InvalidDataException("Candidate M3U track count differs from the approved transaction.");
-        // A persistent playlist without its original M3U cannot be compensated safely.
-        if (original is not null && old is null)
+        bool preserveExisting = old is null && change.NewContent is not null && original is not null && change.ExpectedCount > 0;
+        if (preserveExisting && original!.Count != change.ExpectedCount)
+            throw new InvalidDataException("Existing device playlist differs from the proposed creation; no changes made.");
+        // An existing matching creation is verified without deleting or reimporting it.
+        if (original is not null && old is null && !preserveExisting)
             throw new InvalidDataException("Existing device playlist has no authoritative file backup.");
         if(original is not null && old is not null && TrackCount(old)!=original.Count)
             throw new InvalidDataException("Original authoritative M3U cannot reproduce the device track count; update refused.");
@@ -69,6 +72,28 @@ public sealed class NativeProductionTransaction
             Target = target, change.ExpectedOldSHA256, NewSHA256 = change.NewContent is null ? null : Hash(change.NewContent),
             change.ExpectedCount, OriginalDevice = original, OriginalInventory = before
         }));
+        // Capture current authoritative content, including any earlier committed changes.
+        var otherFiles = new Dictionary<string, byte[]>();
+        foreach (var row in before.Where(x => x.Name != name))
+        {
+            string filename = row.Name + ".m3u";
+            if (filename != Path.GetFileName(filename) || filename.IndexOfAny(Path.GetInvalidFileNameChars()) >= 0) continue;
+            string path = Path.Combine(root, filename);NoLink(path);
+            if (!File.Exists(path)) continue;
+            byte[] content = await File.ReadAllBytesAsync(path, ct);
+            if (TrackCount(content) != row.Count) continue;
+            otherFiles.Add(row.Id, content);
+        }
+        string collateralFolder=Path.Combine(journal,"Collateral");Directory.CreateDirectory(collateralFolder);
+        int backupIndex=0;
+        var collateralManifest=new List<object>();
+        foreach(var row in before.Where(x=>otherFiles.ContainsKey(x.Id)))
+        {
+            string backup=(backupIndex++).ToString("D4")+".m3u";
+            Durable(Path.Combine(collateralFolder,backup),otherFiles[row.Id]);
+            collateralManifest.Add(new{row.Id,row.Name,row.Count,Backup=backup,SHA256=Hash(otherFiles[row.Id])});
+        }
+        Durable(Path.Combine(journal,"collateral-backups.json"),JsonSerializer.SerializeToUtf8Bytes(collateralManifest));
         string pending = Path.Combine(root, ".mmzs-production-pending.json");
         Durable(pending, JsonSerializer.SerializeToUtf8Bytes(new { Journal = journal, Target = target }));
         string stage = Path.Combine(root, ".mmzs-" + Guid.NewGuid().ToString("N") + ".stage");
@@ -83,15 +108,18 @@ public sealed class NativeProductionTransaction
                 VerifyOriginal();
                 if (old is null) File.Move(stage, target); else File.Replace(stage, target, null);
             }
-            if (original is not null) await _device.DeleteExactAsync(original, ct);
+            if (original is not null && !preserveExisting) await _device.DeleteExactAsync(original, ct);
             if (change.NewContent is null)
             {
                 VerifyOriginal();
                 File.Delete(target);
             }
-            else if (change.ExpectedCount > 0)
+            else if (change.ExpectedCount > 0 && !preserveExisting)
                 await _device.ImportAsync(change.FileName, change.ExpectedCount, ct);
             var after = await _device.InventoryAsync(ct);
+            if (!before.Where(x => x.Name != name).Select(x => (x.Id,x.Name,x.Count))
+                .SequenceEqual(after.Where(x => x.Name != name).Select(x => (x.Id,x.Name,x.Count))))
+                throw new InvalidDataException("Unrelated device state changed; transaction cannot be committed.");
             var current = after.SingleOrDefault(x => x.Name == name);
             if (change.ExpectedCount > 0 ? current?.Count != change.ExpectedCount : current is not null)
                 throw new InvalidDataException("Final device state does not match transaction.");
@@ -108,9 +136,30 @@ public sealed class NativeProductionTransaction
             {
                 using var rollback = new CancellationTokenSource(TimeSpan.FromMinutes(3));
                 var currentInventory = await _device.InventoryAsync(rollback.Token);
-                if (!before.Where(x => x.Name != name).Select(x => (x.Id,x.Name,x.Count))
-                    .SequenceEqual(currentInventory.Where(x => x.Name != name).Select(x => (x.Id,x.Name,x.Count))))
+                var expectedOthers=before.Where(x=>x.Name!=name).ToArray();
+                var actualOthers=currentInventory.Where(x=>x.Name!=name).ToArray();
+                // Only an absent original identity can be repaired automatically. Edited,
+                // replaced or additional playlists remain ambiguous and retain the gate.
+                if(actualOthers.Any(row=>!expectedOthers.Any(oldRow=>oldRow.Id==row.Id && oldRow.Name==row.Name && oldRow.Count==row.Count)))
                     throw new InvalidDataException("Unrelated device state changed; automatic rollback refused.");
+                var repaired=new List<ZidooPlaylistRecord>();
+                foreach(var missing in expectedOthers.Where(row=>!actualOthers.Any(currentRow=>currentRow.Id==row.Id)))
+                {
+                    if(!otherFiles.TryGetValue(missing.Id,out var content))
+                        throw new InvalidDataException("Missing playlist has no verified authoritative backup.");
+                    string path=Path.Combine(root,missing.Name+".m3u");NoLink(path);
+                    if(!File.Exists(path) || Hash(File.ReadAllBytes(path))!=Hash(content))
+                        throw new IOException("Authoritative recovery content changed; collateral repair refused.");
+                    await _device.ImportAsync(missing.Name+".m3u",missing.Count,rollback.Token);
+                    if(Hash(File.ReadAllBytes(path))!=Hash(content))throw new IOException("Authoritative content changed during collateral repair.");
+                    repaired.Add(missing);
+                }
+                currentInventory=await _device.InventoryAsync(rollback.Token);
+                var verifiedOthers=currentInventory.Where(x=>x.Name!=name).ToArray();
+                if(verifiedOthers.Length!=expectedOthers.Length || expectedOthers.Any(row=>
+                    !verifiedOthers.Any(currentRow=>currentRow.Name==row.Name && currentRow.Count==row.Count &&
+                        (currentRow.Id==row.Id || repaired.Any(repairedRow=>repairedRow.Id==row.Id)))))
+                    throw new InvalidDataException("Collateral restoration could not be verified.");
                 var current = currentInventory.SingleOrDefault(x => x.Name == name);
                 var fileHash = File.Exists(target) ? Hash(File.ReadAllBytes(target)) : null;
                 var newHash = change.NewContent is null ? null : Hash(change.NewContent);
@@ -130,7 +179,11 @@ public sealed class NativeProductionTransaction
                 }
                 if (original is not null && !originalStillPresent)
                     await _device.ImportAsync(change.FileName, original.Count, rollback.Token);
-                var restored = (await _device.InventoryAsync(rollback.Token)).SingleOrDefault(x => x.Name == name);
+                var restoredInventory = await _device.InventoryAsync(rollback.Token);
+                var restoredOthers=restoredInventory.Where(x=>x.Name!=name).ToArray();
+                if(restoredOthers.Length!=verifiedOthers.Length || verifiedOthers.Any(row=>!restoredOthers.Any(currentRow=>currentRow.Id==row.Id && currentRow.Name==row.Name && currentRow.Count==row.Count)))
+                    throw new InvalidDataException("Unrelated playlists changed during target restoration.");
+                var restored = restoredInventory.SingleOrDefault(x => x.Name == name);
                 if (original is null ? restored is not null : restored?.Count != original.Count)
                     throw new InvalidDataException("Original device state could not be verified after rollback.");
                 if ((File.Exists(target) ? Hash(File.ReadAllBytes(target)) : null) != change.ExpectedOldSHA256)

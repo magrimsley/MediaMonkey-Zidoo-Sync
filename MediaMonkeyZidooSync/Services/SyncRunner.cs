@@ -24,6 +24,7 @@ public sealed class SyncRunner
 
     public event Action<LogEvent>? Output;
     public bool LastRunVerifiedDevice=>_production?.LastRunVerifiedDevice==true;
+    public int LastRunCompletedChanges=>_production?.LastRunCompletedChanges??0;
 
     /// <summary>Read-only assessment; does not authorize or perform execution.</summary>
     public async Task<NativeSyncReadOnlyResult> AssessAsync(AppConfig config, CancellationToken ct = default)
@@ -51,10 +52,10 @@ public sealed class SyncRunner
     {
         if(_production is null)throw new InvalidOperationException("This runner is read-only; synchronization is not configured.");
         try{return await _production.RunAsync(config,ct,reviewed).ConfigureAwait(false);}
-        catch(Exception error)
+        catch(NativeTransactionRolledBackException error) when(ct.IsCancellationRequested)
         {
-            Output?.Invoke(new LogEvent(DateTime.Now,LogLevel.Red,error.ToString()));
-            throw;
+            // The engine has finished compensation and power restoration before this boundary.
+            throw new OperationCanceledException("Synchronization cancelled after the current playlist was restored.", error, ct);
         }
     }
 }

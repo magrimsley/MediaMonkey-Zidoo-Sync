@@ -62,7 +62,8 @@ public sealed class RunHistoryService
         string id = started.ToString("yyyyMMdd-HHmmss-fffffff") + "-" + Guid.NewGuid().ToString("N")[..8];
         string log = Path.Combine(history, id + ".log");
         string record = Path.Combine(history, id + ".json");
-        string[] lines = events.Select(e => $"[{e.Timestamp:yyyy-MM-dd HH:mm:ss}] [{e.Level}] {e.Message}").ToArray();
+        string[] lines = events.Select(e => $"[{e.Timestamp:yyyy-MM-dd HH:mm:ss}] [{e.Level}] {e.Message}" +
+            (string.IsNullOrEmpty(e.DiagnosticDetails) ? "" : Environment.NewLine + "[Diagnostic details]" + Environment.NewLine + e.DiagnosticDetails)).ToArray();
         // Publish the JSON index only after the log is complete. A JSON record is
         // the commit marker; incomplete logs and temporary files are never listed.
         string tempLog = log + ".tmp";

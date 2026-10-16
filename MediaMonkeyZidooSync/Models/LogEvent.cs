@@ -32,4 +32,8 @@ public enum LogLevel
 /// <param name="Timestamp">Local time at which the UI received the message.</param>
 /// <param name="Level">Semantic display category.</param>
 /// <param name="Message">Message text emitted by the synchronization process.</param>
-public sealed record LogEvent(DateTime Timestamp, LogLevel Level, string Message);
+public sealed record LogEvent(DateTime Timestamp, LogLevel Level, string Message)
+{
+    /// <summary>Technical details retained only in the saved diagnostic log.</summary>
+    public string? DiagnosticDetails { get; init; }
+}
