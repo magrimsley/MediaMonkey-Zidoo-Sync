@@ -84,10 +84,10 @@ Test("Unconfigured runner refuses assessment", () =>
 {
     Throws<InvalidOperationException>(() => new SyncRunner().AssessAsync(config).GetAwaiter().GetResult());
 });
-Test("Production RunAsync remains disabled", () =>
+Test("Read-only runner cannot execute production synchronization", () =>
 {
     var runner = new SyncRunner(Orchestrator(new FakeProvider(Plan())));
-    Throws<NotSupportedException>(() => runner.RunAsync(config).GetAwaiter().GetResult());
+    Throws<InvalidOperationException>(() => runner.RunAsync(config).GetAwaiter().GetResult());
 });
 Test("Plan inspection exposes validated proposed operations without execution", () =>
 {
@@ -115,7 +115,7 @@ Test("Plan inspection cannot authorize execution", () =>
         .AssessAsync(config).GetAwaiter().GetResult();
     var rows = NativePlanInspection.FromAssessment(result);
     if (rows.Count != 1 || result.MayExecute) throw new Exception("Unsafe inspection");
-    Throws<NotSupportedException>(() => new SyncRunner(Orchestrator(new FakeProvider(Plan())))
+    Throws<InvalidOperationException>(() => new SyncRunner(Orchestrator(new FakeProvider(Plan())))
         .RunAsync(config).GetAwaiter().GetResult());
 });
 Console.WriteLine($"Results: {passed} passed; {failed} failed");
