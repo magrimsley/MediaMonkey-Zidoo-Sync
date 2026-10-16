@@ -3,7 +3,7 @@
 param()
 $ErrorActionPreference='Stop'
 $manifest=Get-Content (Join-Path $PSScriptRoot 'package-manifest.json') -Raw -Encoding UTF8 | ConvertFrom-Json
-if($manifest.ApplicationVersion -ne '1.1-alpha.60.16.1' -or $manifest.SupportRevision -ne 5){throw 'Unexpected package version.'}
+if($manifest.ApplicationVersion -ne '1.1-alpha.60.17' -or $manifest.SupportRevision -ne 5){throw 'Unexpected package version.'}
 $seen=@{}
 foreach($entry in $manifest.Files){
  $relative=[string]$entry.Path

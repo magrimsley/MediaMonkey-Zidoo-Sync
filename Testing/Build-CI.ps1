@@ -1,4 +1,4 @@
-#requires -Version 5.1
+﻿#requires -Version 5.1
 [CmdletBinding()]
 param([string]$ResultsRoot=(Join-Path ([IO.Path]::GetTempPath()) 'MediaMonkeyZidooSync-CI'),[switch]$NoPublish)
 $ErrorActionPreference='Stop'
@@ -11,7 +11,7 @@ function Step($Name,[scriptblock]$Body){
  Write-Host ($Name+': PASS')
 }
 Step 'Application-Build' {& dotnet build (Join-Path $root 'MediaMonkeyZidooSync\MediaMonkeyZidooSync.csproj') -c Release --nologo;if($LASTEXITCODE){throw 'Application build failed.'}}
-foreach($name in @('NativeOrchestrationTests','RecoveryTests','RunHistoryDurabilityTests','IsolatedSyncTests')){Step $name {& dotnet run --project (Join-Path $root ($name+'\'+$name+'.csproj')) -c Release --nologo;if($LASTEXITCODE){throw 'Offline test failed.'}}}
+foreach($name in @('NativeOrchestrationTests','RecoveryTests','RunHistoryDurabilityTests','IsolatedSyncTests','NativeDeviceTests')){Step $name {& dotnet run --project (Join-Path $root ($name+'\'+$name+'.csproj')) -c Release --nologo;if($LASTEXITCODE){throw 'Offline test failed.'}}}
 Step 'WPF-Static-Contracts' {& (Join-Path $root 'Test-WpfContracts.ps1');if($LASTEXITCODE){throw 'Static contracts failed.'}}
 if(!$NoPublish){Step 'Unsigned-Windows-Publish' {& dotnet publish (Join-Path $root 'MediaMonkeyZidooSync\MediaMonkeyZidooSync.csproj') -c Release -r win-x64 --self-contained true -o (Join-Path $out 'publish') --nologo;if($LASTEXITCODE){throw 'Publish failed.'}}}
 Write-Host ('Results: '+$out)

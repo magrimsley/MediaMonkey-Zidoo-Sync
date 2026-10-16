@@ -37,7 +37,7 @@ try {
         }
     }
     $runner = [System.IO.File]::ReadAllText((Join-Path $root 'Services\SyncRunner.cs'))
-    Assert-Contract ([regex]::IsMatch($runner, 'throw\s+new\s+NotSupportedException\s*\(')) 'Production SyncRunner still rejects synchronization'
+    Assert-Contract ($runner.Contains('NativeProductionSyncService') -and $runner.Contains('This runner is read-only')) 'Native production and read-only execution boundaries remain separate'
     Write-Host "WPF static contracts: $checks passed, 0 failed"
     exit 0
 } catch {

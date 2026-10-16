@@ -137,6 +137,7 @@ public partial class MainWindow : Window {
     private readonly UiStateService _uiStateService = new();
     private UiState _uiState = new();
     private readonly SyncRunner _runner = new();
+    private System.Threading.CancellationTokenSource? _syncCancellation;
     private readonly SyncRunner _nativeAssessmentRunner = new(
         new NativeSyncReadOnlyOrchestrator(
             new NativeSyncPlanProvider(new MediaMonkeyExportTransactionPlanner()),
@@ -533,26 +534,72 @@ public partial class MainWindow : Window {
         }
     }
     /// <summary>Saves the current configuration, launches synchronization, updates status, and marks successful configuration Last Known Good.</summary>
+    private async void RecoverSynchronization_Click(object sender,RoutedEventArgs e)
+    {
+        if(IsolatedStartupMode.Enabled || _syncCancellation is not null || !RunButton.IsEnabled)return;
+        DateTime started=DateTime.Now;
+        _syncCancellation=new System.Threading.CancellationTokenSource();
+        RunButton.Content="Cancel Recovery";RecoverSynchronizationButton.IsEnabled=false;
+        ValidateMediaMonkeyButton.IsEnabled=false;VerifyNativeExporterButton.IsEnabled=false;RunNativeAssessmentButton.IsEnabled=false;
+        _events.Clear();RefreshOutput();_stopwatch=Stopwatch.StartNew();_timer.Start();StatusText.Text="Checking recovery";
+        try
+        {
+            ReadConfigFromForm();var config=_config??throw new InvalidOperationException("Configuration missing.");
+            bool recovered=await _runner.RecoverPendingAsync(config,message=>MessageBox.Show(this,message,"Restore Previous Playlist",MessageBoxButton.YesNo,MessageBoxImage.Question,MessageBoxResult.No)==MessageBoxResult.Yes,_syncCancellation.Token);
+            StatusText.Text=recovered?"Recovery completed":"No recovery performed";
+        }
+        catch(OperationCanceledException){StatusText.Text="Recovery cancelled; retained evidence preserved";}
+        catch(Exception error){StatusText.Text="Recovery requires review";_events.Add(new LogEvent(DateTime.Now,LogLevel.Red,error.ToString()));RefreshOutput();}
+        finally
+        {
+            _timer.Stop();_stopwatch?.Stop();_syncCancellation?.Dispose();_syncCancellation=null;
+            RunButton.Content="Run Synchronization";RunButton.IsEnabled=true;RecoverSynchronizationButton.IsEnabled=true;
+            ValidateMediaMonkeyButton.IsEnabled=true;VerifyNativeExporterButton.IsEnabled=true;RunNativeAssessmentButton.IsEnabled=true;
+            RecordHistory(started,"Synchronization Recovery",StatusText.Text);
+        }
+    }
+
     private async void Run_Click(object sender, RoutedEventArgs e) {
         if (IsolatedStartupMode.Enabled) return;
-        RunButton.IsEnabled=false; StatusText.Text="Running"; _events.Clear(); RefreshOutput();
+        if(_syncCancellation is not null){_syncCancellation.Cancel();RunButton.IsEnabled=false;StatusText.Text="Cancelling; finishing recovery";return;}
+        if(!RunButton.IsEnabled)return;
+        _syncCancellation=new System.Threading.CancellationTokenSource();
+        var token=_syncCancellation.Token;
+        RunButton.Content="Cancel Synchronization"; StatusText.Text="Preparing changes"; _events.Clear(); RefreshOutput();
+        ValidateMediaMonkeyButton.IsEnabled=false;VerifyNativeExporterButton.IsEnabled=false;RunNativeAssessmentButton.IsEnabled=false;
         DateTime runStarted = DateTime.Now;
         _stopwatch=Stopwatch.StartNew(); _timer.Start();
         try {
             ReadConfigFromForm();
             var config = _config ?? throw new InvalidOperationException("Configuration was not created from the form.");
             await _configService.SaveAsync(config);
-            int rc=await _runner.RunAsync(config);
-            if(rc==0) { StatusText.Text="Completed"; _configService.MarkLastKnownGood(); ConfigMessage.Text="Successful run: current configuration marked Last Known Good."; }
+            var review=await _runner.PrepareReviewAsync(config,token);
+            if(review.Count>0)
+            {
+                string details=string.Join(Environment.NewLine,review.Take(12).Select(item=>
+                    (item.CandidateSHA256 is null?"Delete":item.OriginalSHA256 is null?"Create":"Update")+": "+item.FileName+" ("+item.ExpectedCount+" tracks)"));
+                if(review.Count>12)details+=Environment.NewLine+"... and "+(review.Count-12)+" more.";
+                if(MessageBox.Show(this,"Apply "+review.Count+" playlist change(s) to the configured NAS and Zidoo?"+Environment.NewLine+Environment.NewLine+details+Environment.NewLine+Environment.NewLine+
+                    "Original files are backed up. Do not edit MediaMonkey or use the Zidoo remote during synchronization.","Confirm Synchronization",MessageBoxButton.YesNo,MessageBoxImage.Question,MessageBoxResult.No)!=MessageBoxResult.Yes)
+                {StatusText.Text="Cancelled before synchronization";return;}
+            }
+            token.ThrowIfCancellationRequested();StatusText.Text="Running";
+            int rc=await _runner.RunAsync(config,token,review);
+            if(rc==0) {
+                StatusText.Text="Completed";
+                if(_runner.LastRunVerifiedDevice){_configService.MarkLastKnownGood();ConfigMessage.Text="Successful verified run: current configuration marked Last Known Good.";}
+                else ConfigMessage.Text="No playlist changes; existing Last Known Good configuration retained.";
+            }
             else StatusText.Text=$"Failed ({rc})";
-        } catch(NotSupportedException ex) {
-            StatusText.Text="Native migration in progress";
-            ConfigMessage.Text=ex.Message;
-            _events.Add(new LogEvent(DateTime.Now,LogLevel.Yellow,ex.Message)); RefreshOutput();
+        } catch(OperationCanceledException) {
+            StatusText.Text="Cancelled";
         } catch(Exception ex) {
             StatusText.Text="Failed"; _events.Add(new LogEvent(DateTime.Now,LogLevel.Red,ex.Message)); RefreshOutput();
         } finally {
-            _timer.Stop(); _stopwatch?.Stop(); RunButton.IsEnabled=true;
+            _timer.Stop(); _stopwatch?.Stop();
+            _syncCancellation?.Dispose();_syncCancellation=null;
+            RunButton.Content="Run Synchronization";RunButton.IsEnabled=true;
+            ValidateMediaMonkeyButton.IsEnabled=true;VerifyNativeExporterButton.IsEnabled=true;RunNativeAssessmentButton.IsEnabled=true;
             RecordHistory(runStarted, "Synchronization", StatusText.Text);
         }
     }
@@ -1166,6 +1213,10 @@ public partial class MainWindow : Window {
     /// <summary>Captures and saves presentation state when the application closes.</summary>
     private void Window_Closing(object? sender, CancelEventArgs e)
     {
+        if(_syncCancellation is not null)
+        {
+            e.Cancel=true;StatusText.Text="Synchronization active; use Cancel Synchronization and let recovery finish.";return;
+        }
         if (_nativeAssessmentCancellation is { IsCancellationRequested: false } cancellation)
         {
             e.Cancel = true;

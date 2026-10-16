@@ -1,6 +1,6 @@
 # MediaMonkey Zidoo Sync
 
-Windows WPF alpha for preparing and inspecting synchronization plans between MediaMonkey playlists, playlist storage and a Zidoo player. The application version is 1.1-alpha.60.16.1. **Production synchronization is disabled.** This alpha does not provide an enabled end-to-end production sync workflow.
+Windows WPF alpha for preparing and inspecting synchronization plans between MediaMonkey playlists, playlist storage and a Zidoo player. The application version is 1.1-alpha.60.17. Native synchronization is enabled in this development candidate. A controlled live create/update and recovery run passed on the user's Z9X 8K; full UI, delete, power, no-change, regression and installation acceptance remains pending. This is not yet an accepted production release.
 
 This is a local public-source preparation candidate, not a published repository or release. The project license is undecided; no open-source license grant has been selected. See [LICENSE-DECISION.md](LICENSE-DECISION.md).
 

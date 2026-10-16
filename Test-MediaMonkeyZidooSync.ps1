@@ -16,7 +16,7 @@ param(
     [switch]$UiNavigation,
     [switch]$UiWorkflows,
     [switch]$UiDeep,
-    [string]$ExpectedVersion = '1.1-alpha.60.16.1'
+    [string]$ExpectedVersion = '1.1-alpha.60.17'
 )
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
@@ -107,7 +107,8 @@ try {
             @{Name='Native-Orchestration'; Path='NativeOrchestrationTests\\NativeOrchestrationTests.csproj'},
             @{Name='Recovery'; Path='RecoveryTests\\RecoveryTests.csproj'},
             @{Name='Run-History-Durability'; Path='RunHistoryDurabilityTests\\RunHistoryDurabilityTests.csproj'},
-            @{Name='Isolated-Sync'; Path='IsolatedSyncTests\\IsolatedSyncTests.csproj'}
+            @{Name='Isolated-Sync'; Path='IsolatedSyncTests\\IsolatedSyncTests.csproj'},
+            @{Name='Native-Device-And-Transactions'; Path='NativeDeviceTests\\NativeDeviceTests.csproj'}
         )
         foreach ($test in $testProjects) {
             $testPath = Join-Path $root $test.Path
@@ -199,7 +200,8 @@ try {
         Configuration=$Configuration
         BuildSkipped=[bool]$NoBuild
         BinaryIdentity=$binaryIdentity
-        FullTenStageAcceptance=([bool]$UiDeep -and -not $NoBuild -and -not $failed -and $results.Count -eq 10 -and $null -ne $binaryIdentity)
+        FullRegressionAcceptance=([bool]$UiDeep -and -not $NoBuild -and -not $failed -and $results.Count -eq 11 -and $null -ne $binaryIdentity)
+        ExpectedStages=11
         Scope=('Build, offline test executables, static WPF contract checks' + $(if ($UiSmoke -or $UiNavigation -or $UiWorkflows -or $UiDeep) { ', opt-in interactive WPF launch/inspection' } else { '' }) + $(if ($UiNavigation) { ', local tab selection only' } else { '' }) + ' ; only opt-in local Help menu clicks; no synchronization or live Zidoo tests')
         Steps=@($results.ToArray())
     }

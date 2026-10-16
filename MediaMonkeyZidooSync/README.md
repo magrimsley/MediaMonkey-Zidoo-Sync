@@ -1,3 +1,3 @@
-# Application source
+# MediaMonkey Zidoo Sync
 
-Windows WPF Alpha.60.16.1. Production synchronization is disabled. See the repository-root README for build, testing and candidate status, and LICENSE-DECISION.md for the pending license decision. Packaged settings contain no personal deployment defaults.
+Windows WPF Alpha.60.17 native synchronization candidate. Run Synchronization is connected to the native engine with review, cancellation and recovery gates. Full acceptance remains pending. See the repository README. Neutral packaged settings and undecided license remain unchanged.
