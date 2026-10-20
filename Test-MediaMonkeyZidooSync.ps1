@@ -16,7 +16,7 @@ param(
     [switch]$UiNavigation,
     [switch]$UiWorkflows,
     [switch]$UiDeep,
-    [string]$ExpectedVersion = '1.1-alpha.60.18.6'
+    [string]$ExpectedVersion = '1.1-alpha.60.18.7'
 )
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'

@@ -176,13 +176,45 @@
        <TextBlock x:Name="RunHistoryStatus" Margin="14,8,0,0" TextWrapping="Wrap"/>
       </StackPanel>
       <DataGrid x:Name="RunHistoryGrid" Height="390" AutoGenerateColumns="False" IsReadOnly="True"
-                SelectionMode="Single" MouseDoubleClick="OpenRunLog_Click">
+                CanUserAddRows="False" SelectionMode="Extended" SelectionUnit="CellOrRowHeader"
+                HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto" RowHeaderWidth="20">
+       <DataGrid.Resources>
+        <Style x:Key="SelectableHistoryText" TargetType="TextBox">
+         <Setter Property="IsReadOnly" Value="True"/>
+         <Setter Property="IsReadOnlyCaretVisible" Value="True"/>
+         <Setter Property="BorderThickness" Value="0"/>
+         <Setter Property="Background" Value="Transparent"/>
+         <Setter Property="Padding" Value="3,2"/>
+         <Setter Property="TextWrapping" Value="NoWrap"/>
+         <Setter Property="Foreground" Value="{Binding Foreground, RelativeSource={RelativeSource AncestorType=DataGrid}}"/>
+         <Setter Property="HorizontalScrollBarVisibility" Value="Hidden"/>
+         <Setter Property="VerticalScrollBarVisibility" Value="Disabled"/>
+        </Style>
+        <Style TargetType="DataGridCell">
+         <Style.Triggers>
+          <Trigger Property="IsSelected" Value="True">
+           <Setter Property="Background" Value="Transparent"/>
+           <Setter Property="BorderBrush" Value="Transparent"/>
+          </Trigger>
+         </Style.Triggers>
+        </Style>
+       </DataGrid.Resources>
        <DataGrid.Columns>
-        <DataGridTextColumn Header="Started" Binding="{Binding Started, StringFormat={}{0:yyyy-MM-dd HH:mm:ss}}" Width="175"/>
-        <DataGridTextColumn Header="Operation" Binding="{Binding Operation}" Width="210"/>
-        <DataGridTextColumn Header="Result" Binding="{Binding Result}" Width="240"/>
-        <DataGridTextColumn Header="Elapsed" Binding="{Binding Elapsed}" Width="100"/>
-        <DataGridTextColumn Header="Log" Binding="{Binding LogPath}" Width="*"/>
+        <DataGridTemplateColumn Header="Started" SortMemberPath="Started" Width="SizeToCells" MinWidth="175">
+         <DataGridTemplateColumn.CellTemplate><DataTemplate><TextBox Style="{StaticResource SelectableHistoryText}" Text="{Binding Started, Mode=OneWay, StringFormat={}{0:yyyy-MM-dd HH:mm:ss}}"/></DataTemplate></DataGridTemplateColumn.CellTemplate>
+        </DataGridTemplateColumn>
+        <DataGridTemplateColumn Header="Operation" SortMemberPath="Operation" Width="SizeToCells" MinWidth="210">
+         <DataGridTemplateColumn.CellTemplate><DataTemplate><TextBox Style="{StaticResource SelectableHistoryText}" Text="{Binding Operation, Mode=OneWay}"/></DataTemplate></DataGridTemplateColumn.CellTemplate>
+        </DataGridTemplateColumn>
+        <DataGridTemplateColumn Header="Result" SortMemberPath="Result" Width="SizeToCells" MinWidth="240">
+         <DataGridTemplateColumn.CellTemplate><DataTemplate><TextBox Style="{StaticResource SelectableHistoryText}" Text="{Binding Result, Mode=OneWay}"/></DataTemplate></DataGridTemplateColumn.CellTemplate>
+        </DataGridTemplateColumn>
+        <DataGridTemplateColumn Header="Elapsed" SortMemberPath="Elapsed" Width="SizeToCells" MinWidth="100">
+         <DataGridTemplateColumn.CellTemplate><DataTemplate><TextBox Style="{StaticResource SelectableHistoryText}" Text="{Binding Elapsed, Mode=OneWay}"/></DataTemplate></DataGridTemplateColumn.CellTemplate>
+        </DataGridTemplateColumn>
+        <DataGridTemplateColumn Header="Log" SortMemberPath="LogPath" Width="SizeToCells" MinWidth="600">
+         <DataGridTemplateColumn.CellTemplate><DataTemplate><TextBox Style="{StaticResource SelectableHistoryText}" Text="{Binding LogPath, Mode=OneWay}"/></DataTemplate></DataGridTemplateColumn.CellTemplate>
+        </DataGridTemplateColumn>
        </DataGrid.Columns>
       </DataGrid>
      </DockPanel>

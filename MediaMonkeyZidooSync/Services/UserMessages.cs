@@ -8,8 +8,10 @@ namespace MediaMonkeyZidooSync.Services;
 public static class UserMessages
 {
     public static LogEvent Cancelled(Exception? error = null) => new(DateTime.Now, LogLevel.Yellow,
-        "Synchronization cancelled. Any playlist changes completed before cancellation are kept. See Run History for details.")
-        { DiagnosticDetails = error?.ToString() };
+        "User cancelled the synchronization." +
+        (error?.InnerException is NativeTransactionRolledBackException
+            ? " The current playlist was restored to its previous state." : "") +
+        " Previously completed playlist changes remain applied.");
 
     public static LogEvent Completed(int changes) => new(DateTime.Now, LogLevel.Green,
         changes == 0 ? "Synchronization completed successfully. No playlist changes were needed." :

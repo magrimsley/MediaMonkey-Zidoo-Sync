@@ -1,6 +1,6 @@
 # Packaging sources
 
-Installer support revision 5 with neutral-default packaging tools. These are solution items, not application compilation inputs. Build-NeutralPackage.ps1 takes a published Alpha.60.18.6 PayloadDirectory and writes a new unsigned ZIP, file manifest and SHA256 sidecar outside the source tree. It validates version rather than requiring the original private checkpoint executable hash: every source rebuild requires fresh acceptance.
+Installer support revision 5 with neutral-default packaging tools. These are solution items, not application compilation inputs. Build-NeutralPackage.ps1 takes a published Alpha.60.18.7 PayloadDirectory and writes a new unsigned ZIP, file manifest and SHA256 sidecar outside the source tree. It validates version rather than requiring the original private checkpoint executable hash: every source rebuild requires fresh acceptance.
 
 ```powershell
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\Packaging\Build-NeutralPackage.ps1 -PayloadDirectory 'C:\Temp\MyPublishedPayload' -ResultsRoot 'C:\Temp\MyPackages'

@@ -88,6 +88,30 @@ internal static class Program
             var second = Field<Window>(window, "_nativePlanWindow");
             Check(second.IsVisible && !ReferenceEquals(first, second), "Closed Proposed Changes reopens");
             second.Close();
+            var history=Field<DataGrid>(window,"RunHistoryGrid");
+            var tabs=Field<TabControl>(window,"MainTabs");
+            var historyTab=tabs.Items.OfType<TabItem>().Single(tab=>Equals(tab.Header,"Run History / Logs"));
+            tabs.SelectedItem=historyTab;
+            string longLog=@"E:\Temp\MediaMonkey\RunHistory\"+new string('a',220)+".log";
+            var historyRecord=new RunHistoryService.RunRecord("text-selection-test",DateTime.Now,"Synchronization","Cancelled","00:01:00",longLog);
+            history.ItemsSource=new[]{historyRecord};window.Width=1050;window.UpdateLayout();Pump();
+            history.ScrollIntoView(historyRecord,history.Columns.Last());history.UpdateLayout();Pump();
+            System.Collections.Generic.IEnumerable<DependencyObject> Descendants(DependencyObject parent)
+            {
+                for(int i=0;i<System.Windows.Media.VisualTreeHelper.GetChildrenCount(parent);i++)
+                {var child=System.Windows.Media.VisualTreeHelper.GetChild(parent,i);yield return child;foreach(var nested in Descendants(child))yield return nested;}
+            }
+            var scroller=Descendants(history).OfType<ScrollViewer>().First();
+            Check(scroller.ScrollableWidth>0 && scroller.ComputedHorizontalScrollBarVisibility==Visibility.Visible,"Long Run History paths expose a horizontal scrollbar");
+            scroller.ScrollToRightEnd();Pump();Check(scroller.HorizontalOffset>0,"Run History can scroll horizontally to long log paths");
+            var pathBox=Descendants(history).OfType<TextBox>().Single(box=>box.Text==longLog);
+            history.UnselectAll();history.CurrentCell=new DataGridCellInfo(historyRecord,history.Columns.Last());pathBox.Focus();pathBox.Select(3,4);Pump();
+            Check(pathBox.SelectedText=="Temp" && history.SelectedItems.Count==0,"Selecting part of a log path does not select the whole row");
+            Check(pathBox.IsReadOnly && Equals(history.CurrentCell.Item,historyRecord),"Selected log cell remains read-only and identifies its run");
+            Check(history.SelectionUnit==DataGridSelectionUnit.CellOrRowHeader && history.RowHeaderWidth>0,"Whole-row selection requires explicit row-header selection");
+            pathBox.SelectAll();Check(pathBox.SelectedText==longLog,"Select All inside a log path selects only that field");
+            Check(Field<DataGrid>(window,"ConfigHistoryGrid").SelectionUnit==DataGridSelectionUnit.FullRow,"Configuration Archive selection remains unchanged");
+            tabs.SelectedIndex=0;Pump();
             window.Close(); Pump();
             app.Shutdown();
 

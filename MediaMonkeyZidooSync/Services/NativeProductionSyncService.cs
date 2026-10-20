@@ -76,13 +76,14 @@ public sealed class NativeProductionSyncService
     public static async Task<IReadOnlyList<Exception>> ApplyTransactionsAsync(
         IEnumerable<NativeProductionTransaction.Change> changes,
         Func<NativeProductionTransaction.Change,CancellationToken,Task> apply,
-        Action<NativeProductionTransaction.Change> onStart,Action<NativeProductionTransaction.Change> onRestored,CancellationToken ct)
+        Action<NativeProductionTransaction.Change> onStart,Action<NativeProductionTransaction.Change> onRestored,CancellationToken ct,
+        Action<NativeProductionTransaction.Change>? onCompleted = null)
     {
         var failures=new List<Exception>();
         foreach(var item in changes)
         {
             ct.ThrowIfCancellationRequested();onStart(item);
-            try{await apply(item,ct);}
+            try{await apply(item,ct);onCompleted?.Invoke(item);}
             catch(NativeTransactionRolledBackException error) when(!ct.IsCancellationRequested)
             {failures.Add(error);onRestored(item);}
         }
@@ -201,8 +202,9 @@ public sealed class NativeProductionSyncService
             var compensatedFailures=await ApplyTransactionsAsync(
                 changes.Select(item=>new NativeProductionTransaction.Change(item.FileName,item.Content,item.Count,item.OldHash)),
                 (item,token)=>transaction.ApplyAsync(root,evidence,item,token),
-                item=>Output?.Invoke((item.NewContent is null?"Delete":item.ExpectedOldSHA256 is null?"Create":"Update")+": "+item.FileName),
-                item=>Output?.Invoke("Could not synchronize "+item.FileName+". Its previous state was restored and verified. Continuing with the remaining playlists."),ct);
+                item=>Output?.Invoke("Starting "+(item.NewContent is null?"delete":item.ExpectedOldSHA256 is null?"create":"update")+" (not yet completed): "+item.FileName),
+                item=>Output?.Invoke("Could not synchronize "+item.FileName+". Its previous state was restored and verified. Continuing with the remaining playlists."),ct,
+                item=>Output?.Invoke("Completed and verified: "+item.FileName));
             var finalInventory=await device.InventoryAsync(ct);
             if(compensatedFailures.Count>0)
             {
