@@ -16,3 +16,5 @@ No verified workaround exists. Retain the failed run's log and transaction evide
 ### Additional observation in Alpha60.18.8
 
 The October 20 offline regression also encountered a sharing exception in `NativeInterruptedRecovery.Save` while moving the pending-marker temporary file into place (`NativeProductionTransaction.ApplyAsync`, line 101; NAS-only empty-playlist deletion test). This is a different failing operation from the earlier `collateral-backups.json` read. A common cause remains unproven. The broader regression run failed and its evidence was retained; UI/artwork checks passed separately. No synchronization backend code changed for 18.8.
+
+Beta1 delivery note: native Windows CI passed on the released source commit. KB-001 remains a carried known issue; no application fix was made or claimed. The owner requested excluding it from the separate outstanding-work checklist.

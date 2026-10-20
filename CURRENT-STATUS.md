@@ -8,11 +8,11 @@ KB-001 remains documented in KNOWN-BUGS.md as a carried known issue, not an item
 
 ## Outstanding work outside the feature backlog
 
-1. **GitHub review and delivery.** The default branch contains no PowerShell, and GitHub language metadata reports C# only. Beta application changes are reviewed separately in PR1, which remains draft/unmerged. CI must pass for the release commit before private unsigned prerelease publication. See the PR and release for delivery status.
-2. **Script-free distribution.** Legacy script-bearing ZIPs/checksums were withdrawn with local backups. The Beta download uses portable native application files, without a PowerShell installer. Local installer tooling remains in the Visual Studio checkout.
-3. **Deferred release decisions.** Signing and project licensing remain undecided; the private Beta remains unsigned. Select a security-reporting contact before public distribution. These are decisions, not additional synchronization features.
+1. **PR review/merge decision.** PR1 remains draft and unmerged by instruction. Beta acceptance, source push, native CI and the private portable prerelease are complete. A merge/promotion needs a separate owner decision.
+2. **Deferred release decisions.** Signing and project licensing remain undecided; the private Beta remains unsigned. Select a security-reporting contact before public distribution.
+3. **Historical Git cleanup.** The separate plan in GITHUB-HISTORY-CLEANUP-PLAN.md has not been executed; old commits/tags remain unchanged. No force push or history rewrite occurred.
 
-A separate GitHub history-cleanup plan has been prepared in GITHUB-HISTORY-CLEANUP-PLAN.md. It has not been executed; old commits/tags remain unchanged.
+Current delivery: [private Beta prerelease](https://github.com/magrimsley/MediaMonkey-Zidoo-Sync/releases/tag/v1.1-beta.1), [passed native Windows CI](https://github.com/magrimsley/MediaMonkey-Zidoo-Sync/actions/runs/39504792477). Release source commit:103af91006b7142d2fdbe7b199070bdbb04cf60a. The portable ZIP contains zero PowerShell files. The default branch also contains no PowerShell; GitHub language metadata reports C# only.
 
 ## Verified and closed
 
