@@ -1,10 +1,10 @@
-# Separate GitHub history cleanup plan — not executed
+# GitHub history cleanup — approved and applied
 
-Owner approved preparing this plan on October20,2026. No history rewrite or force push is authorized by this plan.
+Owner approved the five exact reference updates after reviewing the rehearsal on 2026-10-20. The atomic, leased update completed; historical procedure text below records the plan used. No repository visibility change was authorized or performed.
 
 ## Scope
 
-The current branch has fifteen PowerShell paths staged for removal, with all local script hashes preserved. The historical inventory also identifies fifteen script paths across locally available refs. Final preparation must fetch/inventory every remote branch and tag, including filename changes and any script-bearing Git objects outside that initial inventory.
+The current branch already excludes PowerShell, with all local script hashes preserved. The historical inventory also identifies fifteen script paths across locally available refs. Final preparation must fetch/inventory every remote branch and tag, including filename changes and any script-bearing Git objects outside that initial inventory.
 
 Uploaded script-containing release ZIPs and matching checksum files have already been removed, with verified copies retained in the local Visual Studio checkout. Branch deletion commits alone do not remove files from old commits or tag source archives.
 
@@ -29,4 +29,5 @@ If eliminating every historical GitHub access path is mandatory, assess a new cl
 
 ## Current disposition
 
-Plan prepared only. A normal default-branch cleanup commit has removed PowerShell from its current tree. The Beta PR branch carries the same policy with the current application changes. No history rewrite or force push occurred. Uploaded ZIP withdrawals are already complete.
+Applied after a verified backup and local rehearsal: two branches and three tags were rewritten atomically with exact-old-value leases. All 23 commits were retained; 15 PowerShell paths were removed and every remaining file blob was preserved. The rewritten copy built successfully and passed the policy check and all five native offline suites. Release descriptions record old/new commit IDs; application assets/checksums are unchanged. Old PR refs and caches may retain prior history, so complete erasure is not claimed. The repository remains private. Local script hashes remained unchanged.
+
