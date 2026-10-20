@@ -1,12 +1,12 @@
 // ============================================================================
 // MediaMonkey Zidoo Sync
 // Product line: 1.1 (Major/Minor controlled by the product owner)
-// Development channel: alpha.40
+// Development channel: Alpha.60.18.6
 // Purpose: Primary application window, configuration presentation, synchronization launch, filtering, menus, and configuration archive UI.
 // Remarks:
-// - Build and revision are compiler-generated through AssemblyVersion 1.0.*.
+// - Version metadata is defined by MediaMonkeyZidooSync.csproj.
 // - Released artifacts are immutable; any code change requires a new build identity.
-// - Production PowerShell synchronization mechanics are not changed by this source-governance pass.
+// - Synchronization is entirely native C#; PowerShell is used only for build, test and installation tooling.
 // ============================================================================
 using System.IO;
 using System.Collections.ObjectModel;
@@ -201,8 +201,8 @@ public partial class MainWindow : Window {
         ProductVersionText.Text = $"Product {ApplicationVersionProvider.ProductVersion}";
         if (isolatedConfigRoot is null) _ = RestoreUiStateAsync();
         Loaded += async (_,__) => await LoadConfigurationAsync();
-        _runner.Output += e => Dispatcher.Invoke(() => { _events.Add(e); RefreshOutput(); });
-        _nativeAssessmentRunner.Output += e => Dispatcher.Invoke(() => { _events.Add(e); RefreshOutput(); });
+        _runner.Output += e => Dispatcher.InvokeAsync(() => { _events.Add(e); RefreshOutput(); });
+        _nativeAssessmentRunner.Output += e => Dispatcher.InvokeAsync(() => { _events.Add(e); RefreshOutput(); });
         _timer.Tick += (_,__) => ElapsedText.Text = $"Elapsed: {FormatElapsed(_stopwatch?.Elapsed)}";
     }
 
@@ -604,14 +604,16 @@ public partial class MainWindow : Window {
             token.ThrowIfCancellationRequested();StatusText.Text="Running";
             int rc=await _runner.RunAsync(config,token,review);
             if(rc==0) {
-                StatusText.Text="Completed";
+                StatusText.Text=_runner.LastRunRecovered?"Recovery completed; validate again":"Completed";
                 if(_runner.LastRunVerifiedDevice)
                 {
                     try{_configService.MarkLastKnownGood();ConfigMessage.Text="Successful verified run: current configuration marked Last Known Good.";}
                     catch(Exception backupError){ConfigMessage.Text="Playlists synchronized, but the configuration backup could not be saved.";_events.Add(new LogEvent(DateTime.Now,LogLevel.Yellow,ConfigMessage.Text){DiagnosticDetails=backupError.ToString()});}
                 }
-                else ConfigMessage.Text="No playlist changes; existing Last Known Good configuration retained.";
-                _events.Add(UserMessages.Completed(_runner.LastRunCompletedChanges));RefreshOutput();
+                else ConfigMessage.Text=_runner.LastRunRecovered?"Recovery completed; existing Last Known Good configuration retained.":"No playlist changes; existing Last Known Good configuration retained.";
+                _events.Add(_runner.LastRunRecovered
+                    ? new LogEvent(DateTime.Now,LogLevel.Green,"Interrupted synchronization recovered and verified. Start with Validate MediaMonkey to review the current changes.")
+                    : UserMessages.Completed(_runner.LastRunCompletedChanges));RefreshOutput();
             }
             else StatusText.Text=$"Failed ({rc})";
         } catch(OperationCanceledException error) when(token.IsCancellationRequested) {

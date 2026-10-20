@@ -9,12 +9,13 @@ using MediaMonkeyZidooSync.Models;
 namespace MediaMonkeyZidooSync.Services;
 
 /// <summary>Native composition of exporter, authoritative file transactions and device protocol.
-/// Alpha.60.17 UI composition; complete production acceptance remains pending.</summary>
+/// Alpha.60.18.6: verifies reviewed changes, journals power ownership and reconciles interrupted runs before further execution.</summary>
 public sealed class NativeProductionSyncService
 {
     public event Action<string>? Output;
     public bool LastRunVerifiedDevice {get;private set;}
     public int LastRunCompletedChanges {get;private set;}
+    public bool LastRunRecovered {get;private set;}
     private sealed record Work(string FileName, byte[]? Content, int Count, string? OldHash);
     private static string Hash(byte[] bytes) => Convert.ToHexString(SHA256.HashData(bytes));
     private static readonly UTF8Encoding M3uEncoding = new(true);
@@ -45,7 +46,7 @@ public sealed class NativeProductionSyncService
         {Output?.Invoke("Recovery cancelled; retained files were not changed.");return false;}
         using var handler=new HttpClientHandler{AllowAutoRedirect=false,UseProxy=false};
         using var http=new HttpClient(handler){BaseAddress=new UriBuilder("http",config.Zidoo.IPAddress,config.Zidoo.ApiPort).Uri,Timeout=TimeSpan.FromSeconds(15)};
-        var device=new NativeZidooPlaylistDevice(http,config);await device.VerifyIdentityAsync(ct);await device.PreflightDirectoriesAsync(ct);
+        var device=new NativeZidooPlaylistDevice(http,config);device.Output+=message=>Output?.Invoke(message);await device.VerifyIdentityAsync(ct);await device.PreflightDirectoriesAsync(ct);
         await new NativeProductionRecovery(device).RecoverOriginalAsync(root,journal,Hash(intent),originalHash,ct);
         Output?.Invoke("Original "+original.Name+" restored and verified. Other playlists unchanged. Recovery completed.");return true;
     }
@@ -98,7 +99,7 @@ public sealed class NativeProductionSyncService
     public async Task<int> RunAsync(AppConfig config, CancellationToken ct = default,
         IReadOnlyList<ReviewedChange>? reviewed = null,IReadOnlyList<ZidooPlaylistRecord>? reviewedInventory = null)
     {
-        LastRunVerifiedDevice=false;LastRunCompletedChanges=0;
+        LastRunVerifiedDevice=false;LastRunCompletedChanges=0;LastRunRecovered=false;
         ConfigurationService.Validate(config);
         string root = Path.GetFullPath(config.NAS.PlaylistFolderUNC);
         if (!Directory.Exists(root)) throw new DirectoryNotFoundException(root);
@@ -108,8 +109,11 @@ public sealed class NativeProductionSyncService
         if (File.Exists(lockPath) && (File.GetAttributes(lockPath) & FileAttributes.ReparsePoint) != 0)
             throw new IOException("Transaction lock is a link.");
         using var fileLock = new FileStream(lockPath,FileMode.OpenOrCreate,FileAccess.ReadWrite,FileShare.None);
-        if(File.Exists(Path.Combine(root,".mmzs-production-pending.json")))
-            throw new IOException("An interrupted or failed transaction requires recovery before another synchronization.");
+        if(File.Exists(Path.Combine(root,".mmzs-production-pending.json")) || File.Exists(NativeProductionRunState.Marker(root)))
+        {
+            await RecoverInterruptedRunUnderLockAsync(config,root,ct);
+            LastRunRecovered=true;return 0;
+        }
         var exporter = new MediaMonkeyPlaylistExporter();
         var prepared = await exporter.ValidateAsync(config,ct);
         var existing = Directory.EnumerateFiles(root,"*.m3u").ToDictionary(path=>Path.GetFileName(path),StringComparer.OrdinalIgnoreCase);
@@ -145,45 +149,17 @@ public sealed class NativeProductionSyncService
         await File.WriteAllTextAsync(Path.Combine(evidence,"plan.json"),JsonSerializer.Serialize(changes.Select(x=>new{x.FileName,Action=x.Content is null?"Delete":x.OldHash is null?"Create":"Update",x.Count,x.OldHash}),new JsonSerializerOptions{WriteIndented=true}),ct);
         using var handler=new HttpClientHandler{AllowAutoRedirect=false,UseProxy=false};
         using var http=new HttpClient(handler){BaseAddress=new UriBuilder("http",config.Zidoo.IPAddress,config.Zidoo.ApiPort).Uri,Timeout=TimeSpan.FromSeconds(15)};
-        var device=new NativeZidooPlaylistDevice(http,config);
+        var device=new NativeZidooPlaylistDevice(http,config);device.Output+=message=>Output?.Invoke(message);
         var power=new NativeZidooConnectivityPowerService(http);
+        bool initiallyReachable=await Reachable(config,ct);
+        new NativeProductionRunState(1,root,Path.GetFullPath(evidence),config.Zidoo.IPAddress,config.Zidoo.ApiPort,
+            config.Zidoo.ExpectedModel,config.Zidoo.MacAddress,initiallyReachable).Save(root);
+        bool powerRestored=true;
         bool woke=false;
         Exception? operationFailure=null;
         try
         {
-            if(!await Reachable(config,ct))
-            {
-                Output?.Invoke("Zidoo control port is unreachable. Sending Wake-on-LAN to the configured device.");
-                await power.SendWakeOnLanAsync(config.Zidoo.MacAddress,config.Zidoo.BroadcastAddress,config.Zidoo.WolPort,ct);
-                woke=true;
-                await File.WriteAllTextAsync(Path.Combine(evidence,"wake-attempt.json"),JsonSerializer.Serialize(new{
-                    config.Zidoo.IPAddress,config.Zidoo.ApiPort,config.Zidoo.MacAddress,config.Zidoo.BroadcastAddress,config.Zidoo.WolPort,
-                    config.Timing.ZidooReadinessTimeoutSeconds,Sent=DateTimeOffset.Now,
-                    Scope="UDP send completed; this does not prove receipt or physical power state"}),ct);
-                var deadline=DateTimeOffset.UtcNow.AddSeconds(config.Timing.ZidooReadinessTimeoutSeconds);
-                var nextProgress=DateTimeOffset.UtcNow;
-                string? lastReadinessError=null;
-                bool ready=false;
-                do
-                {
-                    if(DateTimeOffset.UtcNow>=nextProgress)
-                    {
-                        Output?.Invoke("Waiting for Zidoo model/API readiness ("+Math.Max(0,(int)(deadline-DateTimeOffset.UtcNow).TotalSeconds)+" seconds remaining).");
-                        nextProgress=DateTimeOffset.UtcNow.AddSeconds(10);
-                    }
-                    try{await device.VerifyIdentityAsync(ct);ready=true;break;}
-                    catch(HttpRequestException error){lastReadinessError=error.ToString();}
-                    catch(TaskCanceledException error)when(!ct.IsCancellationRequested){lastReadinessError=error.ToString();}
-                    await Task.Delay(3000,ct);
-                }while(DateTimeOffset.UtcNow<deadline);
-                if(!ready)
-                {
-                    await File.WriteAllTextAsync(Path.Combine(evidence,"readiness-failure.json"),JsonSerializer.Serialize(new{LastError=lastReadinessError,Time=DateTimeOffset.Now}),CancellationToken.None);
-                    throw new IOException("Zidoo did not become ready before the configured timeout. See wake-attempt.json and readiness-failure.json.");
-                }
-                Output?.Invoke("Zidoo identity verified. Allowing "+config.Timing.ColdBootUiStabilizationSeconds+" seconds for its music interface to stabilize.");
-                await Task.Delay(TimeSpan.FromSeconds(config.Timing.ColdBootUiStabilizationSeconds),ct);
-            }
+            if(!initiallyReachable){woke=true;await WakeAndWaitAsync(config,power,device,evidence,ct);}
             await device.VerifyIdentityAsync(ct);
             var initialInventory=await device.InventoryAsync(ct);
             if(reviewedInventory is not null && !initialInventory.Select(x=>(x.Id,x.Name,x.Count)).OrderBy(x=>x.Id,StringComparer.Ordinal)
@@ -240,7 +216,7 @@ public sealed class NativeProductionSyncService
                     throw new InvalidDataException("Final managed playlist reconciliation failed: "+item.M3UFile);
             }
             await File.WriteAllTextAsync(Path.Combine(evidence,"final-inventory.json"),JsonSerializer.Serialize(finalInventory),ct);
-            await File.WriteAllTextAsync(Path.Combine(evidence,"completed.json"),JsonSerializer.Serialize(new{Status="PASS",Transactions=changes.Count,Time=DateTimeOffset.Now}),ct);
+
         }
         catch(Exception error){operationFailure=error;throw;}
         finally
@@ -249,28 +225,114 @@ public sealed class NativeProductionSyncService
             {
                 try
                 {
-                    using var restore=new CancellationTokenSource(TimeSpan.FromSeconds(45));
-                    if(await Reachable(config,restore.Token))
-                    {
-                        await device.VerifyIdentityAsync(restore.Token);
-                        using var response=await http.GetAsync("/ZidooControlCenter/RemoteControl/sendkey?key=Key.PowerOn.Poweroff",restore.Token);
-                        response.EnsureSuccessStatusCode();
-                        using var json=JsonDocument.Parse(await response.Content.ReadAsStringAsync(restore.Token));
-                        if(!json.RootElement.TryGetProperty("status",out var status)||status.GetInt32()!=200)throw new IOException("Power-off was not acknowledged.");
-                        do{await Task.Delay(2000,restore.Token);}while(await Reachable(config,restore.Token));
-                    }
-                    Output?.Invoke("Original unreachable/off state restored: control port is no longer reachable.");
+                    await RestoreOffAsync(config,http,device);
                 }
                 catch(Exception error)
                 {
+                    powerRestored=false;
                     await File.WriteAllTextAsync(Path.Combine(evidence,"power-restore-failure.json"),JsonSerializer.Serialize(new{Error=error.ToString()}));
                     throw new IOException("Original power state could not be verified. Review the saved run details before continuing.", operationFailure is null ? error : new AggregateException(operationFailure,error));
                 }
             }
+            if(powerRestored && !File.Exists(Path.Combine(root,".mmzs-production-pending.json")))File.Delete(NativeProductionRunState.Marker(root));
             Output?.Invoke("Run evidence: "+evidence);
         }
+        await File.WriteAllTextAsync(Path.Combine(evidence,"completed.json"),JsonSerializer.Serialize(new{Status="PASS",Transactions=changes.Count,PowerRestored=true,Time=DateTimeOffset.Now}),ct);
         LastRunVerifiedDevice=true;LastRunCompletedChanges=changes.Count;
         return 0;
+    }
+
+    private async Task RecoverInterruptedRunUnderLockAsync(AppConfig config,string root,CancellationToken ct)
+    {
+        ct.ThrowIfCancellationRequested();
+        var state=NativeProductionRunState.Read(config,root);
+        string pendingPath=Path.Combine(root,".mmzs-production-pending.json");
+        bool pending=File.Exists(pendingPath);
+        if(pending)
+        {
+            var receipt=NativeInterruptedRecovery.ReadPending(root,Environment.ExpandEnvironmentVariables(config.Application.ReportRoot));
+            if(!string.Equals(Path.GetDirectoryName(receipt.Journal),state.Evidence,StringComparison.OrdinalIgnoreCase))
+                throw new InvalidDataException("Transaction and run recovery records differ.");
+        }
+        byte[] stateBytes=File.ReadAllBytes(NativeProductionRunState.Marker(root));
+        Output?.Invoke("Recovering interrupted synchronization. Please wait while the previous run is verified.");
+        using var recovery=new CancellationTokenSource(TimeSpan.FromMinutes(6));
+        using var handler=new HttpClientHandler{AllowAutoRedirect=false,UseProxy=false};
+        using var http=new HttpClient(handler){BaseAddress=new UriBuilder("http",config.Zidoo.IPAddress,config.Zidoo.ApiPort).Uri,Timeout=TimeSpan.FromSeconds(15)};
+        var device=new NativeZidooPlaylistDevice(http,config);device.Output+=message=>Output?.Invoke(message);var power=new NativeZidooConnectivityPowerService(http);
+        bool verified=false;Exception? failure=null;string outcome="Power state restored";
+        try
+        {
+            if(pending || state.InitiallyReachable)
+            {
+                if(!await Reachable(config,recovery.Token))await WakeAndWaitAsync(config,power,device,state.Evidence,recovery.Token);
+                await device.VerifyIdentityAsync(recovery.Token);
+                if(pending)
+                {
+                    await device.PreflightDirectoriesAsync(recovery.Token);
+                    outcome=await new NativeInterruptedRecovery(device).RecoverUnderLockAsync(root,
+                        Environment.ExpandEnvironmentVariables(config.Application.ReportRoot),recovery.Token);
+                }
+            }
+            verified=true;
+        }
+        catch(Exception error){failure=error;throw;}
+        finally
+        {
+            if(!state.InitiallyReachable)
+            {
+                try{await RestoreOffAsync(config,http,device);}
+                catch(Exception error){verified=false;throw new IOException("Recovery could not verify the previous power state. Recovery evidence was retained.",failure is null?error:new AggregateException(failure,error));}
+            }
+        }
+        if(verified)
+        {
+            if(Hash(File.ReadAllBytes(NativeProductionRunState.Marker(root)))!=Hash(stateBytes))throw new IOException("Interrupted run marker changed; retained.");
+            NativeInterruptedRecovery.Save(Path.Combine(state.Evidence,"run-recovered.json"),JsonSerializer.SerializeToUtf8Bytes(new{Status="PASS",Outcome=outcome,PowerRestored=true,Time=DateTimeOffset.Now}));
+            File.Delete(NativeProductionRunState.Marker(root));
+            Output?.Invoke("Interrupted synchronization recovered and verified. Validate and review the current playlists before starting another synchronization.");
+        }
+    }
+
+    private async Task RestoreOffAsync(AppConfig config,HttpClient http,NativeZidooPlaylistDevice device)
+    {
+        using var restore=new CancellationTokenSource(TimeSpan.FromSeconds(45));
+        if(await Reachable(config,restore.Token))
+        {
+            await device.VerifyIdentityAsync(restore.Token);
+            using var response=await http.GetAsync("/ZidooControlCenter/RemoteControl/sendkey?key=Key.PowerOn.Poweroff",restore.Token);
+            response.EnsureSuccessStatusCode();
+            using var json=JsonDocument.Parse(await response.Content.ReadAsStringAsync(restore.Token));
+            if(!json.RootElement.TryGetProperty("status",out var status)||status.GetInt32()!=200)throw new IOException("Power-off was not acknowledged.");
+            do{await Task.Delay(2000,restore.Token);}while(await Reachable(config,restore.Token));
+        }
+        Output?.Invoke("Original unreachable/off state restored: control port is no longer reachable.");
+    }
+    private async Task WakeAndWaitAsync(AppConfig config,NativeZidooConnectivityPowerService power,NativeZidooPlaylistDevice device,string evidence,CancellationToken ct)
+    {
+                Output?.Invoke("Zidoo control port is unreachable. Sending Wake-on-LAN to the configured device.");
+                var attempts=new List<DateTimeOffset>();
+                try
+                {
+                    await NativeZidooReadiness.WaitAsync(device.VerifyIdentityAsync,async token=>
+                    {
+                        await power.SendWakeOnLanAsync(config.Zidoo.MacAddress,config.Zidoo.BroadcastAddress,config.Zidoo.WolPort,token);
+                        attempts.Add(DateTimeOffset.Now);
+                        NativeInterruptedRecovery.Save(Path.Combine(evidence,"wake-attempt.json"),JsonSerializer.SerializeToUtf8Bytes(new{
+                            config.Zidoo.IPAddress,config.Zidoo.ApiPort,config.Zidoo.MacAddress,config.Zidoo.BroadcastAddress,config.Zidoo.WolPort,
+                            config.Timing.ZidooReadinessTimeoutSeconds,Attempts=attempts,
+                            Scope="UDP sends completed; receipt and physical power state are not established"}));
+                    },TimeSpan.FromSeconds(config.Timing.ZidooReadinessTimeoutSeconds),remaining=>
+                        Output?.Invoke("Waiting for Zidoo model/API readiness ("+Math.Max(0,(int)remaining.TotalSeconds)+" seconds remaining)."),ct);
+                }
+                catch(TimeoutException error)
+                {
+                    NativeInterruptedRecovery.Save(Path.Combine(evidence,"readiness-failure.json"),JsonSerializer.SerializeToUtf8Bytes(new{LastError=error.ToString(),Time=DateTimeOffset.Now}));
+                    throw;
+                }
+                Output?.Invoke("Zidoo identity verified. Allowing "+config.Timing.ColdBootUiStabilizationSeconds+" seconds for its music interface to stabilize.");
+                await Task.Delay(TimeSpan.FromSeconds(config.Timing.ColdBootUiStabilizationSeconds),ct);
+
     }
 
     private static async Task<bool> Reachable(AppConfig config,CancellationToken ct)

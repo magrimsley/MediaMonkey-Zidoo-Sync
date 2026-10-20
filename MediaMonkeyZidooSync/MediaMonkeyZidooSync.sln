@@ -1,4 +1,4 @@
-﻿
+
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.5.33516.290
@@ -17,6 +17,21 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Packaging", "Packaging", "{
 		..\Packaging\Templates\Verify-Package.ps1 = ..\Packaging\Templates\Verify-Package.ps1
 		..\Packaging\Tests\Test-InstallerFiles.ps1 = ..\Packaging\Tests\Test-InstallerFiles.ps1
 		..\Packaging\Tests\Test-UninstallRecovery.ps1 = ..\Packaging\Tests\Test-UninstallRecovery.ps1
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests and Architecture", "Tests and Architecture", "{2EC1F17F-94E9-41CF-BEA2-D10082A9F0AD}"
+	ProjectSection(SolutionItems) = preProject
+		..\ARCHITECTURE.md = ..\ARCHITECTURE.md
+		..\NativeDeviceTests\NativeDeviceTests.csproj = ..\NativeDeviceTests\NativeDeviceTests.csproj
+		..\NativeDeviceTests\Program.cs = ..\NativeDeviceTests\Program.cs
+		..\NativeDeviceTests\CrashChecks.cs = ..\NativeDeviceTests\CrashChecks.cs
+		..\NativeDeviceTests\ReadinessChecks.cs = ..\NativeDeviceTests\ReadinessChecks.cs
+		..\NativeOrchestrationTests\NativeOrchestrationTests.csproj = ..\NativeOrchestrationTests\NativeOrchestrationTests.csproj
+		..\NativeOrchestrationTests\Program.cs = ..\NativeOrchestrationTests\Program.cs
+		..\Testing\InstalledWorkflowAcceptance\InstalledWorkflowAcceptance.csproj = ..\Testing\InstalledWorkflowAcceptance\InstalledWorkflowAcceptance.csproj
+		..\Testing\InstalledWorkflowAcceptance\Program.cs = ..\Testing\InstalledWorkflowAcceptance\Program.cs
+		..\Testing\InstalledWorkflowAcceptance\NativeAcceptance.cs = ..\Testing\InstalledWorkflowAcceptance\NativeAcceptance.cs
+		..\Testing\InstalledWorkflowAcceptance\README.md = ..\Testing\InstalledWorkflowAcceptance\README.md
 	EndProjectSection
 EndProject
 Global
