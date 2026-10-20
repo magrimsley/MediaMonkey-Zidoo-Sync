@@ -1,6 +1,6 @@
 # Code signing policy — draft
 
-Current state: unsigned. No SignPath application has been submitted or approved, and no certificate or signing sponsor is available to this project. Do not infer approval from the presence of this document.
+Current state: unsigned. The owner submitted the SignPath Foundation application on 2026-10-20; the displayed confirmation states that the form was submitted. A decision is pending, and no certificate or signing sponsor is available to this project. Do not infer approval from the presence of this document.
 
 The intended future policy is to sign only project-owned artifacts built from reviewed repository source. Third-party binaries retain their upstream signatures and attribution. Future releases require an authorized maintainer's explicit signing approval. SignPath credentials and signing approvals must not be exposed to pull-request builds.
 
@@ -12,6 +12,7 @@ Requirements reference: https://signpath.org/terms.html
 
 ## Confirmed roles and remaining setup — 2026-10-20
 
-Michael Grimsley (GitHub: magrimsley) confirmed that he serves as maintainer/author, reviewer and final signing approver. Every production signing request requires his approval. The repository and Beta download are now public by his explicit authorization. He confirmed that GitHub two-factor authentication is enabled. This is owner-confirmed; the available GitHub API did not independently expose MFA status. SignPath access must also use MFA when configured. No signing application has been submitted, no provider has approved the project, and the Beta remains unsigned.
+Michael Grimsley (GitHub: magrimsley) confirmed that he serves as maintainer/author, reviewer and final signing approver. Every production signing request requires his approval. The repository and Beta download are now public by his explicit authorization. He confirmed that GitHub two-factor authentication is enabled. This is owner-confirmed; the available GitHub API did not independently expose MFA status. SignPath access must also use MFA when configured. The owner submitted the SignPath application on 2026-10-20. No provider approval has been received, and the Beta remains unsigned.
+
 
 
