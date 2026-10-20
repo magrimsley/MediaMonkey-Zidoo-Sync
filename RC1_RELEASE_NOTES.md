@@ -8,4 +8,9 @@ No synchronization backend behavior change. MediaMonkey remains the single sourc
 
 MM Zidoo Sync is independently developed and is not affiliated with, endorsed by or sponsored by Ventis Media or Zidoo. Names and marks remain their owners' property; this disclosure grants no trademark rights.
 
-Validation and delivery results will be recorded after the candidate is built and checked. User acceptance of this release candidate is pending. Stable promotion requires the owner's separate decision.
+Validation complete: all five native offline suites, all 36 focused UI/configuration checks against the exact published RC DLL, six disposable Beta-to-RC upgrade/uninstall checks and all 38 immutable baseline hash checks passed. Windows CI passed on source dfecf7207b3c468476dad86cde61b3a3a0b25061: https://github.com/magrimsley/MediaMonkey-Zidoo-Sync/actions/runs/39513391666. Installed RC DLL SHA256: 42A872BA065B1C52C1DB9576A110FDD7B045CF0AA4259F0A9689832A7BE03AC5. All 11 existing configuration-file hashes were retained; Beta remains installed. No fresh Sandbox registration/profile test or live synchronization was performed for RC1. User acceptance remains pending. Stable promotion requires the owner's separate decision.
+
+## Distribution
+
+The portable archive contains no PowerShell or installer scripts. Extract and run MMZidooSync.exe; portable extraction does not create shortcuts or replace a registered installation. Existing per-user settings retain precedence. Full GPLv3, runtime/dependency notices and artwork provenance are included. The published portable and installed DLL derive from the locally built candidate tested above; CI separately validated the same source and did not produce the uploaded archive. SignPath approval remains pending.
+

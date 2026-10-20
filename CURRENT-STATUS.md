@@ -1,6 +1,6 @@
 # MM Zidoo Sync — current status
 
-Current source candidate: **1.1.0-rc.1**. Installed version remains Beta 1 until RC installation verification completes. Application: **MM Zidoo Sync**. Executable: **MMZidooSync.exe**. About and Help: **MediaMonkey → Zidoo playlist synchronization**.
+Current installed release candidate: **1.1.0-rc.1**. Previous Beta 1 is retained. Application: **MM Zidoo Sync**. Executable: **MMZidooSync.exe**. About and Help: **MediaMonkey → Zidoo playlist synchronization**.
 
 This page supersedes pending-state wording in historical Alpha notes. Those notes remain historical evidence.
 
@@ -40,4 +40,5 @@ PowerShell files and package archives are local-only and excluded from Git track
 
 ## Release candidate preparation
 
-The owner requested RC promotion. Version 1.1.0-rc.1 follows the existing 1.1 Beta line. RC-specific validation and user acceptance remain pending; earlier Beta checks are historical. See RC1_RELEASE_NOTES.md.
+The owner requested RC promotion. Version 1.1.0-rc.1 follows the existing 1.1 Beta line. RC automated validation and local installation verification passed; user acceptance remains pending. Windows CI39513391666 passed. Earlier Beta checks are historical. See RC1_RELEASE_NOTES.md.
+
