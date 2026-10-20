@@ -12,5 +12,6 @@ Requirements reference: https://signpath.org/terms.html
 
 ## Confirmed roles and remaining setup — 2026-10-20
 
-Michael Grimsley (GitHub: magrimsley) confirmed that he serves as maintainer/author, reviewer and final signing approver. Every production signing request requires his approval. The repository and Beta download are now public by his explicit authorization. He reported that GitHub two-factor authentication is not yet enabled; enable it before applying and use MFA for SignPath access. No signing application has been submitted, no provider has approved the project, and the Beta remains unsigned.
+Michael Grimsley (GitHub: magrimsley) confirmed that he serves as maintainer/author, reviewer and final signing approver. Every production signing request requires his approval. The repository and Beta download are now public by his explicit authorization. He confirmed that GitHub two-factor authentication is enabled. This is owner-confirmed; the available GitHub API did not independently expose MFA status. SignPath access must also use MFA when configured. No signing application has been submitted, no provider has approved the project, and the Beta remains unsigned.
+
 
