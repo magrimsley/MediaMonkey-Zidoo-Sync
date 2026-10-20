@@ -19,3 +19,18 @@ publish/
 **/Configuration/Current/
 **/Configuration/Archive/
 **/Configuration/LastKnownGood/
+
+# Local Visual Studio tooling and release archives never belong in GitHub source.
+*.[pP][sS]1
+*.[pP][sS][mM]1
+*.[pP][sS][dD]1
+*.[pP][sS]1[xX][mM][lL]
+*.[pP][sS][sS][cC]
+*.[pP][sS][rR][cC]
+LocalOnly/
+*.zip
+*.7z
+*.tar
+*.tgz
+*.gz
+*.Local.sln

@@ -1,4 +1,4 @@
-name: Draft Windows build
+name: Windows native build and offline checks
 on:
   workflow_dispatch:
 permissions:
@@ -7,6 +7,9 @@ jobs:
   build:
     runs-on: windows-latest
     timeout-minutes: 30
+    defaults:
+      run:
+        shell: cmd
     steps:
       - uses: actions/checkout@v7
         with:
@@ -14,6 +17,17 @@ jobs:
       - uses: actions/setup-dotnet@v6
         with:
           global-json-file: global.json
-      - name: Build and offline checks; no signing or publication
-        shell: powershell
-        run: .\Testing\Build-CI.ps1 -ResultsRoot "$env:RUNNER_TEMP\MediaMonkeyZidooSync"
+      - name: Enforce local-only script policy
+        run: dotnet run --project Testing/RepositoryPolicyChecks/RepositoryPolicyChecks.csproj -c Release -- .
+      - name: Build MM Zidoo Sync
+        run: dotnet build MediaMonkeyZidooSync/MediaMonkeyZidooSync.csproj -c Release --nologo
+      - name: NativeOrchestrationTests
+        run: dotnet run --project NativeOrchestrationTests/NativeOrchestrationTests.csproj -c Release --nologo
+      - name: RecoveryTests
+        run: dotnet run --project RecoveryTests/RecoveryTests.csproj -c Release --nologo
+      - name: RunHistoryDurabilityTests
+        run: dotnet run --project RunHistoryDurabilityTests/RunHistoryDurabilityTests.csproj -c Release --nologo
+      - name: IsolatedSyncTests
+        run: dotnet run --project IsolatedSyncTests/IsolatedSyncTests.csproj -c Release --nologo
+      - name: Unsigned Windows build; no publication
+        run: dotnet publish MediaMonkeyZidooSync/MediaMonkeyZidooSync.csproj -c Release -r win-x64 --self-contained true -o artifacts/windows --nologo
