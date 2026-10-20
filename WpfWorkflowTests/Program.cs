@@ -44,9 +44,10 @@ internal static class Program
             Check(app.ThemeMode == ThemeMode.System, "Deep-workflow test host uses system theme");
             Console.WriteLine($"Test host PID: {Environment.ProcessId}; ThemeMode: {app.ThemeMode}");
 #pragma warning restore WPF0001
-            var window = new MainWindow(root);
+            string? openedLog = null;
+            var window = new MainWindow(root, path => openedLog = path);
             window.Show(); Pump(400);
-            Check(window.Title=="MM Zidoo Sync" && typeof(MainWindow).Assembly.GetName().Name=="MMZidooSync" && ApplicationVersionProvider.ProductVersion=="1.1.0-rc.1", "RC product name, assembly and version match approved identity");
+            Check(window.Title=="MM Zidoo Sync" && typeof(MainWindow).Assembly.GetName().Name=="MMZidooSync" && ApplicationVersionProvider.ProductVersion=="1.1.0-rc.2", "RC product name, assembly and version match approved identity");
             Check(typeof(MainWindow).GetMethod("RunNativeAssessment_Click", BindingFlags.Instance | BindingFlags.NonPublic) is null && typeof(MainWindow).GetMethod("InspectNativePlan_Click", BindingFlags.Instance | BindingFlags.NonPublic) is null, "Optional assessment handlers are excluded from compilation");
             Check(window.FindName("RunNativeAssessmentButton") is null && window.FindName("InspectNativePlanButton") is null, "Optional diagnostics controls are absent");
             Check(window.Icon is not null, "Main window loads application artwork");
@@ -120,8 +121,38 @@ internal static class Program
             Check(history.SelectionUnit==DataGridSelectionUnit.CellOrRowHeader && history.RowHeaderWidth>0,"Whole-row selection requires explicit row-header selection");
             pathBox.SelectAll();Check(pathBox.SelectedText==longLog,"Select All inside a log path selects only that field");
             Check(Field<DataGrid>(window,"ConfigHistoryGrid").SelectionUnit==DataGridSelectionUnit.FullRow,"Configuration Archive selection remains unchanged");
-            tabs.SelectedIndex=0;Pump();
+            var actualLog=Path.Combine(root,"specific-run.log");File.WriteAllText(actualLog,"offline test log");
+            var actualRecord=historyRecord with { Id="specific-run", LogPath=actualLog };
+            history.ItemsSource=new[]{actualRecord};history.UpdateLayout();Pump();
+            history.ScrollIntoView(actualRecord,history.Columns.Last());history.UpdateLayout();Pump();
+            var actualBox=Descendants(history).OfType<TextBox>().Single(box=>box.Text==actualLog);
+            history.UnselectAll();history.CurrentCell=new DataGridCellInfo();
+            actualBox.RaiseEvent(new System.Windows.Input.MouseButtonEventArgs(System.Windows.Input.Mouse.PrimaryDevice,0,System.Windows.Input.MouseButton.Left)
+                {RoutedEvent=System.Windows.Input.Mouse.PreviewMouseDownEvent});
+            Check(Field<Button>(window,"OpenSelectedLogButton").IsEnabled && history.SelectedItems.Count==0,"Clicking selectable log text identifies a run without selecting its row");
+            Invoke(window,"OpenRunLog_Click");
+            Check(openedLog==actualLog,"Open Selected Log opens the clicked cell's exact log after focus moves to its button");
+            flow.BeginValidation();flow.EndValidation(true);flow.BeginVerification();flow.EndVerification(true,false);Refresh();
+            Check(!review.IsEnabled && !run.IsEnabled,"No changes disables both Review Changes and Run Synchronization");
+            var recoveryConfig=new MediaMonkeyZidooSync.Models.AppConfig();recoveryConfig.NAS.PlaylistFolderUNC=root;
+            typeof(MainWindow).GetField("_config",BindingFlags.Instance|BindingFlags.NonPublic)!.SetValue(window,recoveryConfig);
+            var recoveryProbe=typeof(MainWindow).GetMethod("HasPendingRecovery",BindingFlags.Instance|BindingFlags.NonPublic)!;
+            Check(!(bool)recoveryProbe.Invoke(window,null)!,"Clean matching playlists do not imply pending recovery");
+            var marker=Path.Combine(root,".mmzs-production-pending.json");File.WriteAllText(marker,"retained recovery fixture");
+            bool needsRecovery=(bool)recoveryProbe.Invoke(window,null)!;
+            typeof(MainWindow).GetField("_preparedReview",BindingFlags.Instance|BindingFlags.NonPublic)!.SetValue(window,Array.Empty<NativeProductionSyncService.ReviewedChange>());
+            flow.BeginVerification();flow.EndVerification(true,needsRecovery);Refresh();
+            Check(needsRecovery && review.IsEnabled && !run.IsEnabled,"Retained transaction keeps review available but cannot bypass review to run");
+            File.Delete(marker);
+            tabs.SelectedIndex=2;history.Columns[1].Width=333;history.Columns[1].DisplayIndex=0;Pump();
             window.Close(); Pump();
+            var savedUi=new UiStateService(Path.Combine(root,"ui-state.json")).LoadAsync().GetAwaiter().GetResult();
+            Check(savedUi.SelectedTabIndex==2 && savedUi.GridColumns["RunHistoryGrid"].Any(c=>c.Header=="Operation" && c.Width==333),"Layout is saved in the isolated profile, including tab and grid columns");
+            var reopenedWindow=new MainWindow(root);reopenedWindow.Show();Pump(500);
+            var reopenedTabs=Field<TabControl>(reopenedWindow,"MainTabs");var reopenedGrid=Field<DataGrid>(reopenedWindow,"RunHistoryGrid");
+            Console.WriteLine($"Restored layout: tab={reopenedTabs.SelectedIndex}, width={reopenedGrid.Columns[1].Width.Value}, order={reopenedGrid.Columns[1].DisplayIndex}");
+            Check(reopenedTabs.SelectedIndex==2 && reopenedGrid.Columns[1].Width.Value==333 && reopenedGrid.Columns[1].DisplayIndex==0,"Saved layout restores from the same version-independent profile");
+            reopenedWindow.Close();Pump();
             app.Shutdown();
 
             var svc = new ConfigurationService(root);
@@ -165,3 +196,7 @@ internal static class Program
         finally { try { Directory.Delete(root, true); } catch { Console.Error.WriteLine("WARNING: test sandbox cleanup failed: " + root); } }
     }
 }
+
+
+
+

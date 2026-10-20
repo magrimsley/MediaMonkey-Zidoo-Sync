@@ -167,7 +167,7 @@
      <DockPanel Margin="0,8,0,0">
       <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Margin="0,0,0,12">
        <Button Content="Refresh Runs" Padding="14,7" Click="RefreshRunHistory_Click"/>
-       <Button Content="Open Selected Log" Padding="14,7" Margin="10,0,0,0" Click="OpenRunLog_Click"/>
+       <Button x:Name="OpenSelectedLogButton" Content="Open Selected Log" IsEnabled="False" Padding="14,7" Margin="10,0,0,0" Click="OpenRunLog_Click"/>
        <TextBlock x:Name="RunHistoryStatus" Margin="14,8,0,0" TextWrapping="Wrap"/>
       </StackPanel>
       <DataGrid x:Name="RunHistoryGrid" Height="390" AutoGenerateColumns="False" IsReadOnly="True"

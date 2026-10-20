@@ -172,6 +172,16 @@ Test("Failed checks and changed configuration cannot authorize synchronization",
     flow.BeginValidation();flow.Invalidate();flow.EndValidation(true);
     if(flow.CanVerify)throw new Exception("Stale validation accepted");
 });
+Test("No-change verification keeps Review and Run disabled", () =>
+{
+    var flow=new SynchronizationWorkflow();flow.BeginValidation();flow.EndValidation(true);
+    flow.BeginVerification();flow.EndVerification(true, false);
+    if(!flow.Verified || flow.CanReview || flow.CanRun || !flow.NextStep.Contains("No pending changes"))throw new Exception("No-change verification authorized work");
+    bool refused=false;try{flow.AcceptReview();}catch(InvalidOperationException){refused=true;}
+    if(!refused)throw new Exception("No-change review accepted");
+    flow.BeginVerification();flow.EndVerification(true, true);
+    if(!flow.CanReview)throw new Exception("Changed plan cannot be reviewed");
+});
 Test("Optional diagnostics cannot authorize synchronization", () =>
 {
     var flow=new SynchronizationWorkflow();flow.SetDiagnosticBusy(true);flow.SetDiagnosticBusy(false);
