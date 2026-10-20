@@ -4,9 +4,9 @@
 // Development channel: alpha.19
 // Purpose: Strongly typed model for the shared MediaMonkey/Zidoo configuration JSON.
 // Remarks:
-// - Build and revision are compiler-generated through AssemblyVersion 1.0.*.
+// - Version metadata is defined by MediaMonkeyZidooSync.csproj.
 // - Released artifacts are immutable; any code change requires a new build identity.
-// - Production PowerShell synchronization mechanics are not changed by this source-governance pass.
+// - Synchronization is entirely native C#; PowerShell is used only for build, test and installation tooling.
 // ============================================================================
 namespace MediaMonkeyZidooSync.Models;
 

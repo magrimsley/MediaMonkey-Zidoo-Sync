@@ -1,40 +1,44 @@
-# MediaMonkey Zidoo Sync
+# MM Zidoo Sync
 
-Windows WPF alpha for preparing and inspecting synchronization plans between MediaMonkey playlists, playlist storage and a Zidoo player. The application version is 1.1-alpha.60.16.1. **Production synchronization is disabled.** This alpha does not provide an enabled end-to-end production sync workflow.
+Windows WPF application, version **1.1-beta.1**, for synchronizing managed MediaMonkey playlists with NAS M3U files and persistent Zidoo Music playlists. The application and synchronization engine are entirely native C#. PowerShell supports build, testing and installation only.
 
-This is a local public-source preparation candidate, not a published repository or release. The project license is undecided; no open-source license grant has been selected. See [LICENSE-DECISION.md](LICENSE-DECISION.md).
+Follow **Validate MediaMonkey → Verify Native Exporter → Review Changes → Run Synchronization**. Configuration changes and completed, cancelled or failed runs require the checks again. Errors are presented in plain language; detailed exceptions are retained in diagnostic logs. Successful verified synchronization is green, intentional cancellation is yellow. Appearance follows the Windows color scheme.
 
-## Build and test
+Interrupted runs are reconciled through this same sequence. Before applying new changes, Run Synchronization verifies the retained transaction and its recorded device/power ownership. A verified completed change is kept; an incomplete change is restored. Recovery ends that attempt so the current plan must be validated and reviewed again. Unexpected external edits, changed device settings, invalid evidence or an unverifiable device response preserve the recovery gate and stop synchronization. See [architecture and recovery](ARCHITECTURE.md).
 
-Use Windows with the .NET 9 SDK and Windows PowerShell 5.1. Open MediaMonkeyZidooSync/MediaMonkeyZidooSync.sln in Visual Studio, or build from the repository root:
+The repository is private and the package is unsigned. The license remains undecided; no open-source license grant or signing sponsorship is implied. Acceptance is specific to the source commit, package hashes, tested device and recorded scenarios. Release notes record actual results; a build alone is not production acceptance.
 
-```powershell
-dotnet build .\MediaMonkeyZidooSync\MediaMonkeyZidooSync.csproj -c Debug
-powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\Testing\Build-CI.ps1 -NoPublish
-```
+## Build and offline tests
 
-The CI script builds the application, runs four offline suites and checks static WPF contracts. It does not use a real MediaMonkey database, contact Zidoo or write real playlists. The manually triggered GitHub workflow is a draft and has not run on GitHub.
-
-For the full desktop suite on an interactive Windows desktop:
+Use Windows and the .NET 9 SDK. Local Visual Studio installer/test scripts are excluded from GitHub. Open `MediaMonkeyZidooSync/MediaMonkeyZidooSync.sln` in Visual Studio, or run:
 
 ```powershell
-powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\Test-MediaMonkeyZidooSync.ps1 -UiDeep -ResultsDirectory "$env:TEMP\MediaMonkeyZidooSync-FullRegression"
+dotnet build .\MediaMonkeyZidooSync\MediaMonkeyZidooSync.csproj -c Release
+dotnet run --project .\Testing\RepositoryPolicyChecks\RepositoryPolicyChecks.csproj -c Release -- .
+dotnet run --project .\NativeDeviceTests\NativeDeviceTests.csproj -c Release
 ```
 
-Desktop startup tests can read existing per-user configuration and update UI state. Use a disposable account or Windows Sandbox for clean first-run acceptance. The deep configuration and recovery tests use disposable fixtures. The Help workflow uses an in-process WPF menu event instead of the older inaccessible desktop-popup lookup. Neutral settings are rejected as incomplete before persistence tests populate synthetic offline values.
+The offline suites use simulated devices and disposable files, including real termination/restart of child test processes. They do not contact Zidoo or alter real playlists. Desktop smoke tests can read per-user settings and save UI state; use Windows Sandbox or a disposable account for clean-profile acceptance. Explicit live tests are separate and must be bound to their reviewed device, isolated database, owned NAS folder and test playlist.
+
+See [current status](CURRENT-STATUS.md), [testing](AUTOMATED_TESTING_README.md) and [repository policy](REPOSITORY-POLICY.md) for current acceptance and local-only tooling scope.
 
 ## Settings and installation
 
-Packaged device addresses, MAC address, NAS paths, database, playlist and report-location defaults are blank. Existing per-user settings take precedence; valid legacy settings may migrate. Complete deployment settings before validation can succeed. Do not commit local settings, database copies, playlist exports or diagnostic logs.
+Device addresses, MAC address, NAS paths, database and report defaults are blank in distributed packages. Existing per-user settings take precedence; valid legacy settings may migrate. Complete and save configuration before validation. Never commit personal settings, database copies, exported playlists or diagnostic logs.
 
-The draft CI publish step creates an unsigned, self-contained Windows x64 payload. Packaging/Build-NeutralPackage.ps1 wraps a version-matching published payload with the per-user PowerShell installer. Rebuilt artifacts need their own acceptance; earlier binary ZIP hashes do not authenticate a new build. See [Packaging/README.md](Packaging/README.md) for install and removal details.
+In the local Visual Studio checkout only, `Packaging/Build-NeutralPackage.ps1` wraps a version-matching, self-contained Windows x64 payload with the per-user installer. These local PowerShell-bearing packages must not be uploaded to GitHub. Each artifact has a manifest and SHA256 sidecar. Hashes detect changes and do not authenticate a publisher. Keep the complete extracted package for interrupted-uninstall recovery. Configuration, archives, unknown files and recovery evidence are retained during removal. See [packaging](Packaging/README.md).
+
+## Known bugs
+
+See [known bugs](KNOWN-BUGS.md), including the intermittent transaction-file sharing failure whose cause remains unidentified. It did not recur during the latest diagnostic capture; earlier offline tests did reproduce it.
 
 ## Project policies
 
+- [License decision](LICENSE-DECISION.md)
 - [Privacy](PRIVACY.md)
 - [Contributing](CONTRIBUTING.md)
 - [Security reporting](SECURITY.md)
-- [Code signing policy](CODE-SIGNING.md)
+- [Code signing](CODE-SIGNING.md)
 - [Third-party components](THIRD-PARTY-NOTICES.md)
 
-No GitHub repository, release, signing service or sponsor is claimed by this candidate. MediaMonkey and Zidoo names identify interoperability targets; no affiliation or endorsement is claimed.
+MediaMonkey and Zidoo names identify interoperability targets; no affiliation or endorsement is claimed.

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -46,31 +46,81 @@ internal static class Program
 #pragma warning restore WPF0001
             var window = new MainWindow(root);
             window.Show(); Pump(400);
-            var inspect = (Button)(typeof(MainWindow).GetMethod("FindInspectNativePlanButton", BindingFlags.Instance | BindingFlags.NonPublic)!.Invoke(window, null) ?? throw new Exception("Inspect button missing"));
-            Check(!inspect.IsEnabled, "Inspect Plan initially disabled");
-            var entries = new NativePlanInspectionItem[] {
-                new("WPF-Test-Only.m3u", PlaylistTransactionAction.Create, "Synthetic read-only UI fixture", false)
-            };
-            typeof(MainWindow).GetField("_lastNativePlanInspection", BindingFlags.Instance | BindingFlags.NonPublic)!
-                .SetValue(window, entries);
-            inspect.IsEnabled = true;
-            Invoke(window, "InspectNativePlan_Click"); Pump();
-            var first = Field<Window>(window, "_nativePlanWindow");
-            Check(first.IsVisible, "Proposed Changes opens");
-            Invoke(window, "InspectNativePlan_Click"); Pump();
-            Check(ReferenceEquals(first, Field<Window>(window, "_nativePlanWindow")), "Reopen while visible reuses window");
-            Check(first.Owner is null, "Proposed Changes modeless and unowned for normal stacking");
-            window.Activate(); Pump();
-            Check(window.IsVisible && first.IsVisible, "Main and Proposed Changes coexist");
-            first.Activate(); Pump();
-            Check(first.IsVisible, "Proposed Changes can reactivate");
-            first.Close(); Pump();
-            Check(typeof(MainWindow).GetField("_nativePlanWindow", BindingFlags.Instance | BindingFlags.NonPublic)!.GetValue(window) is null,
-                "Closing clears inspector reference");
-            Invoke(window, "InspectNativePlan_Click"); Pump();
-            var second = Field<Window>(window, "_nativePlanWindow");
-            Check(second.IsVisible && !ReferenceEquals(first, second), "Closed Proposed Changes reopens");
-            second.Close();
+            Check(window.Title=="MM Zidoo Sync" && typeof(MainWindow).Assembly.GetName().Name=="MMZidooSync" && ApplicationVersionProvider.ProductVersion=="1.1-beta.1", "Beta product name, assembly and version match approved identity");
+            Check(typeof(MainWindow).GetMethod("RunNativeAssessment_Click", BindingFlags.Instance | BindingFlags.NonPublic) is null && typeof(MainWindow).GetMethod("InspectNativePlan_Click", BindingFlags.Instance | BindingFlags.NonPublic) is null, "Optional assessment handlers are excluded from compilation");
+            Check(window.FindName("RunNativeAssessmentButton") is null && window.FindName("InspectNativePlanButton") is null, "Optional diagnostics controls are absent");
+            Check(window.Icon is not null, "Main window loads application artwork");
+            var validate=Field<Button>(window,"ValidateMediaMonkeyButton");
+            var verify=Field<Button>(window,"VerifyNativeExporterButton");
+            var review=Field<Button>(window,"ReviewSynchronizationButton");
+            var run=Field<Button>(window,"RunButton");
+            Check(validate.IsEnabled && !verify.IsEnabled && !review.IsEnabled && !run.IsEnabled,"Only validation is enabled at startup");
+            Check(typeof(MainWindow).GetField("RecoverSynchronizationButton",BindingFlags.Instance|BindingFlags.NonPublic) is null,"Unrequested recovery button removed");
+            var flow=Field<SynchronizationWorkflow>(window,"_workflow");
+            void Refresh()=>typeof(MainWindow).GetMethod("RefreshWorkflowControls",BindingFlags.Instance|BindingFlags.NonPublic)!.Invoke(window,null);
+            flow.BeginValidation();Refresh();
+            Check(!validate.IsEnabled && !verify.IsEnabled && !run.IsEnabled,"Busy validation disables later steps");
+            flow.EndValidation(true);Refresh();Check(verify.IsEnabled && !run.IsEnabled,"Validation enables verification only");
+            flow.BeginVerification();flow.EndVerification(true);
+            typeof(MainWindow).GetField("_preparedReview",BindingFlags.Instance|BindingFlags.NonPublic)!.SetValue(window,Array.Empty<NativeProductionSyncService.ReviewedChange>());
+            Refresh();Check(review.IsEnabled && !run.IsEnabled,"Verified exporter requires review before running");
+            flow.AcceptReview();Refresh();Check(run.IsEnabled,"Accepted review enables synchronization");
+            typeof(MainWindow).GetMethod("InvalidateWorkflow",BindingFlags.Instance|BindingFlags.NonPublic)!.Invoke(window,null);
+            Check(!verify.IsEnabled && !review.IsEnabled && !run.IsEnabled,"Configuration invalidation resets enabled buttons");
+            var splashType=typeof(MainWindow).Assembly.GetType("MediaMonkeyZidooSync.StartupSplash")!;
+            var splashProbe=new Window { Width=200,Height=100,ShowInTaskbar=false,Content=new TextBlock{Text="Splash timing fixture"} };
+            var splashObject=Activator.CreateInstance(splashType,BindingFlags.Instance|BindingFlags.NonPublic,null,new object[]{splashProbe},null)!;
+            bool SplashVisible()=> (bool)splashType.GetProperty("IsVisible",BindingFlags.Instance|BindingFlags.NonPublic)!.GetValue(splashObject)!;
+            var renderedAt=new System.Diagnostics.Stopwatch();splashProbe.ContentRendered+=(_,_)=>renderedAt.Start();
+            int heartbeat=0;var beat=new DispatcherTimer{Interval=TimeSpan.FromMilliseconds(25)};beat.Tick+=(_,_)=>heartbeat++;beat.Start();
+            splashProbe.Show();Pump(350);Check(SplashVisible(),"Splash remains visible after main UI first renders");
+            Pump(1000);Check(SplashVisible(),"Splash does not close before its two-second interval");
+            Pump(1000);Console.WriteLine($"Splash diagnostic: visible={SplashVisible()}, renderedSeconds={renderedAt.Elapsed.TotalSeconds:F3}, heartbeat={heartbeat}");Check(!SplashVisible() && renderedAt.Elapsed.TotalSeconds>=2 && renderedAt.Elapsed.TotalSeconds<4,"Splash closes automatically two seconds after rendering without activation");
+            Check(heartbeat>25,"UI dispatcher remains responsive while the splash timer runs");beat.Stop();splashProbe.Close();
+            var trayWindow=new Window { Width=200, Height=100, ShowInTaskbar=false };
+            var branding=typeof(MainWindow).Assembly.GetType("MediaMonkeyZidooSync.ApplicationBranding")!;
+            var trayState=(Func<bool>)branding.GetMethod("AttachTray",BindingFlags.Static|BindingFlags.NonPublic)!.Invoke(null,new object[]{trayWindow})!;
+            trayWindow.Show();Pump();Check(trayState(),"Tray icon registers with Windows using supplied artwork");
+            trayWindow.Close();Pump();Check(!trayState(),"Closing the window removes its tray icon");
+            var about=new AboutWindow{Owner=window};about.Show();Pump();
+            Check(((Image)about.FindName("AboutBrandImage")).Source is not null && about.Icon is not null,"About displays supplied artwork and application icon");
+            Check(Descendants(about).OfType<TextBlock>().Any(t=>t.Text.Contains("MediaMonkey → Zidoo playlist synchronization")),"About shows approved synchronization description");
+            about.Close();
+            var help = new HelpWindow("GettingStarted");help.Show();Pump();
+            Check(((Image)help.FindName("HelpBrandImage")).Source is not null && help.Icon is not null, "Help loads supplied artwork and application icon");
+            var helpDocument=((FlowDocumentScrollViewer)help.FindName("TopicBody")).Document;
+            Check(new System.Windows.Documents.TextRange(helpDocument.ContentStart,helpDocument.ContentEnd).Text.Contains("MediaMonkey → Zidoo playlist synchronization"),"Help shows approved synchronization description");
+            var preview = new System.Windows.Media.Imaging.RenderTargetBitmap((int)help.ActualWidth,(int)help.ActualHeight,96,96,System.Windows.Media.PixelFormats.Pbgra32);
+            preview.Render(help);
+            var encoder = new System.Windows.Media.Imaging.PngBitmapEncoder();encoder.Frames.Add(System.Windows.Media.Imaging.BitmapFrame.Create(preview));
+            using(var png=File.Create(Path.Combine(root,"help-preview.png")))encoder.Save(png);
+            var artifacts=Environment.GetEnvironmentVariable("MMZS_UI_ARTIFACT_DIRECTORY");
+            if(!string.IsNullOrWhiteSpace(artifacts)){Directory.CreateDirectory(artifacts);File.Copy(Path.Combine(root,"help-preview.png"),Path.Combine(artifacts,"help-preview.png"),true);
+                var mainPreview=new System.Windows.Media.Imaging.RenderTargetBitmap((int)window.ActualWidth,(int)window.ActualHeight,96,96,System.Windows.Media.PixelFormats.Pbgra32);mainPreview.Render(window);var mainEncoder=new System.Windows.Media.Imaging.PngBitmapEncoder();mainEncoder.Frames.Add(System.Windows.Media.Imaging.BitmapFrame.Create(mainPreview));using(var png=File.Create(Path.Combine(artifacts,"main-preview.png")))mainEncoder.Save(png);}
+            help.Close();            var history=Field<DataGrid>(window,"RunHistoryGrid");
+            var tabs=Field<TabControl>(window,"MainTabs");
+            var historyTab=tabs.Items.OfType<TabItem>().Single(tab=>Equals(tab.Header,"Run History / Logs"));
+            tabs.SelectedItem=historyTab;
+            string longLog=@"E:\Temp\MediaMonkey\RunHistory\"+new string('a',220)+".log";
+            var historyRecord=new RunHistoryService.RunRecord("text-selection-test",DateTime.Now,"Synchronization","Cancelled","00:01:00",longLog);
+            history.ItemsSource=new[]{historyRecord};window.Width=1050;window.UpdateLayout();Pump();
+            history.ScrollIntoView(historyRecord,history.Columns.Last());history.UpdateLayout();Pump();
+            System.Collections.Generic.IEnumerable<DependencyObject> Descendants(DependencyObject parent)
+            {
+                for(int i=0;i<System.Windows.Media.VisualTreeHelper.GetChildrenCount(parent);i++)
+                {var child=System.Windows.Media.VisualTreeHelper.GetChild(parent,i);yield return child;foreach(var nested in Descendants(child))yield return nested;}
+            }
+            var scroller=Descendants(history).OfType<ScrollViewer>().First();
+            Check(scroller.ScrollableWidth>0 && scroller.ComputedHorizontalScrollBarVisibility==Visibility.Visible,"Long Run History paths expose a horizontal scrollbar");
+            scroller.ScrollToRightEnd();Pump();Check(scroller.HorizontalOffset>0,"Run History can scroll horizontally to long log paths");
+            var pathBox=Descendants(history).OfType<TextBox>().Single(box=>box.Text==longLog);
+            history.UnselectAll();history.CurrentCell=new DataGridCellInfo(historyRecord,history.Columns.Last());pathBox.Focus();pathBox.Select(3,4);Pump();
+            Check(pathBox.SelectedText=="Temp" && history.SelectedItems.Count==0,"Selecting part of a log path does not select the whole row");
+            Check(pathBox.IsReadOnly && Equals(history.CurrentCell.Item,historyRecord),"Selected log cell remains read-only and identifies its run");
+            Check(history.SelectionUnit==DataGridSelectionUnit.CellOrRowHeader && history.RowHeaderWidth>0,"Whole-row selection requires explicit row-header selection");
+            pathBox.SelectAll();Check(pathBox.SelectedText==longLog,"Select All inside a log path selects only that field");
+            Check(Field<DataGrid>(window,"ConfigHistoryGrid").SelectionUnit==DataGridSelectionUnit.FullRow,"Configuration Archive selection remains unchanged");
+            tabs.SelectedIndex=0;Pump();
             window.Close(); Pump();
             app.Shutdown();
 

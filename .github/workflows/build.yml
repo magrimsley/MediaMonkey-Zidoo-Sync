@@ -29,5 +29,7 @@ jobs:
         run: dotnet run --project RunHistoryDurabilityTests/RunHistoryDurabilityTests.csproj -c Release --nologo
       - name: IsolatedSyncTests
         run: dotnet run --project IsolatedSyncTests/IsolatedSyncTests.csproj -c Release --nologo
+      - name: NativeDeviceTests
+        run: dotnet run --project NativeDeviceTests/NativeDeviceTests.csproj -c Release --nologo
       - name: Unsigned Windows build; no publication
         run: dotnet publish MediaMonkeyZidooSync/MediaMonkeyZidooSync.csproj -c Release -r win-x64 --self-contained true -o artifacts/windows --nologo

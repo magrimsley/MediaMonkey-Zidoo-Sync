@@ -1,0 +1,14 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType><UseAppHost>false</UseAppHost><TargetFramework>net9.0-windows</TargetFramework>
+    <UseWPF>true</UseWPF><Nullable>enable</Nullable><ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="MediaMonkey Zidoo Sync"><HintPath>$(CandidateDirectory)\MediaMonkey Zidoo Sync.dll</HintPath></Reference>
+    <PackageReference Include="Microsoft.Data.Sqlite" Version="9.0.0" />
+    <Content Include="$(CandidateDirectory)\**\*"><Link>%(RecursiveDir)%(Filename)%(Extension)</Link><CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory></Content>
+  </ItemGroup>
+  <Target Name="RequireExplicitCandidate" BeforeTargets="ResolveReferences">
+    <Error Condition="!Exists('$(CandidateDirectory)\MediaMonkey Zidoo Sync.dll')" Text="Provide CandidateDirectory containing the exact accepted published payload. This live test is not part of CI." />
+  </Target>
+</Project>

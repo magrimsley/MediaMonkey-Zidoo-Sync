@@ -19,8 +19,7 @@ internal static class Program {
    app=new Application { ShutdownMode=ShutdownMode.OnExplicitShutdown, ThemeMode=ThemeMode.System };
 #pragma warning restore WPF0001
    var main=new MainWindow(root);main.Show();Pump();
-   var inspect=(Button)typeof(MainWindow).GetMethod("FindInspectNativePlanButton",BindingFlags.NonPublic|BindingFlags.Instance)!.Invoke(main,null)!;
-   Check(!inspect.IsEnabled,"Inspect Plan disabled before assessment");
+   Check(main.FindName("RunNativeAssessmentButton") is null && main.FindName("InspectNativePlanButton") is null,"Optional diagnostics controls removed");
    var menu=Walk(main).OfType<Menu>().Single();
    var help=menu.Items.OfType<MenuItem>().Single(m=>m.Header.ToString()!.Replace("_","")=="Help");
    var guide=help.Items.OfType<MenuItem>().Single(m=>m.Header.ToString()!.Contains("User Guide"));

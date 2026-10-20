@@ -1,12 +1,12 @@
 // ============================================================================
 // MediaMonkey Zidoo Sync
-// Product line: 1.0 (Major/Minor controlled by the product owner)
-// Development channel: alpha.6
+// Product line: 1.1 (Major/Minor controlled by the product owner)
+// Development channel: Alpha.60.18.6
 // Purpose: Application startup and native Windows Fluent system-theme activation.
 // Remarks:
-// - Build and revision are compiler-generated through AssemblyVersion 1.0.*.
+// - Version metadata is defined by MediaMonkeyZidooSync.csproj.
 // - Released artifacts are immutable; any code change requires a new build identity.
-// - Production PowerShell synchronization mechanics are not changed by this source-governance pass.
+// - Synchronization is entirely native C#; PowerShell is used only for build, test and installation tooling.
 // ============================================================================
 using System.Windows;
 using System;
@@ -33,7 +33,7 @@ public partial class App : Application
             DiagnosticReportingService.Shared.Report("WPF dispatcher", args.Exception, "Critical");
             // Do not mark handled: continuing after an unknown UI exception may be unsafe.
             try { MessageBox.Show("An unexpected application error occurred. Details were recorded in the diagnostic log.",
-                "MediaMonkey Zidoo Sync — Application Error", MessageBoxButton.OK, MessageBoxImage.Error); }
+                "MM Zidoo Sync — Application Error", MessageBoxButton.OK, MessageBoxImage.Error); }
             catch { /* The dispatcher may be unable to display UI. */ }
         };
         AppDomain.CurrentDomain.UnhandledException += (_, args) =>
@@ -51,6 +51,10 @@ public partial class App : Application
         IsolatedStartupMode.ResolveRoot();
         ThemeMode = ThemeMode.System;
         base.OnStartup(e);
+        var main = new MainWindow();
+        MainWindow = main;
+        if (!IsolatedStartupMode.Enabled) _ = new StartupSplash(main);
+        main.Show();
     }
 #pragma warning restore WPF0001
 }

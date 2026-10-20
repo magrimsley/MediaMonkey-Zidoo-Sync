@@ -1,0 +1,1 @@
+<Project><PropertyGroup Condition="'$(TargetPlatformIdentifier)' == 'Windows'"><TargetPlatformMoniker>Windows,Version=7.0</TargetPlatformMoniker><TargetPlatformDisplayName>Windows</TargetPlatformDisplayName></PropertyGroup></Project>

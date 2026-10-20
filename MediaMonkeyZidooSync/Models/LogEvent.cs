@@ -4,9 +4,9 @@
 // Development channel: alpha.6
 // Purpose: Live UI log-event model and semantic color categories.
 // Remarks:
-// - Build and revision are compiler-generated through AssemblyVersion 1.0.*.
+// - Version metadata is defined by MediaMonkeyZidooSync.csproj.
 // - Released artifacts are immutable; any code change requires a new build identity.
-// - Production PowerShell synchronization mechanics are not changed by this source-governance pass.
+// - Synchronization is entirely native C#; PowerShell is used only for build, test and installation tooling.
 // ============================================================================
 namespace MediaMonkeyZidooSync.Models;
 
@@ -32,4 +32,8 @@ public enum LogLevel
 /// <param name="Timestamp">Local time at which the UI received the message.</param>
 /// <param name="Level">Semantic display category.</param>
 /// <param name="Message">Message text emitted by the synchronization process.</param>
-public sealed record LogEvent(DateTime Timestamp, LogLevel Level, string Message);
+public sealed record LogEvent(DateTime Timestamp, LogLevel Level, string Message)
+{
+    /// <summary>Technical details retained only in the saved diagnostic log.</summary>
+    public string? DiagnosticDetails { get; init; }
+}

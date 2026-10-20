@@ -1,0 +1,7 @@
+<Project Sdk="Microsoft.NET.Sdk">
+ <PropertyGroup><OutputType>Exe</OutputType><UseAppHost>false</UseAppHost><TargetFramework>net9.0</TargetFramework><ImplicitUsings>enable</ImplicitUsings><Nullable>enable</Nullable></PropertyGroup>
+ <ItemGroup><Compile Include="../MediaMonkeyZidooSync/Services/ZidooPlaylistProtocol.cs" Link="ZidooPlaylistProtocol.cs" /><Compile Include="../MediaMonkeyZidooSync/Services/NativeZidooPlaylistDevice.cs" Link="NativeZidooPlaylistDevice.cs" /><Compile Include="../MediaMonkeyZidooSync/Services/NativeProductionTransaction.cs" Link="NativeProductionTransaction.cs" /><Compile Include="../MediaMonkeyZidooSync/Models/AppConfig.cs" Link="AppConfig.cs" /></ItemGroup>
+ <ItemGroup><Compile Include="../MediaMonkeyZidooSync/Services/NativeProductionRecovery.cs" Link="NativeProductionRecovery.cs" /></ItemGroup>
+ <ItemGroup><Compile Include="../MediaMonkeyZidooSync/Services/NativeInterruptedRecovery.cs" Link="NativeInterruptedRecovery.cs" /></ItemGroup>
+ <ItemGroup><Compile Include="../MediaMonkeyZidooSync/Services/NativeZidooReadiness.cs" Link="NativeZidooReadiness.cs" /></ItemGroup>
+</Project>

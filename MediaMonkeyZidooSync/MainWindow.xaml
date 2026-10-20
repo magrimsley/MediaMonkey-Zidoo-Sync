@@ -1,7 +1,7 @@
 <Window x:Class="MediaMonkeyZidooSync.MainWindow"
  xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
  xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
- Title="MediaMonkey Zidoo Sync" Height="820" Width="1180" MinHeight="700" MinWidth="980" Closing="Window_Closing">
+ Icon="Resources/Branding/Application.ico" Title="MM Zidoo Sync" Height="820" Width="1180" MinHeight="700" MinWidth="980" Closing="Window_Closing">
  <Grid Margin="18">
   <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="*"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
   <Menu Grid.Row="0" Margin="-18,-18,-18,12">
@@ -16,11 +16,11 @@
     <MenuItem Header="_Troubleshooting" Click="Troubleshooting_Click"/>
     <Separator/><MenuItem Header="_About" Click="About_Click"/>
    </MenuItem>
-   <MenuItem Header="X" Foreground="#FFFF5252" FontWeight="Bold" ToolTip="Exit MediaMonkey Zidoo Sync" Click="Exit_Click"/>
+   <MenuItem Header="X" Foreground="#FFFF5252" FontWeight="Bold" ToolTip="Exit MM Zidoo Sync" Click="Exit_Click"/>
   </Menu>
   <DockPanel Grid.Row="1" Margin="0,0,0,12">
    <StackPanel DockPanel.Dock="Left">
-    <TextBlock Text="MediaMonkey Zidoo Sync" FontSize="26" FontWeight="SemiBold"/>
+    <TextBlock Text="MM Zidoo Sync" FontSize="26" FontWeight="SemiBold"/>
     
    </StackPanel>
    <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" HorizontalAlignment="Right">
@@ -35,12 +35,15 @@
    <TabItem Header="Synchronization">
     <Grid Margin="14">
      <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="*"/></Grid.RowDefinitions>
-     <StackPanel Orientation="Horizontal">
-      <Button x:Name="RunButton" Content="Run Synchronization" Padding="18,8" Click="Run_Click"/>
-      <Button x:Name="ValidateMediaMonkeyButton" Content="Validate MediaMonkey Playlists" Padding="18,8" Margin="10,0,0,0" Click="ValidateMediaMonkey_Click"/>
-      <Button x:Name="VerifyNativeExporterButton" Content="Verify Native Exporter" Padding="18,8" Margin="10,0,0,0" Click="VerifyNativeExporter_Click"/>
-      <Button x:Name="RunNativeAssessmentButton" Content="Run Native Assessment (Read-only)" Padding="18,8" Margin="10,0,0,0" Click="RunNativeAssessment_Click"/>
-      <Button x:Name="InspectNativePlanButton" Content="Inspect Plan (Read-only)" Padding="14,8" Margin="10,0,0,0" IsEnabled="False" Click="InspectNativePlan_Click"/>
+     <StackPanel>
+      <WrapPanel>
+      <Button x:Name="ValidateMediaMonkeyButton" Content="1. Validate MediaMonkey Playlists" Padding="14,8" Click="ValidateMediaMonkey_Click"/>
+      <Button x:Name="VerifyNativeExporterButton" Content="2. Verify Native Exporter" IsEnabled="False" Padding="14,8" Margin="10,0,0,0" Click="VerifyNativeExporter_Click"/>
+      <Button x:Name="ReviewSynchronizationButton" Content="3. Review Changes" IsEnabled="False" Padding="14,8" Margin="10,0,0,0" Click="ReviewSynchronization_Click"/>
+      <Button x:Name="RunButton" Content="4. Run Synchronization" IsEnabled="False" Padding="14,8" Margin="10,0,0,0" Click="Run_Click"/>
+      </WrapPanel>
+      <TextBlock x:Name="WorkflowHint" Text="Step 1: Validate MediaMonkey playlists." Margin="0,8,0,4" TextWrapping="Wrap"/>
+      <!-- Optional read-only diagnostics removed at product-owner request (2026-10-20). -->
      </StackPanel>
      <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,14,0,8">
       <TextBlock Text="Show:" VerticalAlignment="Center" Margin="0,0,10,0"/>
@@ -72,7 +75,7 @@
     </Grid>
    </TabItem>
 
-   <TabItem Header="Configuration">
+   <TabItem x:Name="ConfigurationTab" Header="Configuration">
     <ScrollViewer VerticalScrollBarVisibility="Auto">
      <StackPanel Margin="16">
       <Expander x:Name="ZidooSection" Header="Zidoo" IsExpanded="True" Margin="0,18,0,0">
@@ -168,13 +171,45 @@
        <TextBlock x:Name="RunHistoryStatus" Margin="14,8,0,0" TextWrapping="Wrap"/>
       </StackPanel>
       <DataGrid x:Name="RunHistoryGrid" Height="390" AutoGenerateColumns="False" IsReadOnly="True"
-                SelectionMode="Single" MouseDoubleClick="OpenRunLog_Click">
+                CanUserAddRows="False" SelectionMode="Extended" SelectionUnit="CellOrRowHeader"
+                HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto" RowHeaderWidth="20">
+       <DataGrid.Resources>
+        <Style x:Key="SelectableHistoryText" TargetType="TextBox">
+         <Setter Property="IsReadOnly" Value="True"/>
+         <Setter Property="IsReadOnlyCaretVisible" Value="True"/>
+         <Setter Property="BorderThickness" Value="0"/>
+         <Setter Property="Background" Value="Transparent"/>
+         <Setter Property="Padding" Value="3,2"/>
+         <Setter Property="TextWrapping" Value="NoWrap"/>
+         <Setter Property="Foreground" Value="{Binding Foreground, RelativeSource={RelativeSource AncestorType=DataGrid}}"/>
+         <Setter Property="HorizontalScrollBarVisibility" Value="Hidden"/>
+         <Setter Property="VerticalScrollBarVisibility" Value="Disabled"/>
+        </Style>
+        <Style TargetType="DataGridCell">
+         <Style.Triggers>
+          <Trigger Property="IsSelected" Value="True">
+           <Setter Property="Background" Value="Transparent"/>
+           <Setter Property="BorderBrush" Value="Transparent"/>
+          </Trigger>
+         </Style.Triggers>
+        </Style>
+       </DataGrid.Resources>
        <DataGrid.Columns>
-        <DataGridTextColumn Header="Started" Binding="{Binding Started, StringFormat={}{0:yyyy-MM-dd HH:mm:ss}}" Width="175"/>
-        <DataGridTextColumn Header="Operation" Binding="{Binding Operation}" Width="210"/>
-        <DataGridTextColumn Header="Result" Binding="{Binding Result}" Width="240"/>
-        <DataGridTextColumn Header="Elapsed" Binding="{Binding Elapsed}" Width="100"/>
-        <DataGridTextColumn Header="Log" Binding="{Binding LogPath}" Width="*"/>
+        <DataGridTemplateColumn Header="Started" SortMemberPath="Started" Width="SizeToCells" MinWidth="175">
+         <DataGridTemplateColumn.CellTemplate><DataTemplate><TextBox Style="{StaticResource SelectableHistoryText}" Text="{Binding Started, Mode=OneWay, StringFormat={}{0:yyyy-MM-dd HH:mm:ss}}"/></DataTemplate></DataGridTemplateColumn.CellTemplate>
+        </DataGridTemplateColumn>
+        <DataGridTemplateColumn Header="Operation" SortMemberPath="Operation" Width="SizeToCells" MinWidth="210">
+         <DataGridTemplateColumn.CellTemplate><DataTemplate><TextBox Style="{StaticResource SelectableHistoryText}" Text="{Binding Operation, Mode=OneWay}"/></DataTemplate></DataGridTemplateColumn.CellTemplate>
+        </DataGridTemplateColumn>
+        <DataGridTemplateColumn Header="Result" SortMemberPath="Result" Width="SizeToCells" MinWidth="240">
+         <DataGridTemplateColumn.CellTemplate><DataTemplate><TextBox Style="{StaticResource SelectableHistoryText}" Text="{Binding Result, Mode=OneWay}"/></DataTemplate></DataGridTemplateColumn.CellTemplate>
+        </DataGridTemplateColumn>
+        <DataGridTemplateColumn Header="Elapsed" SortMemberPath="Elapsed" Width="SizeToCells" MinWidth="100">
+         <DataGridTemplateColumn.CellTemplate><DataTemplate><TextBox Style="{StaticResource SelectableHistoryText}" Text="{Binding Elapsed, Mode=OneWay}"/></DataTemplate></DataGridTemplateColumn.CellTemplate>
+        </DataGridTemplateColumn>
+        <DataGridTemplateColumn Header="Log" SortMemberPath="LogPath" Width="SizeToCells" MinWidth="600">
+         <DataGridTemplateColumn.CellTemplate><DataTemplate><TextBox Style="{StaticResource SelectableHistoryText}" Text="{Binding LogPath, Mode=OneWay}"/></DataTemplate></DataGridTemplateColumn.CellTemplate>
+        </DataGridTemplateColumn>
        </DataGrid.Columns>
       </DataGrid>
      </DockPanel>
