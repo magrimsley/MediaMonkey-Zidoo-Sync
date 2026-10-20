@@ -8,7 +8,7 @@
     <AssemblyName>MediaMonkey Zidoo Sync</AssemblyName>
     <RootNamespace>MediaMonkeyZidooSync</RootNamespace>
     <VersionPrefix>1.1</VersionPrefix>
-    <VersionSuffix>alpha.60.17.1</VersionSuffix>
+    <VersionSuffix>alpha.60.18.6</VersionSuffix>
     <BuildNumber Condition="'$(BuildNumber)' == ''">0</BuildNumber>
     <RevisionNumber Condition="'$(RevisionNumber)' == ''">0</RevisionNumber>
     <AssemblyVersion>1.1.$(BuildNumber).$(RevisionNumber)</AssemblyVersion>

@@ -1,6 +1,6 @@
 #requires -Version 5.1
 [CmdletBinding()]
-param([Parameter(Mandatory=$true)][string]$PayloadDirectory,[string]$InstallRoot=(Join-Path $env:LOCALAPPDATA 'Programs\MediaMonkey Zidoo Sync'),[string]$ExpectedVersion='1.1-alpha.60.17.1',[switch]$FileOnly)
+param([Parameter(Mandatory=$true)][string]$PayloadDirectory,[string]$InstallRoot=(Join-Path $env:LOCALAPPDATA 'Programs\MediaMonkey Zidoo Sync'),[string]$ExpectedVersion='1.1-alpha.60.18.6',[switch]$FileOnly)
 . (Join-Path $PSScriptRoot 'Common.ps1')
 $root=Resolve-InstallRoot $InstallRoot
 $payload=(Resolve-Path -LiteralPath $PayloadDirectory).Path

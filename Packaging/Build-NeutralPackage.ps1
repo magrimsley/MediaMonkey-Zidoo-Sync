@@ -11,9 +11,9 @@ $projectRoot=Split-Path $PSScriptRoot -Parent
 if($results -eq $projectRoot -or $results.StartsWith($projectRoot+'\',[StringComparison]::OrdinalIgnoreCase)){throw 'Choose a results directory outside the source project.'}
 $exe=Join-Path $source 'MediaMonkey Zidoo Sync.exe'
 $version=([Diagnostics.FileVersionInfo]::GetVersionInfo($exe).ProductVersion -split '\+')[0]
-if($version -ne '1.1-alpha.60.17.1'){throw 'Payload version must be Alpha.60.17.1. This source-built candidate requires separate acceptance; it is not the earlier binary checkpoint.'}
+if($version -ne '1.1-alpha.60.18.6'){throw 'Payload version must be Alpha.60.18.6. This source-built candidate requires separate acceptance; it is not the earlier binary checkpoint.'}
 $out=Join-Path $results ('NeutralPackage-'+(Get-Date -Format 'yyyyMMdd-HHmmss-fff')+'-'+[guid]::NewGuid().ToString('N').Substring(0,6))
-$package=Join-Path $out 'MediaMonkey-Alpha60.17.1-Neutral'
+$package=Join-Path $out 'MediaMonkey-Alpha60.18.6-Neutral'
 New-Item -ItemType Directory -Path $package | Out-Null
 Copy-Item $source (Join-Path $package 'Payload') -Recurse
 Copy-Item (Join-Path $PSScriptRoot 'Installer') (Join-Path $package 'Installer') -Recurse
@@ -26,10 +26,10 @@ $pdb=Join-Path $package 'Payload\MediaMonkey Zidoo Sync.pdb'
 if(Test-Path $pdb){Remove-Item -LiteralPath $pdb}
 Copy-Item (Join-Path $PSScriptRoot 'PACKAGE-README.md') (Join-Path $package 'README.md')
 $files=@(Get-ChildItem $package -File -Recurse | ForEach-Object {[pscustomobject]@{Path=$_.FullName.Substring($package.Length+1);SHA256=(Get-FileHash $_.FullName).Hash}})
-$manifest=[pscustomobject]@{ApplicationVersion='1.1-alpha.60.17.1';SupportRevision=5;Distribution='Unsigned neutral-default rebuild; fresh acceptance pending';Files=$files}
+$manifest=[pscustomobject]@{ApplicationVersion='1.1-alpha.60.18.6';SupportRevision=5;Distribution='Unsigned neutral-default rebuild; fresh acceptance pending';Files=$files}
 $manifest | ConvertTo-Json -Depth 6 | Set-Content (Join-Path $package 'package-manifest.json') -Encoding UTF8
 & (Join-Path $package 'Verify-Package.ps1')
-$archive=Join-Path $out 'MediaMonkey-Alpha60.17.1-Neutral-unsigned.zip'
+$archive=Join-Path $out 'MediaMonkey-Alpha60.18.6-Neutral-unsigned.zip'
 Compress-Archive -Path (Join-Path $package '*') -DestinationPath $archive
 $hash=(Get-FileHash $archive).Hash
 [IO.File]::WriteAllText(($archive+'.sha256'),($hash+'  '+[IO.Path]::GetFileName($archive)+[Environment]::NewLine))

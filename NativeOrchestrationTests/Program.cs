@@ -205,6 +205,17 @@ Test("User cancellation stops after compensation without attempting the next pla
         {calls++;cancellation.Cancel();throw new NativeTransactionRolledBackException("Cancelled after compensation",new OperationCanceledException(ct));},_=>{},_=>{},cancellation.Token).GetAwaiter().GetResult());
     if(calls!=1)throw new Exception("Cancellation did not stop batch");
 });
+Test("Interrupted run power ownership is bound to device and configured storage", () =>
+{
+    string root=Path.Combine(Path.GetTempPath(),"MMZS-RunState-"+Guid.NewGuid().ToString("N"));Directory.CreateDirectory(root);
+    string reports=Path.Combine(root,"Reports");string evidence=Path.Combine(reports,"NativeSync-fixture");Directory.CreateDirectory(evidence);
+    var settings=new AppConfig();settings.Application.ReportRoot=reports;settings.Zidoo.IPAddress="192.0.2.1";settings.Zidoo.ApiPort=9529;settings.Zidoo.ExpectedModel="TEST";settings.Zidoo.MacAddress="001122334455";
+    new NativeProductionRunState(1,root,evidence,settings.Zidoo.IPAddress,settings.Zidoo.ApiPort,settings.Zidoo.ExpectedModel,settings.Zidoo.MacAddress,false).Save(root);
+    if(NativeProductionRunState.Read(settings,root).InitiallyReachable)throw new Exception("Original off state lost");
+    settings.Zidoo.IPAddress="192.0.2.2";Throws<InvalidDataException>(()=>NativeProductionRunState.Read(settings,root));
+    settings.Zidoo.IPAddress="192.0.2.1";settings.Application.ReportRoot=Path.Combine(root,"OtherReports");Throws<InvalidDataException>(()=>NativeProductionRunState.Read(settings,root));
+    if(!File.Exists(NativeProductionRunState.Marker(root)))throw new Exception("Conflicting state was discarded");
+});
 Console.WriteLine($"Results: {passed} passed; {failed} failed");
 return failed == 0 ? 0 : 1;
 

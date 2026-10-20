@@ -9,12 +9,13 @@ namespace MediaMonkeyZidooSync.Services;
 /// Network and delay dependencies are injectable; construction performs no I/O.</summary>
 public sealed class NativeZidooPlaylistDevice : IProductionPlaylistDevice
 {
+    public event Action<string>? Output;
     private readonly HttpClient _http;
     private readonly AppConfig _config;
     private readonly Func<int, CancellationToken, Task> _delay;
     private readonly SemaphoreSlim _gate = new(1, 1);
     private static readonly HashSet<string> AllowedKeys = new(StringComparer.Ordinal)
-        { "Key.Up", "Key.Down", "Key.Left", "Key.Right", "Key.Ok", "Key.Select" };
+        { "Key.Up", "Key.Down", "Key.Left", "Key.Right", "Key.Ok", "Key.Select", "Key.Back" };
 
     public NativeZidooPlaylistDevice(HttpClient http, AppConfig config,
         Func<int, CancellationToken, Task>? delay = null)
@@ -97,6 +98,9 @@ public sealed class NativeZidooPlaylistDevice : IProductionPlaylistDevice
                 throw new InvalidDataException("Playlist identity/count changed before deletion.");
             await Anchor(ct);
             await Key("Key.Down", 700, ct);
+            await RebuildPlaylistNameOrderAsync(ct);
+            // Observed Back returns to Sort; Right establishes the first tile without app re-entry.
+            await Key("Key.Right", 500, ct);
             await Keys("Key.Down", target.GridIndex / _config.Zidoo.PlaylistGridColumns, 300, ct);
             await Keys("Key.Right", target.GridIndex % _config.Zidoo.PlaylistGridColumns, 300, ct);
             await VerifyIdentityAsync(ct);
@@ -114,8 +118,44 @@ public sealed class NativeZidooPlaylistDevice : IProductionPlaylistDevice
                 !before.Where(x => x.Id != target.Id).Select(x => (x.Id, x.Name, x.Count))
                     .SequenceEqual(after.Select(x => (x.Id, x.Name, x.Count))))
                 throw new InvalidDataException("Deletion verification failed or unrelated playlists changed; recovery required.");
+            // Production wrapper Invoke-GuardedDelete requires this refresh after
+            // verified deletion, before import or another API-index target.
+            await RefreshPersistentPlaylistGridAfterMutationAsync(after, ct);
         }
         finally { _gate.Release(); }
+    }
+
+    private async Task RebuildPlaylistNameOrderAsync(CancellationToken ct)
+    {
+        // The immutable inventory component explicitly requires visual grid/API
+        // order agreement. Recorded evidence showed a checked A-Z preference
+        // alongside a newest-first rendered grid. A different selection followed
+        // by A-Z rebuilt it; selecting the already-checked option was insufficient.
+        // This is a documented prerequisite extension, not an original frozen key
+        // sequence. Back dismissal was separately observed with Michael's remote.
+        Output?.Invoke("Rebuilding the visible playlist grid in name order before targeting.");
+        await Key("Key.Left", 450, ct);
+        await Key("Key.Ok", 500, ct);
+        await Keys("Key.Up", 4, 350, ct);
+        await Keys("Key.Down", 3, 350, ct);
+        await Key("Key.Ok", 500, ct);
+        await Key("Key.Up", 350, ct);
+        await Key("Key.Ok", 500, ct);
+        await Key("Key.Back", 500, ct);
+        // Do not read getSongLists between sort selections. It cannot establish
+        // rendered order and may influence the preference without repainting.
+        // The existing fresh-inventory guard still runs before tile activation.
+    }
+
+    private async Task RefreshPersistentPlaylistGridAfterMutationAsync(
+        IReadOnlyList<ZidooPlaylistRecord> expected, CancellationToken ct)
+    {
+        Output?.Invoke("Refreshing the playlist grid after verified deletion.");
+        // Establish the existing frozen app-open/home boundary before refreshing.
+        // Up/Down from a grid or track list does not itself return to home.
+        await Anchor(ct);
+        if (!SameInventory(expected, await InventoryAsync(ct)))
+            throw new InvalidDataException("Playlist inventory changed during grid refresh; recovery required.");
     }
 
     private string EncodedShare => Uri.EscapeDataString("/mnt/smb/" + _config.NAS.Host + "#" + _config.NAS.ShareName);
@@ -182,6 +222,7 @@ public sealed class NativeZidooPlaylistDevice : IProductionPlaylistDevice
             await Key("Key.Ok", 800, ct); await Key("Key.Ok", 1000, ct);
             await VerifyIdentityAsync(ct);
             await Key("Key.Down", 450, ct); await Key("Key.Ok", 900, ct);
+            Output?.Invoke("Locating the configured playlist storage.");
             var share = await List(EncodedShare, false, ct);
             int music = UniqueIndex(share,_config.NAS.MusicFolderName);
             if (music < 0) throw new InvalidDataException("Configured music folder is missing on device.");
@@ -193,6 +234,7 @@ public sealed class NativeZidooPlaylistDevice : IProductionPlaylistDevice
             var eligible = await List(EncodedPlaylists, true, ct);
             int target = UniqueIndex(eligible,filename);
             if (target < 0) throw new InvalidDataException("Exact playlist filename is missing on device.");
+            Output?.Invoke("Selecting the playlist to import.");
             await Keys("Key.Down", target, 350, ct);
             if (!eligible.SequenceEqual(await List(EncodedPlaylists, true, ct)))
                 throw new InvalidDataException("Directory order changed during import targeting.");
@@ -200,6 +242,7 @@ public sealed class NativeZidooPlaylistDevice : IProductionPlaylistDevice
             await Key("Key.Right", 500, ct); await Key("Key.Ok", 700, ct);
             await VerifyIdentityAsync(ct); await _delay(1500, ct);
             var after = await InventoryAsync(ct);
+            Output?.Invoke("Verifying the imported playlist.");
             var added = after.SingleOrDefault(x => x.Name == name);
             if (added is null || added.Count != expectedCount || before.Any(x => x.Id == added.Id) ||
                 !before.Select(x => (x.Id, x.Name, x.Count)).SequenceEqual(after.Where(x => x.Id != added.Id).Select(x => (x.Id, x.Name, x.Count))))

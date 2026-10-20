@@ -1,12 +1,12 @@
 // ============================================================================
 // MediaMonkey Zidoo Sync
-// Product line: 1.0 (Major/Minor controlled by the product owner)
-// Development channel: alpha.6
+// Product line: 1.1 (Major/Minor controlled by the product owner)
+// Development channel: Alpha.60.18.6
 // Purpose: Application startup and native Windows Fluent system-theme activation.
 // Remarks:
-// - Build and revision are compiler-generated through AssemblyVersion 1.0.*.
+// - Version metadata is defined by MediaMonkeyZidooSync.csproj.
 // - Released artifacts are immutable; any code change requires a new build identity.
-// - Production PowerShell synchronization mechanics are not changed by this source-governance pass.
+// - Synchronization is entirely native C#; PowerShell is used only for build, test and installation tooling.
 // ============================================================================
 using System.Windows;
 using System;

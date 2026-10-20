@@ -25,6 +25,7 @@ public sealed class SyncRunner
     public event Action<LogEvent>? Output;
     public bool LastRunVerifiedDevice=>_production?.LastRunVerifiedDevice==true;
     public int LastRunCompletedChanges=>_production?.LastRunCompletedChanges??0;
+    public bool LastRunRecovered=>_production?.LastRunRecovered==true;
 
     /// <summary>Read-only assessment; does not authorize or perform execution.</summary>
     public async Task<NativeSyncReadOnlyResult> AssessAsync(AppConfig config, CancellationToken ct = default)
@@ -51,7 +52,7 @@ public sealed class SyncRunner
         IReadOnlyList<NativeProductionSyncService.ReviewedChange>? reviewed=null)
     {
         if(_production is null)throw new InvalidOperationException("This runner is read-only; synchronization is not configured.");
-        try{return await _production.RunAsync(config,ct,reviewed).ConfigureAwait(false);}
+        try{return await Task.Run(()=>_production.RunAsync(config,ct,reviewed),ct).ConfigureAwait(false);}
         catch(NativeTransactionRolledBackException error) when(ct.IsCancellationRequested)
         {
             // The engine has finished compensation and power restoration before this boundary.

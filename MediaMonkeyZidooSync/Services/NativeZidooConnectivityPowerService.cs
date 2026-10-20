@@ -1,5 +1,5 @@
-// 1.1-alpha.40 — native network readiness and Wake-on-LAN transport.
-// Not connected to production synchronization. No power-off operation is issued.
+// Native network readiness and Wake-on-LAN transport.
+// Used by the native coordinator; power-off ownership remains with that coordinator.
 using System;
 using System.Net;
 using System.Net.Http;

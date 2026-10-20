@@ -34,6 +34,8 @@ function Start-Child([string]$Root,[string]$Boundary='',[switch]$Install){
  elseif($Install){$psi.Arguments='-NoProfile -ExecutionPolicy Bypass -File "'+(Join-Path $tools 'Install.ps1')+'" -InstallRoot "'+$Root+'" -PayloadDirectory "'+$PayloadDirectory+'" -FileOnly'}
  else{$psi.Arguments='-NoProfile -ExecutionPolicy Bypass -File "'+(Join-Path $tools 'Uninstall.ps1')+'" -InstallRoot "'+$Root+'"'}
  $psi.UseShellExecute=$false;$psi.CreateNoWindow=$true;$psi.RedirectStandardOutput=$true;$psi.RedirectStandardError=$true
+ $psi.EnvironmentVariables["PSModulePath"]=(Join-Path $env:SystemRoot 'System32\WindowsPowerShell\v1.0\Modules')
+
  $p=New-Object Diagnostics.Process;$p.StartInfo=$psi;[void]$p.Start()
  $child=[pscustomobject]@{Process=$p;Signal=$signal;Stdout=$p.StandardOutput.ReadToEndAsync();Stderr=$p.StandardError.ReadToEndAsync()};$children.Add($child);return $child
 }
@@ -82,7 +84,7 @@ try{
  }
 }finally{
  foreach($child in $children){if(!$child.Process.HasExited){$child.Process.Kill();$child.Process.WaitForExit()};$child.Process.Dispose()}
- [pscustomobject]@{SupportRevision=5;ApplicationVersion='1.1-alpha.60.17.1';Scope='FileOnly; real child termination at debugger-controlled boundaries after actual file deletion; corruption/edit fixtures; no app/device/real playlist writes; not power-loss proof';Checks=$results.ToArray()} | ConvertTo-Json -Depth 9 | Set-Content (Join-Path $lab 'summary.json') -Encoding UTF8
+ [pscustomobject]@{SupportRevision=5;ApplicationVersion='1.1-alpha.60.18.6';Scope='FileOnly; real child termination at debugger-controlled boundaries after actual file deletion; corruption/edit fixtures; no app/device/real playlist writes; not power-loss proof';Checks=$results.ToArray()} | ConvertTo-Json -Depth 9 | Set-Content (Join-Path $lab 'summary.json') -Encoding UTF8
 }
 $results | Format-Table Name,Status
 Write-Host "Evidence: $lab"

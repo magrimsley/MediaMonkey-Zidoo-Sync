@@ -1,10 +1,10 @@
 // ============================================================================
 // MediaMonkey Zidoo Sync
 // Product line: 1.1 (Major/Minor controlled by the product owner)
-// Development channel: alpha.18
+// Development channel: Alpha.60.18.6
 // Purpose: In-application help navigation and authoritative user-facing topic content.
 // Remarks:
-// - Build and revision are compiler-generated through AssemblyVersion 1.0.*.
+// - Version metadata is defined by MediaMonkeyZidooSync.csproj.
 // - Released artifacts are immutable; any code change requires a new build identity.
 // - Production application synchronization mechanics are not changed by this source-governance pass.
 // ============================================================================
@@ -68,7 +68,7 @@ public partial class HelpWindow : Window
                 "DELETE — A previously managed playlist has been removed from MediaMonkey. The application first deletes the corresponding persistent playlist from Zidoo Music and verifies that the intended playlist is gone. Only after that verification does it remove the corresponding managed M3U file from playlist storage. Keeping the M3U file until the Zidoo device deletion is verified preserves information needed for recovery if the Zidoo device operation fails.\n\n" +
                 "Power handling — If the Zidoo device was already on when synchronization began, the application leaves it on. If synchronization wakes a Zidoo that was off, the process is designed to restore the original off/standby state after the run. If there are no managed playlist changes, the application does not wake or contact the Zidoo device.\n\n" +
                 "Verify Native Exporter compares the expected MediaMonkey playlists with existing M3U files and displays a read-only transaction plan: Unchanged, Create, Update, and Pending Zidoo Deletion. This verification does not change playlist files or contact Zidoo. Pending Zidoo Deletion does not delete any file; removal must wait for verified deletion on the Zidoo device.\n\n" +
-                "Each playlist change is handled as a separate transaction. A failure involving one playlist does not undo an earlier independent playlist transaction that was already completed and verified.\n\n" +
+                "If the application or Windows stops during a run, use the normal validation, verification and review steps, then Run Synchronization. The application first verifies the interrupted run, keeps a verified completed change or restores an incomplete change, and restores its recorded power state. After recovery completes, start again at Validate MediaMonkey before applying current changes. If files, settings or playlists changed unexpectedly, it stops and preserves the recovery details.\n\nEach playlist change is handled as a separate transaction. A failure involving one playlist does not undo an earlier independent playlist transaction that was already completed and verified.\n\n" +
                 "Review and approve the proposed change summary before synchronization. Cancel Synchronization requests a controlled stop; let recovery and power restoration finish before exiting. If recovery is required, keep all backups and receipts and do not remove the recovery gate to force another run.\n\nThe Status / Output area shows run activity. The complete run log stored beneath Report / Log Root is the authoritative record of the synchronization."),
             "Configuration" => ("Configuration",
                 "Use the Configuration tab to tell the application where MediaMonkey stores its information, where playlist files belong, and how to communicate with Zidoo and Music Player 8. You can expand or collapse each section. The application remembers which sections you leave open or closed.\n\n" +

@@ -13,11 +13,13 @@ public interface IProductionPlaylistDevice
 }
 
 /// <summary>One durable native transaction. A failed or interrupted transaction retains
-/// its receipt and backup and prevents a new run until explicit recovery is completed.</summary>
+/// its receipt and backup for reconciliation before a new synchronization may begin.</summary>
 public sealed class NativeProductionTransaction
 {
     private readonly IProductionPlaylistDevice _device;
-    public NativeProductionTransaction(IProductionPlaylistDevice device) => _device = device;
+    private readonly Action<string>? _checkpoint;
+    public NativeProductionTransaction(IProductionPlaylistDevice device, Action<string>? checkpoint = null)
+    { _device = device; _checkpoint = checkpoint; }
     public sealed record Change(string FileName, byte[]? NewContent, int ExpectedCount, string? ExpectedOldSHA256);
 
     private static string Hash(byte[] data) => Convert.ToHexString(SHA256.HashData(data));
@@ -95,7 +97,10 @@ public sealed class NativeProductionTransaction
         }
         Durable(Path.Combine(journal,"collateral-backups.json"),JsonSerializer.SerializeToUtf8Bytes(collateralManifest));
         string pending = Path.Combine(root, ".mmzs-production-pending.json");
-        Durable(pending, JsonSerializer.SerializeToUtf8Bytes(new { Journal = journal, Target = target }));
+        if(File.Exists(pending))throw new IOException("A previous transaction still requires recovery.");
+        NativeInterruptedRecovery.Save(pending,JsonSerializer.SerializeToUtf8Bytes(new NativeInterruptedRecovery.Pending(
+            2,journal,target,Hash(File.ReadAllBytes(Path.Combine(journal,"intent.json"))),Hash(File.ReadAllBytes(Path.Combine(journal,"collateral-backups.json"))))));
+        _checkpoint?.Invoke("Prepared");
         string stage = Path.Combine(root, ".mmzs-" + Guid.NewGuid().ToString("N") + ".stage");
         try
         {
@@ -108,7 +113,9 @@ public sealed class NativeProductionTransaction
                 VerifyOriginal();
                 if (old is null) File.Move(stage, target); else File.Replace(stage, target, null);
             }
+            _checkpoint?.Invoke("FilePublished");
             if (original is not null && !preserveExisting) await _device.DeleteExactAsync(original, ct);
+            _checkpoint?.Invoke("DeviceDeleted");
             if (change.NewContent is null)
             {
                 VerifyOriginal();
@@ -116,6 +123,7 @@ public sealed class NativeProductionTransaction
             }
             else if (change.ExpectedCount > 0 && !preserveExisting)
                 await _device.ImportAsync(change.FileName, change.ExpectedCount, ct);
+            _checkpoint?.Invoke("DeviceImported");
             var after = await _device.InventoryAsync(ct);
             if (!before.Where(x => x.Name != name).Select(x => (x.Id,x.Name,x.Count))
                 .SequenceEqual(after.Where(x => x.Name != name).Select(x => (x.Id,x.Name,x.Count))))
@@ -127,6 +135,7 @@ public sealed class NativeProductionTransaction
             if ((File.Exists(target) ? Hash(File.ReadAllBytes(target)) : null) != expectedHash)
                 throw new IOException("Final authoritative file verification failed.");
             Durable(Path.Combine(journal, "committed.json"), JsonSerializer.SerializeToUtf8Bytes(new { Time = DateTimeOffset.Now }));
+            _checkpoint?.Invoke("Committed");
             File.Delete(pending);
         }
         catch (Exception failure)

@@ -1,5 +1,5 @@
 [CmdletBinding()]
-param([string]$ResultsRoot=(Join-Path ([IO.Path]::GetTempPath()) 'MediaMonkeyZidooSync-Tests'),[Parameter(Mandatory=$true)][string]$NewPayloadDirectory,[Parameter(Mandatory=$true)][string]$OldPayloadDirectory)
+param([string]$ResultsRoot=(Join-Path ([IO.Path]::GetTempPath()) 'MediaMonkeyZidooSync-Tests'),[Parameter(Mandatory=$true)][string]$NewPayloadDirectory,[Parameter(Mandatory=$true)][string]$OldPayloadDirectory,[string]$OldExpectedVersion='1.1-alpha.60.15.1')
 $ErrorActionPreference='Stop'
 $tools=Join-Path (Split-Path $PSScriptRoot -Parent) 'Installer'
 $test=Join-Path $ResultsRoot ('InstallerLab-'+(Get-Date -Format 'yyyyMMdd-HHmmss-fff'))
@@ -15,8 +15,8 @@ New-Item -ItemType Directory -Force (Split-Path $config) | Out-Null
 'user-settings-retention-sentinel' | Set-Content -LiteralPath $config
 $sentinelHash=(Get-FileHash $config).Hash
 Check 'fresh-file-install-with-spaces-and-Unicode' {
- & (Join-Path $tools 'Install.ps1') -PayloadDirectory $oldPayload -InstallRoot $root -ExpectedVersion '1.1-alpha.60.15.1' -FileOnly
- Assert (Test-Path (Join-Path $root 'Versions\1.1-alpha.60.15.1\MediaMonkey Zidoo Sync.exe')) 'Installed executable missing'
+ & (Join-Path $tools 'Install.ps1') -PayloadDirectory $oldPayload -InstallRoot $root -ExpectedVersion $OldExpectedVersion -FileOnly
+ Assert (Test-Path (Join-Path $root ("Versions\"+$OldExpectedVersion+"\MediaMonkey Zidoo Sync.exe"))) 'Installed executable missing'
 }
 Check 'interrupted-copy-preserves-installed-version-and-retry' {
  $broken=Join-Path $test 'locked-source'
@@ -28,13 +28,13 @@ Check 'interrupted-copy-preserves-installed-version-and-retry' {
  $held=[IO.File]::Open($locked,[IO.FileMode]::Open,[IO.FileAccess]::Read,[IO.FileShare]::None)
  $refused=$false;try{& (Join-Path $tools 'Install.ps1') -PayloadDirectory $broken -InstallRoot $root -FileOnly}catch{$refused=$true}finally{$held.Dispose()}
  Assert ($refused -and (Get-FileHash $manifest).Hash -eq $before) 'Failed copy changed active installation state'
- Assert (!(Test-Path (Join-Path $root 'Versions\1.1-alpha.60.17.1'))) 'Partial version published'
+ Assert (!(Test-Path (Join-Path $root 'Versions\1.1-alpha.60.18.6'))) 'Partial version published'
  Assert (@(Get-ChildItem $root -Directory -Filter '.staging-*').Count -eq 0) 'Staging debris remains'
 }
-Check 'upgrade-to-Alpha60.17.1-retains-prior-payload' {
+Check 'upgrade-to-Alpha60.18.6-retains-prior-payload' {
  & (Join-Path $tools 'Install.ps1') -PayloadDirectory $newPayload -InstallRoot $root -FileOnly
  $state=Get-Content (Join-Path $root '.mmzs-install.json') -Raw | ConvertFrom-Json
- Assert ($state.CurrentVersion -eq '1.1-alpha.60.17.1' -and @($state.Versions).Count -eq 2) 'Upgrade state incorrect'
+ Assert ($state.CurrentVersion -eq '1.1-alpha.60.18.6' -and @($state.Versions).Count -eq 2) 'Upgrade state incorrect'
  Assert ((Get-FileHash $config).Hash -eq $sentinelHash) 'Configuration changed'
 }
 Check 'wrong-version-refused-before-install' {
@@ -48,19 +48,19 @@ Check 'unowned-directory-preserved' {
  Assert ($refused -and (Get-Content (Join-Path $unowned 'keep.txt')) -eq 'keep') 'Unowned directory changed'
 }
 Check 'locked-installed-file-stops-uninstall' {
- $exe=Join-Path $root 'Versions\1.1-alpha.60.17.1\MediaMonkey Zidoo Sync.exe'
+ $exe=Join-Path $root 'Versions\1.1-alpha.60.18.6\MediaMonkey Zidoo Sync.exe'
  $handle=[IO.File]::Open($exe,[IO.FileMode]::Open,[IO.FileAccess]::Read,[IO.FileShare]::None)
  $refused=$false;try{& (Join-Path $root 'Uninstall.ps1') -InstallRoot $root}catch{$refused=$true}finally{$handle.Dispose()}
  Assert ($refused -and (Test-Path $exe) -and (Test-Path (Join-Path $root '.mmzs-install.json'))) 'Locked uninstall changed ownership or removed locked binary'
 }
 Check 'modified-installed-file-preserved' {
- $file=Join-Path $root 'Versions\1.1-alpha.60.17.1\Resources\MediaMonkey-Zidoo-Config-v1.0.0.json'
+ $file=Join-Path $root 'Versions\1.1-alpha.60.18.6\Resources\MediaMonkey-Zidoo-Config-v1.0.0.json'
  $bytes=[IO.File]::ReadAllBytes($file)
  try{[IO.File]::AppendAllText($file,' ');$refused=$false;try{& (Join-Path $root 'Uninstall.ps1') -InstallRoot $root}catch{$refused=$true};Assert ($refused -and (Test-Path $file) -and (Test-Path (Join-Path $root '.mmzs-install.json'))) 'Modified installation was not preserved'}finally{[IO.File]::WriteAllBytes($file,$bytes)}
 }
 Check 'manifest-traversal-refused' {
  $manifest=Join-Path $root '.mmzs-install.json';$bytes=[IO.File]::ReadAllBytes($manifest)
- try{$state=Get-Content $manifest -Raw | ConvertFrom-Json;$state.Versions[0].Files[0].Path='Versions\..\..\outside.txt';$state | ConvertTo-Json -Depth 8 | Set-Content $manifest;$refused=$false;try{& (Join-Path $root 'Uninstall.ps1') -InstallRoot $root}catch{$refused=$true};Assert ($refused -and (Test-Path (Join-Path $root 'Versions\1.1-alpha.60.17.1\MediaMonkey Zidoo Sync.exe'))) 'Unsafe manifest not rejected before removal'}finally{[IO.File]::WriteAllBytes($manifest,$bytes)}
+ try{$state=Get-Content $manifest -Raw | ConvertFrom-Json;$state.Versions[0].Files[0].Path='Versions\..\..\outside.txt';$state | ConvertTo-Json -Depth 8 | Set-Content $manifest;$refused=$false;try{& (Join-Path $root 'Uninstall.ps1') -InstallRoot $root}catch{$refused=$true};Assert ($refused -and (Test-Path (Join-Path $root 'Versions\1.1-alpha.60.18.6\MediaMonkey Zidoo Sync.exe'))) 'Unsafe manifest not rejected before removal'}finally{[IO.File]::WriteAllBytes($manifest,$bytes)}
 }
 Check 'uninstall-preserves-user-configuration-and-unknown-files' {
  'keep-unknown' | Set-Content (Join-Path $root 'user-note.txt')

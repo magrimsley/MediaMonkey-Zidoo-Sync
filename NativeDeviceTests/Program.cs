@@ -2,6 +2,8 @@ using MediaMonkeyZidooSync.Services;
 
 try
 {
+if(args.Length==3 && args[0]=="--recover-worker"){await CrashChecks.RecoverWorker(args[1],args[2]);return;}
+if(args.Length==4 && args[0]=="--crash-worker"){await CrashChecks.Worker(args[1],args[2],args[3]);return;}
 if(args.Length>0 && args[0]=="--probe") { await LiveProbe.Run(args); return; }
 int checks = 0;
 void Assert(bool result) { checks++; if (!result) throw new Exception("Check failed: " + checks); }
@@ -24,8 +26,12 @@ Reject("[null]");
 Reject("[" + string.Join(",", Enumerable.Range(0,500).Select(i => "{\"obj\":{\"id\":"+i+",\"name\":\"P"+i+"\"},\"count\":1}")) + "]");
 Console.WriteLine($"PASS: {checks} native device inventory assertions; no device contacted.");
 await DeviceChecks.Run();
+await SortOrderChecks.Run();
+await ReadinessChecks.Run();
 await TransactionChecks.Run();
+await EmptyPlaylistChecks.Run();
 await RecoveryChecks.Run();
+await CrashChecks.Run();
 }
 catch (Exception error)
 {
@@ -176,6 +182,15 @@ static class DeviceChecks
         await device.DeleteExactAsync(new("1", "Jazz", 2, 0));
         if (!transport.Deleted || transport.Keys.Count(x => x == "Key.Select") != 1)
             throw new Exception("Delete sequence was not exercised.");
+        var refresh=Enumerable.Repeat("Key.Up",20).Concat(Enumerable.Repeat("Key.Down",2)).Append("Key.Ok");
+        if(!transport.Keys.Skip(transport.Keys.IndexOf("Key.Select")+1).SequenceEqual(refresh))
+            throw new Exception("Locked production post-delete grid refresh was omitted or changed.");
+        transport.Reset();transport.RefuseRefresh=true;
+        try{await device.DeleteExactAsync(new("1","Jazz",2,0));throw new Exception("Failed grid refresh accepted.");}
+        catch(InvalidDataException){if(!transport.Deleted)throw;}
+        transport.Reset();transport.ChangeAfterRefresh=true;
+        try{await device.DeleteExactAsync(new("1","Jazz",2,0));throw new Exception("Changed post-refresh inventory accepted.");}
+        catch(InvalidDataException){if(!transport.Deleted)throw;}
         transport.Reset(); transport.WrongModel = true;
         try { await device.DeleteExactAsync(new("1", "Jazz", 2, 0)); throw new Exception("Wrong device accepted."); }
         catch (InvalidDataException) { if (transport.Keys.Count != 0) throw new Exception("Sent keys to wrong model."); }
@@ -197,15 +212,15 @@ static class DeviceChecks
         transport.Reset();transport.ImportMode=true;transport.UnrelatedDuplicates=true;
         await device.ImportAsync("Jazz.m3u",2);
         if(!transport.Imported)throw new Exception("Unrelated duplicate directory names blocked a unique import target.");
-        Console.WriteLine("PASS: 8 native device transport scenarios; fake HTTP handler only, no network or device access.");
+        Console.WriteLine("PASS: 10 native device transport scenarios; fake HTTP handler only, no network or device access.");
     }
 
     private sealed class Replay : HttpMessageHandler
     {
-        public bool Deleted, WrongModel, ChangeInventory, Collateral, ImportMode, Imported, BadImportCount,DuplicateListing,UnrelatedDuplicates;
+        public bool Deleted, WrongModel, ChangeInventory, Collateral, ImportMode, Imported, BadImportCount,DuplicateListing,UnrelatedDuplicates,RefuseRefresh,ChangeAfterRefresh;
         public List<string> Keys = new();
         private int inventories;
-        public void Reset() { Deleted=WrongModel=ChangeInventory=Collateral=ImportMode=Imported=BadImportCount=DuplicateListing=UnrelatedDuplicates=false; Keys.Clear(); inventories=0; }
+        public void Reset() { Deleted=WrongModel=ChangeInventory=Collateral=ImportMode=Imported=BadImportCount=DuplicateListing=UnrelatedDuplicates=RefuseRefresh=ChangeAfterRefresh=false; Keys.Clear(); inventories=0; }
         protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {
             var uri = request.RequestUri!;
@@ -217,12 +232,13 @@ static class DeviceChecks
                 var other="{\"obj\":{\"id\":2,\"name\":\"Rock\"},\"count\":3}";
                 var target="{\"obj\":{\"id\":1,\"name\":\"Jazz\"},\"count\":"+(BadImportCount?4:2)+"}";
                 json = ImportMode ? (Imported?"["+other+","+target+"]":"["+other+"]") :
-                    Deleted ? (Collateral?"[]":"["+other+"]") :
+                    Deleted ? (Collateral || (ChangeAfterRefresh && inventories>=4)?"[]":"["+other+"]") :
                     ChangeInventory && inventories>1?"["+other+","+target+"]":"["+target+","+other+"]";
             }
             else if (uri.AbsolutePath.EndsWith("sendkey"))
             {
                 string key=Uri.UnescapeDataString(uri.Query.Split('=')[1]); Keys.Add(key);
+                if(Deleted && RefuseRefresh && key=="Key.Up")json="{\"status\":500}";
                 if(key=="Key.Select") Deleted=true;
                 if(ImportMode && Keys.Count>=2 && Keys[^2]=="Key.Right" && key=="Key.Ok") Imported=true;
             }
