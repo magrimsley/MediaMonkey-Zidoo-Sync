@@ -1,4 +1,4 @@
-﻿#requires -Version 5.1
+#requires -Version 5.1
 [CmdletBinding()]
 param([string]$ResultsRoot=(Join-Path ([IO.Path]::GetTempPath()) 'MediaMonkeyZidooSync-CI'),[switch]$NoPublish)
 $ErrorActionPreference='Stop'
@@ -7,7 +7,7 @@ $out=Join-Path $ResultsRoot ('Build-'+(Get-Date -Format 'yyyyMMdd-HHmmss-fff'))
 New-Item -ItemType Directory -Force $out | Out-Null
 $checks=@()
 function Step($Name,[scriptblock]$Body){
- try{& $Body *> (Join-Path $out ($Name+'.log'));$script:checks+=[pscustomobject]@{Name=$Name;Status='PASS'}}catch{$script:checks+=[pscustomobject]@{Name=$Name;Status='FAIL';Detail=$_.Exception.Message};throw}finally{$script:checks | ConvertTo-Json -Depth 5 | Set-Content (Join-Path $out 'summary.json') -Encoding UTF8}
+ try{& $Body *> (Join-Path $out ($Name+'.log'));$script:checks+=[pscustomobject]@{Name=$Name;Status='PASS'}}catch{Write-Host ('Diagnostic tail: '+$Name);Get-Content -LiteralPath (Join-Path $out ($Name+'.log')) -Tail 80 -ErrorAction SilentlyContinue | ForEach-Object {Write-Host $_};$script:checks+=[pscustomobject]@{Name=$Name;Status='FAIL';Detail=$_.Exception.Message};throw}finally{$script:checks | ConvertTo-Json -Depth 5 | Set-Content (Join-Path $out 'summary.json') -Encoding UTF8}
  Write-Host ($Name+': PASS')
 }
 Step 'Application-Build' {& dotnet build (Join-Path $root 'MediaMonkeyZidooSync\MediaMonkeyZidooSync.csproj') -c Release --nologo;if($LASTEXITCODE){throw 'Application build failed.'}}
