@@ -914,7 +914,9 @@ public partial class MainWindow : Window {
 
     private void OpenRunLog_Click(object sender, RoutedEventArgs e)
     {
-        if (RunHistoryGrid.SelectedItem is not RunHistoryService.RunRecord selected)
+        var selected = RunHistoryGrid.SelectedItem as RunHistoryService.RunRecord
+            ?? RunHistoryGrid.CurrentCell.Item as RunHistoryService.RunRecord;
+        if (selected is null)
         {
             RunHistoryStatus.Text = "Select a completed run first.";
             return;

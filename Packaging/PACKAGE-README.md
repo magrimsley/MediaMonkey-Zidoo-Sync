@@ -1,6 +1,6 @@
 # MediaMonkey Zidoo Sync unsigned test package
 
-Application Alpha.60.18.6; installer support revision 5. Generated with neutral defaults. Native production synchronization is enabled. Consult the accompanying release acceptance notes for the validated scope and remaining limitations; a successful build or hash check alone is not regression acceptance. This package is unsigned.
+Application Alpha.60.18.7; installer support revision 5. Generated with neutral defaults. Native production synchronization is enabled. Consult the accompanying release acceptance notes for the validated scope and remaining limitations; a successful build or hash check alone is not regression acceptance. This package is unsigned.
 
 Extract the whole ZIP to a local folder. Open Windows PowerShell in that folder and run:
 

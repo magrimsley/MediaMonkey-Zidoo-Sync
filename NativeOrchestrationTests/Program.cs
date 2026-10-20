@@ -123,7 +123,7 @@ Test("Cancellation is yellow and diagnostics stay out of visible output", () =>
 {
     var entry=UserMessages.Cancelled(new TaskCanceledException("private technical detail"));
     if(entry.Level!=LogLevel.Yellow || !entry.Message.Contains("cancelled") || entry.Message.Contains("Exception") ||
-       entry.Message.Contains("private technical detail") || !entry.DiagnosticDetails!.Contains("TaskCanceledException"))throw new Exception("Cancellation presentation leaked diagnostics");
+       entry.Message.Contains("private technical detail") || !string.IsNullOrEmpty(entry.DiagnosticDetails))throw new Exception("Cancellation presentation leaked diagnostics");
 });
 Test("Successful changed and no-change runs have green completion messages", () =>
 {
@@ -215,6 +215,45 @@ Test("Interrupted run power ownership is bound to device and configured storage"
     settings.Zidoo.IPAddress="192.0.2.2";Throws<InvalidDataException>(()=>NativeProductionRunState.Read(settings,root));
     settings.Zidoo.IPAddress="192.0.2.1";settings.Application.ReportRoot=Path.Combine(root,"OtherReports");Throws<InvalidDataException>(()=>NativeProductionRunState.Read(settings,root));
     if(!File.Exists(NativeProductionRunState.Marker(root)))throw new Exception("Conflicting state was discarded");
+});
+Test("User cancellation history has plain wording and no exception diagnostics", () =>
+{
+    var wrapped=new OperationCanceledException("Internal cancellation",new NativeTransactionRolledBackException("Restored",new TaskCanceledException("private detail")));
+    var entry=UserMessages.Cancelled(wrapped);
+    string root=System.IO.Path.Combine(System.IO.Path.GetTempPath(),"MMZS-CancelMessages-"+Guid.NewGuid().ToString("N"));
+    var record=new RunHistoryService().Save(root,DateTime.Now,"Synchronization","Cancelled",TimeSpan.Zero,new[]{entry});
+    string log=System.IO.File.ReadAllText(record.LogPath);
+    if(!log.Contains("User cancelled the synchronization.") || !log.Contains("current playlist was restored") ||
+       log.Contains("Exception") || log.Contains("Diagnostic details") || log.Contains("private detail"))throw new Exception("Expected cancellation was written as an error");
+});
+Test("Only committed playlists emit completion when the next playlist is cancelled", () =>
+{
+    using var cancellation=new CancellationTokenSource();
+    var changes=new[]{"First.m3u","Cancelled.m3u","NotStarted.m3u"}.Select(name=>new NativeProductionTransaction.Change(name,null,0,"hash")).ToArray();
+    var started=new List<string>();var completed=new List<string>();
+    Throws<NativeTransactionRolledBackException>(()=>NativeProductionSyncService.ApplyTransactionsAsync(changes,(item,ct)=>
+    {
+        if(item.FileName=="Cancelled.m3u"){cancellation.Cancel();throw new NativeTransactionRolledBackException("Restored",new OperationCanceledException(ct));}
+        return Task.CompletedTask;
+    },item=>started.Add(item.FileName),_=>{},cancellation.Token,item=>completed.Add(item.FileName)).GetAwaiter().GetResult());
+    if(!started.SequenceEqual(new[]{"First.m3u","Cancelled.m3u"}) || !completed.SequenceEqual(new[]{"First.m3u"}))throw new Exception("Cancelled or unstarted playlist reported as completed");
+});
+Test("A compensated failure never emits completion for the failed playlist", () =>
+{
+    var changes=new[]{"Failed.m3u","Completed.m3u"}.Select(name=>new NativeProductionTransaction.Change(name,null,0,"hash")).ToArray();
+    var completed=new List<string>();
+    var failures=NativeProductionSyncService.ApplyTransactionsAsync(changes,(item,ct)=>
+    {if(item.FileName=="Failed.m3u")throw new NativeTransactionRolledBackException("Restored",new IOException("true failure"));return Task.CompletedTask;},_=>{},_=>{},default,item=>completed.Add(item.FileName)).GetAwaiter().GetResult();
+    if(failures.Count!=1 || !completed.SequenceEqual(new[]{"Completed.m3u"}))throw new Exception("Rollback was reported as completion");
+});
+Test("A cancellation request does not disguise an unrelated true failure", () =>
+{
+    using var cancellation=new CancellationTokenSource();cancellation.Cancel();
+    if(!SyncRunner.IsUserCancellation(new OperationCanceledException(),cancellation.Token) ||
+       !SyncRunner.IsUserCancellation(new NativeTransactionRolledBackException("Restored",new TaskCanceledException()),cancellation.Token) ||
+       SyncRunner.IsUserCancellation(new NativeTransactionRolledBackException("Restored",new IOException("real failure")),cancellation.Token) ||
+       SyncRunner.IsUserCancellation(new IOException("Recovery failed",new OperationCanceledException()),cancellation.Token) ||
+       SyncRunner.IsUserCancellation(new TaskCanceledException("timeout"),default))throw new Exception("Cancellation classification hid a true failure");
 });
 Console.WriteLine($"Results: {passed} passed; {failed} failed");
 return failed == 0 ? 0 : 1;

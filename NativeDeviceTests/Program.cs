@@ -29,6 +29,7 @@ await DeviceChecks.Run();
 await SortOrderChecks.Run();
 await ReadinessChecks.Run();
 await TransactionChecks.Run();
+await CancellationLoggingChecks.Run();
 await EmptyPlaylistChecks.Run();
 await RecoveryChecks.Run();
 await CrashChecks.Run();

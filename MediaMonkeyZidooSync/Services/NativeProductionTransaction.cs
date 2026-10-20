@@ -140,7 +140,11 @@ public sealed class NativeProductionTransaction
         }
         catch (Exception failure)
         {
-            Durable(Path.Combine(journal, "failure.json"), JsonSerializer.SerializeToUtf8Bytes(new { Error = failure.ToString() }));
+            if (failure is OperationCanceledException && ct.IsCancellationRequested)
+                Durable(Path.Combine(journal, "cancelled.json"), JsonSerializer.SerializeToUtf8Bytes(new
+                { Message = "User cancelled the synchronization. Restoring the current playlist.", Time = DateTimeOffset.Now }));
+            else
+                Durable(Path.Combine(journal, "failure.json"), JsonSerializer.SerializeToUtf8Bytes(new { Error = failure.ToString() }));
             try
             {
                 using var rollback = new CancellationTokenSource(TimeSpan.FromMinutes(3));

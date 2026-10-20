@@ -15,7 +15,8 @@ public sealed class SyncRunner
     public SyncRunner(NativeProductionSyncService production)
     {
         _production=production??throw new ArgumentNullException(nameof(production));
-        _production.Output+=message=>Output?.Invoke(new LogEvent(DateTime.Now,LogLevel.Blue,message));
+        _production.Output+=message=>Output?.Invoke(new LogEvent(DateTime.Now,
+            message.StartsWith("Completed and verified: ",StringComparison.Ordinal)?LogLevel.Green:LogLevel.Blue,message));
     }
 
     // Explicit composition for read-only planning and isolated tests.
@@ -47,13 +48,16 @@ public sealed class SyncRunner
     public Task<bool> RecoverPendingAsync(AppConfig config,Func<string,bool> confirm,CancellationToken ct=default)
         => (_production??throw new InvalidOperationException("This runner is read-only.")).RecoverPendingAsync(config,confirm,ct);
 
+    public static bool IsUserCancellation(Exception error, CancellationToken ct) =>
+        ct.IsCancellationRequested && (error is OperationCanceledException ||
+            error is NativeTransactionRolledBackException { InnerException: OperationCanceledException });
     /// <summary>Executes native synchronization; read-only runners cannot authorize it.</summary>
     public async Task<int> RunAsync(AppConfig config, CancellationToken ct = default,
         IReadOnlyList<NativeProductionSyncService.ReviewedChange>? reviewed=null)
     {
         if(_production is null)throw new InvalidOperationException("This runner is read-only; synchronization is not configured.");
         try{return await Task.Run(()=>_production.RunAsync(config,ct,reviewed),ct).ConfigureAwait(false);}
-        catch(NativeTransactionRolledBackException error) when(ct.IsCancellationRequested)
+        catch(NativeTransactionRolledBackException error) when(IsUserCancellation(error,ct))
         {
             // The engine has finished compensation and power restoration before this boundary.
             throw new OperationCanceledException("Synchronization cancelled after the current playlist was restored.", error, ct);
