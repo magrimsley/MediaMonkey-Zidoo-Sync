@@ -1,6 +1,6 @@
 # Contributing — private Beta
 
-MM Zidoo Sync is a private project. Licensing and outside contribution terms remain undecided. Do not invite outside contributions before the owner resolves those terms.
+MM Zidoo Sync is a private project. Project-owned source uses GPL-3.0-only. Submit contributions under the same license and identify any third-party material and its terms. No copyright assignment or royalty agreement is requested. Public contribution intake remains closed while the repository is private.
 
 The native Beta has production synchronization enabled behind validation, exporter verification and plan review. Use synthetic fixtures and simulated devices for development; live device operations require their separately reviewed scope.
 

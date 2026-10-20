@@ -6,7 +6,7 @@ Follow **Validate MediaMonkey → Verify Native Exporter → Review Changes → 
 
 Interrupted runs are reconciled through this same sequence. Before applying new changes, Run Synchronization verifies the retained transaction and its recorded device/power ownership. A verified completed change is kept; an incomplete change is restored. Recovery ends that attempt so the current plan must be validated and reviewed again. Unexpected external edits, changed device settings, invalid evidence or an unverifiable device response preserve the recovery gate and stop synchronization. See [architecture and recovery](ARCHITECTURE.md).
 
-The repository is private and the package is unsigned. The license remains undecided; no open-source license grant or signing sponsorship is implied. Acceptance is specific to the source commit, package hashes, tested device and recorded scenarios. Release notes record actual results; a build alone is not production acceptance.
+The repository is private and the package is unsigned. Project-owned source is licensed under GPL-3.0-only; see [LICENSE](LICENSE). [Voluntary donations](DONATIONS.md) are welcome. No signing sponsorship is implied. Acceptance is specific to the source commit, package hashes, tested device and recorded scenarios. Release notes record actual results; a build alone is not production acceptance.
 
 ## Build and offline tests
 

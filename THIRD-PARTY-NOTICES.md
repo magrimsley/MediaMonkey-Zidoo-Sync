@@ -4,4 +4,4 @@ dependency-inventory.json records the seven NuGet packages resolved for the exis
 
 This inventory is not a complete license-notice bundle. Before distributing source-built binaries, collect and retain upstream license/NOTICE texts, review the embedded native SQLite component and the .NET runtime included by self-contained publication, and confirm redistribution requirements for the exact versions being shipped. No ownership or re-licensing of upstream components is claimed.
 
-The project's own license remains undecided; see LICENSE-DECISION.md.
+Project-owned source uses GPL-3.0-only; see LICENSE-DECISION.md and LICENSE. This does not replace upstream licenses or complete the notice review described above.
