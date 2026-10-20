@@ -52,12 +52,25 @@ internal static class CrashChecks
         }
         child.Kill(true);await child.WaitForExitAsync();return root;
     }
+    // A process exit notification can precede release of a fixture handle by
+    // Windows or another local observer. Keep exclusive ownership mandatory;
+    // retry only sharing/lock violations, with a fixed deadline.
+    private static async Task<FileStream> AcquireFixtureLock(string root,int timeoutMs=5000)
+    {
+        var timer=Stopwatch.StartNew();
+        while(true)
+        {
+            try{return new FileStream(Path.Combine(root,".mmzs-production.lock"),FileMode.OpenOrCreate,FileAccess.ReadWrite,FileShare.None);}
+            catch(IOException error)when((error.HResult&0xffff) is 32 or 33 && timer.ElapsedMilliseconds<timeoutMs)
+            {await Task.Delay(25);}
+        }
+    }
     public static async Task RecoverWorker(string root,string phase)
     {
         string temp=Path.GetFullPath(Path.GetTempPath()).TrimEnd(Path.DirectorySeparatorChar)+Path.DirectorySeparatorChar;
         if(!Path.GetFullPath(root).StartsWith(temp,StringComparison.OrdinalIgnoreCase) || !File.Exists(Path.Combine(root,".mmzs-crash-test")))
             throw new InvalidOperationException("Disposable crash-test fixture required.");
-        using var fileLock=new FileStream(Path.Combine(root,".mmzs-production.lock"),FileMode.OpenOrCreate,FileAccess.ReadWrite,FileShare.None);
+        using var fileLock=await AcquireFixtureLock(root);
         await new NativeInterruptedRecovery(new FileDevice(root),point=>
         {if(point!=phase)return;File.WriteAllText(Path.Combine(root,"recovery-paused"),point);Thread.Sleep(Timeout.Infinite);}).RecoverUnderLockAsync(root,root);
         throw new Exception("Recovery checkpoint not reached.");
@@ -65,12 +78,32 @@ internal static class CrashChecks
     public static async Task Run()
     {
         int checks=0;
+        string lockRoot=Path.Combine(Path.GetTempPath(),"MMZS-Crash-Lock-"+Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(lockRoot);
+        string lockPath=Path.Combine(lockRoot,".mmzs-production.lock");
+        using(var held=new FileStream(lockPath,FileMode.CreateNew,FileAccess.ReadWrite,FileShare.None))
+        {
+            Task<FileStream> pending=AcquireFixtureLock(lockRoot);
+            await Task.Delay(100);
+            if(pending.IsCompleted)throw new Exception("Fixture lock acquisition bypassed a held exclusive lock");
+            held.Dispose();
+            using var acquired=await pending;
+        }
+        checks++;
+        using(var held=new FileStream(lockPath,FileMode.Open,FileAccess.ReadWrite,FileShare.None))
+        {
+            bool refused=false;
+            try{using var unexpected=await AcquireFixtureLock(lockRoot,100);}
+            catch(IOException error)when((error.HResult&0xffff) is 32 or 33){refused=true;}
+            if(!refused)throw new Exception("Fixture lock deadline did not refuse a persistent owner");
+        }
+        checks++;
         foreach(string operation in new[]{"Create","Update","Delete","Empty"})
         foreach(string phase in new[]{"Prepared","FilePublished","DeviceDeleted","DeviceImported","Committed"})
         {
             string root=await KilledFixture(operation,phase);
             var device=new FileDevice(root);var earlier=device.Read().Single(row=>row.Name=="Earlier");
-            using var fileLock=new FileStream(Path.Combine(root,".mmzs-production.lock"),FileMode.OpenOrCreate,FileAccess.ReadWrite,FileShare.None);
+            using var fileLock=await AcquireFixtureLock(root);
             var recovery=new NativeInterruptedRecovery(device);
             string outcome=await recovery.RecoverUnderLockAsync(root,root);
             var rows=device.Read();var target=rows.SingleOrDefault(row=>row.Name=="Target");
@@ -117,7 +150,7 @@ internal static class CrashChecks
             {if(child.HasExited)throw new Exception(await child.StandardError.ReadToEndAsync());if(DateTime.UtcNow>deadline){child.Kill(true);throw new TimeoutException("Recovery checkpoint not reached");}await Task.Delay(30);}
             child.Kill(true);await child.WaitForExitAsync();
             var device=new FileDevice(root);
-            using var fileLock=new FileStream(Path.Combine(root,".mmzs-production.lock"),FileMode.OpenOrCreate,FileAccess.ReadWrite,FileShare.None);
+            using var fileLock=await AcquireFixtureLock(root);
             if(await new NativeInterruptedRecovery(device).RecoverUnderLockAsync(root,root)!="Restored" ||
                 device.Read().Single(row=>row.Name=="Target").Count!=1 || !File.ReadAllBytes(Path.Combine(root,"Target.m3u")).SequenceEqual(Original) ||
                 File.Exists(Path.Combine(root,".mmzs-production-pending.json")))throw new Exception("Interrupted recovery did not resume idempotently");
