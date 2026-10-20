@@ -1,0 +1,34 @@
+MediaMonkey Zidoo Sync - Backlog
+
+1. In-place Zidoo playlist UPDATE
+   Investigate modifying existing persistent playlist membership without delete/
+   recreate. Must prove additions, removals, ordering, duplicates, exact verification
+   and rollback before replacing the current validated UPDATE method.
+
+2. Structured UI event channel
+   Add exact Blue/Yellow/Green/Red event metadata alongside existing logging without
+   changing what is written to the authoritative production log.
+
+3. Run History / Logs
+   Browse prior runs, show summary/status and open the authoritative log.
+
+4. Connection tests
+   Test Zidoo, NAS and MediaMonkey from the Configuration UI.
+
+5. Zidoo DHCP resilience
+   Validate configured IP against expected device identity and safely resolve a new
+   address when DHCP changes it, while preserving the no-change/no-wake rule.
+
+6. Installer / deployment hardening
+   Install application/backend under Program Files; configuration/history under
+   ProgramData; standard users receive read/execute but not modify access to backend.
+
+7. Review optional assessment controls in the main interface
+   Determine whether Run Native Assessment (Read-only) and Inspect Plan (Read-only)
+   serve a user requirement distinct from Review Changes. Michael questioned their
+   inclusion on October 20, 2026; the inherited handoff does not establish that he
+   originally requested them. Consider removal or simplification after review.
+   Do not assume a diagnostics menu exists or add one without an agreed requirement.
+   Preserve the required Validate MediaMonkey -> Verify Native Exporter ->
+   Review Changes -> Run Synchronization flow. Backlog only; no UI change authorized
+   by this entry.
