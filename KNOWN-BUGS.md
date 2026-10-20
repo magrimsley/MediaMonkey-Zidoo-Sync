@@ -2,7 +2,7 @@
 
 ## KB-001: Intermittent temporary transaction-file sharing failure
 
-**Observed in:** Alpha60.18.7 and Alpha60.18.8; carried forward as unresolved in 1.1-beta.1  
+**Observed in:** Alpha60.18.7 and Alpha60.18.8; carried forward as unresolved through 1.1.0-rc.1
 **Status (October 20, 2026):** Open; intermittent sharing failures; cause unidentified. The earlier diagnostic capture did not reproduce the failure; a later 18.8 offline regression encountered another sharing failure as detailed below.
 
 An offline transaction test occasionally fails with a file-sharing exception while reading the newly written `collateral-backups.json` transaction evidence file. The failure occurs before that transaction writes its pending marker or publishes its new target playlist file. This observation does not imply that earlier transactions in a run made no changes.
