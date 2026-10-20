@@ -8,7 +8,7 @@ KB-001 remains documented in KNOWN-BUGS.md as a carried known issue, not an item
 
 ## Outstanding work outside the feature backlog
 
-1. **PR review/merge decision.** PR1 remains draft and unmerged by instruction. Beta acceptance, source push, native CI and the private portable prerelease are complete. A merge/promotion needs a separate owner decision.
+1. **Beta promotion complete.** The owner approved merging and promotion on 2026-10-20. PR #1 merged into main at 961af80ae192a93c29e986f48659ae3b0a4c9c72. The private 1.1-beta.1 release retains its Beta prerelease designation; stable/public distribution remains a separate decision.
 2. **Deferred release decisions.** Signing and project licensing remain undecided; the private Beta remains unsigned. Select a security-reporting contact before public distribution.
 3. **Historical Git cleanup.** The separate plan in GITHUB-HISTORY-CLEANUP-PLAN.md has not been executed; old commits/tags remain unchanged. No force push or history rewrite occurred.
 
