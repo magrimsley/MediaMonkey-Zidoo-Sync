@@ -33,7 +33,7 @@ public partial class App : Application
             DiagnosticReportingService.Shared.Report("WPF dispatcher", args.Exception, "Critical");
             // Do not mark handled: continuing after an unknown UI exception may be unsafe.
             try { MessageBox.Show("An unexpected application error occurred. Details were recorded in the diagnostic log.",
-                "MediaMonkey Zidoo Sync — Application Error", MessageBoxButton.OK, MessageBoxImage.Error); }
+                "MM Zidoo Sync — Application Error", MessageBoxButton.OK, MessageBoxImage.Error); }
             catch { /* The dispatcher may be unable to display UI. */ }
         };
         AppDomain.CurrentDomain.UnhandledException += (_, args) =>
@@ -51,6 +51,10 @@ public partial class App : Application
         IsolatedStartupMode.ResolveRoot();
         ThemeMode = ThemeMode.System;
         base.OnStartup(e);
+        var main = new MainWindow();
+        MainWindow = main;
+        if (!IsolatedStartupMode.Enabled) _ = new StartupSplash(main);
+        main.Show();
     }
 #pragma warning restore WPF0001
 }

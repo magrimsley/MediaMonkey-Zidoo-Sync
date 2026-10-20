@@ -2,13 +2,13 @@
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
     <TargetFramework>net9.0-windows</TargetFramework>
-    <UseWPF>true</UseWPF>
+    <UseWPF>true</UseWPF><ApplicationIcon>Resources\Branding\Application.ico</ApplicationIcon>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
-    <AssemblyName>MediaMonkey Zidoo Sync</AssemblyName>
+    <AssemblyName>MMZidooSync</AssemblyName><Product>MM Zidoo Sync</Product><AssemblyTitle>MM Zidoo Sync</AssemblyTitle>
     <RootNamespace>MediaMonkeyZidooSync</RootNamespace>
     <VersionPrefix>1.1</VersionPrefix>
-    <VersionSuffix>alpha.60.18.7</VersionSuffix>
+    <VersionSuffix>beta.1</VersionSuffix>
     <BuildNumber Condition="'$(BuildNumber)' == ''">0</BuildNumber>
     <RevisionNumber Condition="'$(RevisionNumber)' == ''">0</RevisionNumber>
     <AssemblyVersion>1.1.$(BuildNumber).$(RevisionNumber)</AssemblyVersion>
@@ -25,5 +25,10 @@
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
     </Content>
   </ItemGroup>
+<ItemGroup>
+<Resource Include="Resources\Branding\Application.ico" />
+<Resource Include="Resources\Branding\Splash.jpg" />
+<Content Include="Resources\Branding\Application.ico"><CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory><CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory></Content>
+</ItemGroup>
 </Project>
 
