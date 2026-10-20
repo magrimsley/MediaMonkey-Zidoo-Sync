@@ -7,16 +7,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MediaMonkeyZidooSync", "Med
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Packaging", "Packaging", "{C977A932-6016-46AC-BE8B-777EA17B89D8}"
 	ProjectSection(SolutionItems) = preProject
-		..\Packaging\Build-NeutralPackage.ps1 = ..\Packaging\Build-NeutralPackage.ps1
 		..\Packaging\PACKAGE-README.md = ..\Packaging\PACKAGE-README.md
 		..\Packaging\README.md = ..\Packaging\README.md
-		..\Packaging\Installer\Common.ps1 = ..\Packaging\Installer\Common.ps1
-		..\Packaging\Installer\Install.ps1 = ..\Packaging\Installer\Install.ps1
-		..\Packaging\Installer\Uninstall.ps1 = ..\Packaging\Installer\Uninstall.ps1
-		..\Packaging\Templates\Install-Package.ps1 = ..\Packaging\Templates\Install-Package.ps1
-		..\Packaging\Templates\Verify-Package.ps1 = ..\Packaging\Templates\Verify-Package.ps1
-		..\Packaging\Tests\Test-InstallerFiles.ps1 = ..\Packaging\Tests\Test-InstallerFiles.ps1
-		..\Packaging\Tests\Test-UninstallRecovery.ps1 = ..\Packaging\Tests\Test-UninstallRecovery.ps1
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests and Architecture", "Tests and Architecture", "{2EC1F17F-94E9-41CF-BEA2-D10082A9F0AD}"

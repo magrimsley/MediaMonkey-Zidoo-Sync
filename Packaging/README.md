@@ -1,13 +1,17 @@
-# Packaging sources
+# MM Zidoo Sync packaging policy
 
-Installer support revision 5 with neutral-default packaging tools. These are solution items, not application compilation inputs. Build-NeutralPackage.ps1 takes a published Alpha.60.18.7 PayloadDirectory and writes a new unsigned ZIP, file manifest and SHA256 sidecar outside the source tree. It validates version rather than requiring the original private checkpoint executable hash: every source rebuild requires fresh acceptance.
+Current application: **1.1-beta.1**, executable **MMZidooSync.exe**.
 
-```powershell
-powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\Packaging\Build-NeutralPackage.ps1 -PayloadDirectory 'C:\Temp\MyPublishedPayload' -ResultsRoot 'C:\Temp\MyPackages'
+PowerShell installer, packaging and installer-test files remain in the local Visual Studio checkout and are deliberately excluded from GitHub. A GitHub clone does not contain those scripts. Existing local installed helpers remain necessary for their uninstall/recovery contract; this cleanup does not delete them.
+
+A source-only build can publish the native application directly:
+
+```text
+dotnet publish MediaMonkeyZidooSync/MediaMonkeyZidooSync.csproj -c Release -r win-x64 --self-contained true -o artifacts/windows
 ```
 
-Extract a generated ZIP and run Install-Package.ps1 in Windows PowerShell. Installation is per-user and does not launch the app. Keep the extracted package available to run Installer/Uninstall.ps1 with the original InstallRoot if removal is interrupted. Configuration, archives, unknown files and recovery evidence remain after removal.
+Publishing builds files; it does not install, sign, upload or release them. A future GitHub distribution must contain no PowerShell files or script-bearing installer archives.
 
-Tests/Test-InstallerFiles.ps1 requires explicit old and new payload directories. Tests/Test-UninstallRecovery.ps1 requires an explicit payload directory. Results default to the operating-system temporary directory; an explicit ResultsRoot can preserve a preferred local testing directory. Do not store generated ZIPs, installed payloads or results in this source folder.
+All four legacy uploaded installer ZIPs and matching checksum assets were withdrawn on October20,2026 after preserving verified local copies. Historical release notes remain. No replacement Beta download is published by this cleanup.
 
-No signing, publication, production sync or certificate sponsorship is claimed. The project license is undecided. See the root README and CODE-SIGNING.md.
+Current acceptance, the unresolved sharing failures and local-only tooling boundaries are recorded in ../CURRENT-STATUS.md and ../REPOSITORY-POLICY.md.

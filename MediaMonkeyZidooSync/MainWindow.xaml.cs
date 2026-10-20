@@ -138,29 +138,30 @@ public partial class MainWindow : Window {
     private UiState _uiState = new();
     private readonly SyncRunner _runner = new();
     private System.Threading.CancellationTokenSource? _syncCancellation;
-    private readonly SyncRunner _nativeAssessmentRunner = new(
-        new NativeSyncReadOnlyOrchestrator(
-            new NativeSyncPlanProvider(new MediaMonkeyExportTransactionPlanner()),
-            new NativePlaylistFolderReconciler()));
-    // The inspect button and assessment button share the same XAML StackPanel.
-    // A Window.FindName lookup can return null for controls in nested namescopes.
-    // Resolve from the actual parent container and validate before changing state.
-    private Button? FindInspectNativePlanButton()
-    {
-        return (RunNativeAssessmentButton.Parent as Panel)?.Children
-            .OfType<Button>()
-            .FirstOrDefault(button => button.Name == "InspectNativePlanButton");
-    }
-
-    private IReadOnlyList<NativePlanInspectionItem>? _lastNativePlanInspection;
-    private System.Threading.CancellationTokenSource? _nativeAssessmentCancellation;
+// Disabled optional diagnostics:     private readonly SyncRunner _nativeAssessmentRunner = new(
+// Disabled optional diagnostics:         new NativeSyncReadOnlyOrchestrator(
+// Disabled optional diagnostics:             new NativeSyncPlanProvider(new MediaMonkeyExportTransactionPlanner()),
+// Disabled optional diagnostics:             new NativePlaylistFolderReconciler()));
+// Disabled optional diagnostics:     // The inspect button and assessment button share the same XAML StackPanel.
+// Disabled optional diagnostics:     // A Window.FindName lookup can return null for controls in nested namescopes.
+// Disabled optional diagnostics:     // Resolve from the actual parent container and validate before changing state.
+// Disabled optional diagnostics:     private Button? FindInspectNativePlanButton()
+// Disabled optional diagnostics:     {
+// Disabled optional diagnostics: // Disabled optional diagnostics:         return (RunNativeAssessmentButton.Parent as Panel)?.Children
+// Disabled optional diagnostics:             .OfType<Button>()
+// Disabled optional diagnostics:             .FirstOrDefault(button => button.Name == "InspectNativePlanButton");
+// Disabled optional diagnostics:     }
+// Disabled optional diagnostics: 
+// Disabled optional diagnostics:     private IReadOnlyList<NativePlanInspectionItem>? _lastNativePlanInspection;
+// Disabled optional diagnostics:     private System.Threading.CancellationTokenSource? _nativeAssessmentCancellation;
+// Disabled optional diagnostics: 
     private readonly ZidooDiscoveryService _zidooDiscovery = new();
     private readonly RunHistoryService _runHistoryService = new();
     private readonly MediaMonkeyPlaylistExporter _mediaMonkeyExporter = new();
     private readonly MediaMonkeyExporterEquivalenceService _exporterEquivalence = new();
     private readonly MediaMonkeyExportTransactionPlanner _transactionPlanner = new();
     private HelpWindow? _helpWindow;
-    private Window? _nativePlanWindow;
+// Disabled optional diagnostics:     private Window? _nativePlanWindow;
     private readonly List<LogEvent> _events = new();
     private readonly SynchronizationWorkflow _workflow = new();
     private IReadOnlyList<NativeProductionSyncService.ReviewedChange>? _preparedReview, _approvedReview;
@@ -179,13 +180,14 @@ public partial class MainWindow : Window {
     public MainWindow(string? isolatedConfigRoot) {
         _configService = new ConfigurationService(isolatedConfigRoot);
         InitializeComponent();
+        if (isolatedConfigRoot is null && !IsolatedStartupMode.Enabled) ApplicationBranding.AttachTray(this);
         ConfigurationTab.AddHandler(System.Windows.Controls.Primitives.TextBoxBase.TextChangedEvent,
             new TextChangedEventHandler((_,_) => InvalidateWorkflow()));
         RefreshWorkflowControls();
         if (IsolatedStartupMode.Enabled)
         {
             // Explicit smoke mode: no assessment, discovery, configuration mutation or sync.
-            RunNativeAssessmentButton.IsEnabled = false;
+// Disabled optional diagnostics:             RunNativeAssessmentButton.IsEnabled = false;
             DiscoverZidooButton.IsEnabled = false;
             RunButton.IsEnabled = false;
         }
@@ -202,14 +204,14 @@ public partial class MainWindow : Window {
         if (isolatedConfigRoot is null) _ = RestoreUiStateAsync();
         Loaded += async (_,__) => await LoadConfigurationAsync();
         _runner.Output += e => Dispatcher.InvokeAsync(() => { _events.Add(e); RefreshOutput(); });
-        _nativeAssessmentRunner.Output += e => Dispatcher.InvokeAsync(() => { _events.Add(e); RefreshOutput(); });
+// Disabled optional diagnostics:         _nativeAssessmentRunner.Output += e => Dispatcher.InvokeAsync(() => { _events.Add(e); RefreshOutput(); });
         _timer.Tick += (_,__) => ElapsedText.Text = $"Elapsed: {FormatElapsed(_stopwatch?.Elapsed)}";
     }
 
     private void InvalidateWorkflow()
     {
         _workflow.Invalidate();_preparedReview=_approvedReview=null;
-        _lastNativePlanInspection=null;_nativePlanWindow?.Close();
+// Disabled optional diagnostics:         _lastNativePlanInspection=null;_nativePlanWindow?.Close();
         RefreshWorkflowControls();
     }
 
@@ -221,8 +223,8 @@ public partial class MainWindow : Window {
         VerifyNativeExporterButton.IsEnabled=allowed && _workflow.CanVerify;
         ReviewSynchronizationButton.IsEnabled=allowed && _workflow.CanReview && _preparedReview is not null;
         RunButton.IsEnabled=allowed && (_syncCancellation is not null ? !_syncCancellation.IsCancellationRequested : _workflow.CanRun);
-        RunNativeAssessmentButton.IsEnabled=allowed && (_nativeAssessmentCancellation is not null || (_workflow.CanReview && _workflow.Verified));
-        InspectNativePlanButton.IsEnabled=allowed && !_workflow.Busy && _lastNativePlanInspection is not null;
+// Disabled optional diagnostics:         RunNativeAssessmentButton.IsEnabled=allowed && (_nativeAssessmentCancellation is not null || (_workflow.CanReview && _workflow.Verified));
+// Disabled optional diagnostics:         InspectNativePlanButton.IsEnabled=allowed && !_workflow.Busy && _lastNativePlanInspection is not null;
         ConfigurationTab.IsEnabled=!_workflow.Busy;
         WorkflowHint.Text=_workflow.NextStep;
     }
@@ -314,277 +316,278 @@ public partial class MainWindow : Window {
     }
 
     /// <summary>Displays only operations from the last completed read-only assessment.</summary>
-    private void InspectNativePlan_Click(object sender, RoutedEventArgs e)
-    {
-        var items = _lastNativePlanInspection;
-        if (items is null) return;
-        // Reuse an existing inspector rather than stacking duplicate modeless windows.
-        if (_nativePlanWindow is not null)
-        {
-            if (_nativePlanWindow.WindowState == WindowState.Minimized)
-                _nativePlanWindow.WindowState = WindowState.Normal;
-            _nativePlanWindow.Activate();
-            return;
-        }
-        var window = new Window
-        {
-            Title = "Native Synchronization Plan — Read-only",
-            // Intentionally unowned: an owned WPF window stays above its owner.
-            // Both the main application and inspector must be independently activatable.
-            Width = 1000, Height = 560,
-            MinWidth = 640, MinHeight = 350, WindowStartupLocation = WindowStartupLocation.Manual
-        };
-        // Center over the main window without establishing an owner relationship.
-        window.Left = Left + Math.Max(0, (ActualWidth - window.Width) / 2);
-        window.Top = Top + Math.Max(0, (ActualHeight - window.Height) / 2);
-        var layout = new DockPanel { Margin = new Thickness(14), Background = Brushes.Transparent };
-        var heading = new TextBlock
-        {
-            Text = $"Proposed changes: {items.Count} | No files will be modified. Unchanged playlists are included in assessment totals, not this change list.",
-            TextWrapping = TextWrapping.Wrap, Margin = new Thickness(0, 0, 0, 12)
-        };
-        DockPanel.SetDock(heading, Dock.Top);
-        layout.Children.Add(heading);
-        var filter = new ComboBox { Width = 260, HorizontalAlignment = HorizontalAlignment.Left, Margin = new Thickness(0, 0, 0, 10) };
-        // Display labels are independent from the existing operation identifiers.
-        var filterOptions = new[]
-        {
-            new { Label = "All proposed changes", Value = "" },
-            new { Label = "Create", Value = "Create" },
-            new { Label = "Update", Value = "Update" },
-            new { Label = "Pending Zidoo Delete", Value = "PendingZidooDelete" }
-        };
-        filter.ItemsSource = filterOptions;
-        filter.DisplayMemberPath = "Label";
-        filter.SelectedValuePath = "Value";
-        filter.SelectedIndex = 0;
-        DockPanel.SetDock(filter, Dock.Top);
-        layout.Children.Add(filter);
-        var bottom = new StackPanel
-        {
-            Orientation = Orientation.Horizontal, HorizontalAlignment = HorizontalAlignment.Right,
-            Margin = new Thickness(0, 12, 0, 0)
-        };
-        var copy = new Button { Content = "Copy Selected", Padding = new Thickness(18, 7, 18, 7), Margin = new Thickness(0, 0, 10, 0), Visibility = Visibility.Collapsed };
-        var close = new Button { Content = "Close", Padding = new Thickness(24, 7, 24, 7), IsCancel = true };
-        bottom.Children.Add(copy);
-        bottom.Children.Add(close);
-        DockPanel.SetDock(bottom, Dock.Bottom);
-        layout.Children.Add(bottom);
-        var table = new DataGrid
-        {
-            IsReadOnly = true, AutoGenerateColumns = false, CanUserAddRows = false,
-            CanUserDeleteRows = false, SelectionMode = DataGridSelectionMode.Extended,
-            SelectionUnit = DataGridSelectionUnit.FullRow,
-            HeadersVisibility = DataGridHeadersVisibility.Column
-        };
-        table.Columns.Add(new DataGridTextColumn { Header = "Operation", Binding = new System.Windows.Data.Binding("Action"), Width = new DataGridLength(175) });
-        table.Columns.Add(new DataGridTextColumn { Header = "Playlist file", Binding = new System.Windows.Data.Binding("FileName"), Width = new DataGridLength(2, DataGridLengthUnitType.Star) });
-        table.Columns.Add(new DataGridTextColumn { Header = "Reason", Binding = new System.Windows.Data.Binding("Explanation"), Width = new DataGridLength(3, DataGridLengthUnitType.Star) });
-        void CopySelected()
-        {
-            var rows = table.SelectedItems.Cast<NativePlanInspectionItem>().ToArray();
-            if (rows.Length == 0) return;
-            Clipboard.SetText(string.Join(Environment.NewLine,
-                rows.Select(x => $"{x.Action}\t{x.FileName}\t{x.Explanation}")));
-        }
-        copy.Click += (_, _) => CopySelected();
-        close.Click += (_, _) => window.Close();
-        var menu = new ContextMenu();
-        var copyMenu = new MenuItem { Header = "Copy Selected Rows" };
-        copyMenu.Click += (_, _) => CopySelected();
-        menu.Items.Add(copyMenu);
-        var selectAllMenu = new MenuItem { Header = "Select All" };
-        selectAllMenu.Click += (_, _) => table.SelectAll();
-        menu.Items.Add(selectAllMenu);
-        table.ContextMenu = menu;
-        // Keep the copy action out of sight until at least one row is selected.
-        void RefreshSelectionActions()
-        {
-            bool hasSelection = table.SelectedItems.Count > 0;
-            copy.Visibility = hasSelection ? Visibility.Visible : Visibility.Collapsed;
-            copyMenu.Visibility = hasSelection ? Visibility.Visible : Visibility.Collapsed;
-            selectAllMenu.IsEnabled = table.Items.Count > 0;
-        }
-        table.SelectionChanged += (_, _) => RefreshSelectionActions();
-        table.ContextMenuOpening += (_, _) => RefreshSelectionActions();
-        // Use the same blank-area selection behavior as the main application grids.
-        GridSelectionBehavior.Attach(table);
-        filter.SelectionChanged += (_, _) =>
-        {
-            // A new filter must never retain a selection from the previous view.
-            table.UnselectAll();
-            var chosen = filter.SelectedValue as string;
-            table.ItemsSource = string.IsNullOrEmpty(chosen) ? items :
-                items.Where(x => x.Action.ToString() == chosen).ToArray();
-            RefreshSelectionActions();
-        };
-        table.ItemsSource = items;
-        RefreshSelectionActions();
-        layout.Children.Add(table);
-        // A transparent content surface receives clicks on otherwise empty space.
-        // Register on the window itself so clicks on the heading, filter, footer,
-        // and blank content are all observed, including handled child events.
-        window.AddHandler(UIElement.PreviewMouseLeftButtonDownEvent,
-            new System.Windows.Input.MouseButtonEventHandler((_, args) =>
-            {
-                if (args.OriginalSource is not DependencyObject source) return;
-                static bool IsWithin(DependencyObject node, DependencyObject target)
-                {
-                    for (DependencyObject? current = node; current is not null;)
-                    {
-                        if (ReferenceEquals(current, target)) return true;
-                        current = current is System.Windows.Media.Visual ||
-                                  current is System.Windows.Media.Media3D.Visual3D
-                            ? System.Windows.Media.VisualTreeHelper.GetParent(current)
-                            : System.Windows.LogicalTreeHelper.GetParent(current);
-                    }
-                    return false;
-                }
-                // Keep selection intact for grid gestures and the copy action.
-                if (IsWithin(source, table) || IsWithin(source, copy)) return;
-                table.UnselectAll();
-            }), true);
-
-        // Modeless inspector permits File/Help menus and other main-window actions.
-        // Clear selection when returning to the owner, not when switching to an
-        // unrelated application. Never treat loss of focus alone as a click.
-        EventHandler ownerActivated = (_, _) => table.UnselectAll();
-        Activated += ownerActivated;
-        window.Closed += (_, _) =>
-        {
-            Activated -= ownerActivated;
-            if (ReferenceEquals(_nativePlanWindow, window)) _nativePlanWindow = null;
-        };
-        window.Content = layout;
-        _nativePlanWindow = window;
-        window.Show();
-        window.Activate();
-    }
-
-    /// <summary>Read-only assessment. Does not save configuration or authorize any mutation.</summary>
-    private async void RunNativeAssessment_Click(object sender, RoutedEventArgs e)
-    {
-        if (IsolatedStartupMode.Enabled) return;
-        if (_nativeAssessmentCancellation is not null)
-        {
-            // Repeated cancellation requests are harmless, including during shutdown.
-            if (!_nativeAssessmentCancellation.IsCancellationRequested)
-            {
-                _nativeAssessmentCancellation.Cancel();
-                StatusText.Text = "Canceling native assessment...";
-            }
-            return;
-        }
-        if(_workflow.Busy || !_workflow.Verified)return;
-        _workflow.SetDiagnosticBusy(true);RefreshWorkflowControls();
-        // Validate required UI dependencies before mutating assessment state.
-        // A missing control is a recoverable initialization error, not a reason to crash.
-        Button? inspectButton;
-        try
-        {
-            inspectButton = FindInspectNativePlanButton();
-            if (inspectButton is null)
-                throw new InvalidOperationException(
-                    "The Inspect Plan control could not be initialized. Restart the application; " +
-                    "if the issue persists, check the diagnostic log and application installation.");
-        }
-        catch (Exception ex)
-        {
-            _workflow.SetDiagnosticBusy(false);RefreshWorkflowControls();
-            StatusText.Text = "Native assessment unavailable";
-            _events.Add(new LogEvent(DateTime.Now, LogLevel.Red,
-                "Unable to start read-only native assessment: " + ex));
-            RefreshOutput();
-            MessageBox.Show(this, UserMessages.Explain(ex), "Native Assessment Unavailable",
-                MessageBoxButton.OK, MessageBoxImage.Error);
-            return;
-        }
-        // A new assessment invalidates any previously displayed proposed changes.
-        // Closing the old inspector also releases its event subscriptions.
-        _nativePlanWindow?.Close();
-        var started = DateTime.Now;
-        bool showCompletedPlan = false;
-        _nativeAssessmentCancellation = new System.Threading.CancellationTokenSource();
-        // Keep the token local so a closing window cannot replace the token mid-await.
-        var assessmentToken = _nativeAssessmentCancellation.Token;RefreshWorkflowControls();
-        RunNativeAssessmentButton.Content = "Cancel Native Assessment";
-        RunButton.IsEnabled = false;
-        ValidateMediaMonkeyButton.IsEnabled = false;
-        VerifyNativeExporterButton.IsEnabled = false;
-        _lastNativePlanInspection = null;
-        inspectButton.IsEnabled = false;
-        _events.Clear();
-        RefreshOutput();
-        _stopwatch = Stopwatch.StartNew();
-        _timer.Start();
-        string resultLabel = "Assessment failed";
-        try
-        {
-            // Capture the current form without saving configuration or invoking the sync runner.
-            ReadConfigFromForm();
-            var config = _config ?? throw new InvalidOperationException("Configuration is not loaded.");
-            StatusText.Text = "Native assessment running (read-only)";
-            var result = await _nativeAssessmentRunner.AssessAsync(config, assessmentToken);
-            _lastNativePlanInspection = NativePlanInspection.FromAssessment(result);
-            inspectButton.IsEnabled = true;
-            showCompletedPlan = true;
-            resultLabel = $"Read-only: {result.CreateCount} create, {result.UpdateCount} update, {result.UnchangedCount} unchanged, {result.PendingZidooDeleteCount} pending deletion";
-            StatusText.Text = "Native assessment completed (read-only)";
-            _events.Add(new LogEvent(DateTime.Now, LogLevel.Green, resultLabel + ". No changes executed."));
-            RefreshOutput();
-        }
-        catch (OperationCanceledException) when (assessmentToken.IsCancellationRequested)
-        {
-            resultLabel = "Assessment canceled";
-            StatusText.Text = resultLabel;
-            _events.Add(new LogEvent(DateTime.Now, LogLevel.Yellow, resultLabel + ". No changes executed."));
-            RefreshOutput();
-        }
-        catch (Exception ex)
-        {
-            StatusText.Text = "Native assessment failed";
-            DiagnosticReportingService.Shared.Report("Native read-only assessment", ex);
-            _events.Add(new LogEvent(DateTime.Now, LogLevel.Red, "Read-only native assessment failed: " + ex));
-            RefreshOutput();
-        }
-        finally
-        {
-            _timer.Stop();
-            _stopwatch?.Stop();
-            _nativeAssessmentCancellation?.Dispose();
-            _nativeAssessmentCancellation = null;
-            RunNativeAssessmentButton.Content = "Run Native Assessment (Read-only)";
-            RunButton.IsEnabled = true;
-            ValidateMediaMonkeyButton.IsEnabled = true;
-            VerifyNativeExporterButton.IsEnabled = true;
-            // A failed or cancelled assessment must not leave a stale inspect action enabled.
-            inspectButton.IsEnabled = _lastNativePlanInspection is not null;
-            _workflow.SetDiagnosticBusy(false);RefreshWorkflowControls();
-            RecordHistory(started, "Native Read-only Assessment", resultLabel);
-        }
-        // Present the validated proposal automatically, only after successful completion
-        // and after restoring assessment controls. Display errors are non-fatal to the
-        // already-completed read-only assessment and must be visible to the user.
-        if (showCompletedPlan && _lastNativePlanInspection is not null)
-        {
-            try
-            {
-                InspectNativePlan_Click(this, new RoutedEventArgs());
-            }
-            catch (Exception ex)
-            {
-                StatusText.Text = "Assessment completed; plan window unavailable";
-                _events.Add(new LogEvent(DateTime.Now, LogLevel.Red,
-                    "Read-only assessment succeeded, but the plan window could not open: " + ex));
-                RefreshOutput();
-                MessageBox.Show(this,
-                    "The read-only assessment completed successfully, but its proposed-change window could not be displayed. " +
-                    "Use Inspect Plan to try again. Details: " + UserMessages.Explain(ex),
-                    "Plan Inspection Unavailable", MessageBoxButton.OK, MessageBoxImage.Warning);
-            }
-        }
-    }
+// Disabled optional diagnostics:     private void InspectNativePlan_Click(object sender, RoutedEventArgs e)
+// Disabled optional diagnostics:     {
+// Disabled optional diagnostics:         var items = _lastNativePlanInspection;
+// Disabled optional diagnostics:         if (items is null) return;
+// Disabled optional diagnostics:         // Reuse an existing inspector rather than stacking duplicate modeless windows.
+// Disabled optional diagnostics:         if (_nativePlanWindow is not null)
+// Disabled optional diagnostics:         {
+// Disabled optional diagnostics:             if (_nativePlanWindow.WindowState == WindowState.Minimized)
+// Disabled optional diagnostics:                 _nativePlanWindow.WindowState = WindowState.Normal;
+// Disabled optional diagnostics:             _nativePlanWindow.Activate();
+// Disabled optional diagnostics:             return;
+// Disabled optional diagnostics:         }
+// Disabled optional diagnostics:         var window = new Window
+// Disabled optional diagnostics:         {
+// Disabled optional diagnostics:             Title = "Native Synchronization Plan — Read-only",
+// Disabled optional diagnostics:             // Intentionally unowned: an owned WPF window stays above its owner.
+// Disabled optional diagnostics:             // Both the main application and inspector must be independently activatable.
+// Disabled optional diagnostics:             Width = 1000, Height = 560,
+// Disabled optional diagnostics:             MinWidth = 640, MinHeight = 350, WindowStartupLocation = WindowStartupLocation.Manual
+// Disabled optional diagnostics:         };
+// Disabled optional diagnostics:         // Center over the main window without establishing an owner relationship.
+// Disabled optional diagnostics:         window.Left = Left + Math.Max(0, (ActualWidth - window.Width) / 2);
+// Disabled optional diagnostics:         window.Top = Top + Math.Max(0, (ActualHeight - window.Height) / 2);
+// Disabled optional diagnostics:         var layout = new DockPanel { Margin = new Thickness(14), Background = Brushes.Transparent };
+// Disabled optional diagnostics:         var heading = new TextBlock
+// Disabled optional diagnostics:         {
+// Disabled optional diagnostics:             Text = $"Proposed changes: {items.Count} | No files will be modified. Unchanged playlists are included in assessment totals, not this change list.",
+// Disabled optional diagnostics:             TextWrapping = TextWrapping.Wrap, Margin = new Thickness(0, 0, 0, 12)
+// Disabled optional diagnostics:         };
+// Disabled optional diagnostics:         DockPanel.SetDock(heading, Dock.Top);
+// Disabled optional diagnostics:         layout.Children.Add(heading);
+// Disabled optional diagnostics:         var filter = new ComboBox { Width = 260, HorizontalAlignment = HorizontalAlignment.Left, Margin = new Thickness(0, 0, 0, 10) };
+// Disabled optional diagnostics:         // Display labels are independent from the existing operation identifiers.
+// Disabled optional diagnostics:         var filterOptions = new[]
+// Disabled optional diagnostics:         {
+// Disabled optional diagnostics:             new { Label = "All proposed changes", Value = "" },
+// Disabled optional diagnostics:             new { Label = "Create", Value = "Create" },
+// Disabled optional diagnostics:             new { Label = "Update", Value = "Update" },
+// Disabled optional diagnostics:             new { Label = "Pending Zidoo Delete", Value = "PendingZidooDelete" }
+// Disabled optional diagnostics:         };
+// Disabled optional diagnostics:         filter.ItemsSource = filterOptions;
+// Disabled optional diagnostics:         filter.DisplayMemberPath = "Label";
+// Disabled optional diagnostics:         filter.SelectedValuePath = "Value";
+// Disabled optional diagnostics:         filter.SelectedIndex = 0;
+// Disabled optional diagnostics:         DockPanel.SetDock(filter, Dock.Top);
+// Disabled optional diagnostics:         layout.Children.Add(filter);
+// Disabled optional diagnostics:         var bottom = new StackPanel
+// Disabled optional diagnostics:         {
+// Disabled optional diagnostics:             Orientation = Orientation.Horizontal, HorizontalAlignment = HorizontalAlignment.Right,
+// Disabled optional diagnostics:             Margin = new Thickness(0, 12, 0, 0)
+// Disabled optional diagnostics:         };
+// Disabled optional diagnostics:         var copy = new Button { Content = "Copy Selected", Padding = new Thickness(18, 7, 18, 7), Margin = new Thickness(0, 0, 10, 0), Visibility = Visibility.Collapsed };
+// Disabled optional diagnostics:         var close = new Button { Content = "Close", Padding = new Thickness(24, 7, 24, 7), IsCancel = true };
+// Disabled optional diagnostics:         bottom.Children.Add(copy);
+// Disabled optional diagnostics:         bottom.Children.Add(close);
+// Disabled optional diagnostics:         DockPanel.SetDock(bottom, Dock.Bottom);
+// Disabled optional diagnostics:         layout.Children.Add(bottom);
+// Disabled optional diagnostics:         var table = new DataGrid
+// Disabled optional diagnostics:         {
+// Disabled optional diagnostics:             IsReadOnly = true, AutoGenerateColumns = false, CanUserAddRows = false,
+// Disabled optional diagnostics:             CanUserDeleteRows = false, SelectionMode = DataGridSelectionMode.Extended,
+// Disabled optional diagnostics:             SelectionUnit = DataGridSelectionUnit.FullRow,
+// Disabled optional diagnostics:             HeadersVisibility = DataGridHeadersVisibility.Column
+// Disabled optional diagnostics:         };
+// Disabled optional diagnostics:         table.Columns.Add(new DataGridTextColumn { Header = "Operation", Binding = new System.Windows.Data.Binding("Action"), Width = new DataGridLength(175) });
+// Disabled optional diagnostics:         table.Columns.Add(new DataGridTextColumn { Header = "Playlist file", Binding = new System.Windows.Data.Binding("FileName"), Width = new DataGridLength(2, DataGridLengthUnitType.Star) });
+// Disabled optional diagnostics:         table.Columns.Add(new DataGridTextColumn { Header = "Reason", Binding = new System.Windows.Data.Binding("Explanation"), Width = new DataGridLength(3, DataGridLengthUnitType.Star) });
+// Disabled optional diagnostics:         void CopySelected()
+// Disabled optional diagnostics:         {
+// Disabled optional diagnostics:             var rows = table.SelectedItems.Cast<NativePlanInspectionItem>().ToArray();
+// Disabled optional diagnostics:             if (rows.Length == 0) return;
+// Disabled optional diagnostics:             Clipboard.SetText(string.Join(Environment.NewLine,
+// Disabled optional diagnostics:                 rows.Select(x => $"{x.Action}\t{x.FileName}\t{x.Explanation}")));
+// Disabled optional diagnostics:         }
+// Disabled optional diagnostics:         copy.Click += (_, _) => CopySelected();
+// Disabled optional diagnostics:         close.Click += (_, _) => window.Close();
+// Disabled optional diagnostics:         var menu = new ContextMenu();
+// Disabled optional diagnostics:         var copyMenu = new MenuItem { Header = "Copy Selected Rows" };
+// Disabled optional diagnostics:         copyMenu.Click += (_, _) => CopySelected();
+// Disabled optional diagnostics:         menu.Items.Add(copyMenu);
+// Disabled optional diagnostics:         var selectAllMenu = new MenuItem { Header = "Select All" };
+// Disabled optional diagnostics:         selectAllMenu.Click += (_, _) => table.SelectAll();
+// Disabled optional diagnostics:         menu.Items.Add(selectAllMenu);
+// Disabled optional diagnostics:         table.ContextMenu = menu;
+// Disabled optional diagnostics:         // Keep the copy action out of sight until at least one row is selected.
+// Disabled optional diagnostics:         void RefreshSelectionActions()
+// Disabled optional diagnostics:         {
+// Disabled optional diagnostics:             bool hasSelection = table.SelectedItems.Count > 0;
+// Disabled optional diagnostics:             copy.Visibility = hasSelection ? Visibility.Visible : Visibility.Collapsed;
+// Disabled optional diagnostics:             copyMenu.Visibility = hasSelection ? Visibility.Visible : Visibility.Collapsed;
+// Disabled optional diagnostics:             selectAllMenu.IsEnabled = table.Items.Count > 0;
+// Disabled optional diagnostics:         }
+// Disabled optional diagnostics:         table.SelectionChanged += (_, _) => RefreshSelectionActions();
+// Disabled optional diagnostics:         table.ContextMenuOpening += (_, _) => RefreshSelectionActions();
+// Disabled optional diagnostics:         // Use the same blank-area selection behavior as the main application grids.
+// Disabled optional diagnostics:         GridSelectionBehavior.Attach(table);
+// Disabled optional diagnostics:         filter.SelectionChanged += (_, _) =>
+// Disabled optional diagnostics:         {
+// Disabled optional diagnostics:             // A new filter must never retain a selection from the previous view.
+// Disabled optional diagnostics:             table.UnselectAll();
+// Disabled optional diagnostics:             var chosen = filter.SelectedValue as string;
+// Disabled optional diagnostics:             table.ItemsSource = string.IsNullOrEmpty(chosen) ? items :
+// Disabled optional diagnostics:                 items.Where(x => x.Action.ToString() == chosen).ToArray();
+// Disabled optional diagnostics:             RefreshSelectionActions();
+// Disabled optional diagnostics:         };
+// Disabled optional diagnostics:         table.ItemsSource = items;
+// Disabled optional diagnostics:         RefreshSelectionActions();
+// Disabled optional diagnostics:         layout.Children.Add(table);
+// Disabled optional diagnostics:         // A transparent content surface receives clicks on otherwise empty space.
+// Disabled optional diagnostics:         // Register on the window itself so clicks on the heading, filter, footer,
+// Disabled optional diagnostics:         // and blank content are all observed, including handled child events.
+// Disabled optional diagnostics:         window.AddHandler(UIElement.PreviewMouseLeftButtonDownEvent,
+// Disabled optional diagnostics:             new System.Windows.Input.MouseButtonEventHandler((_, args) =>
+// Disabled optional diagnostics:             {
+// Disabled optional diagnostics:                 if (args.OriginalSource is not DependencyObject source) return;
+// Disabled optional diagnostics:                 static bool IsWithin(DependencyObject node, DependencyObject target)
+// Disabled optional diagnostics:                 {
+// Disabled optional diagnostics:                     for (DependencyObject? current = node; current is not null;)
+// Disabled optional diagnostics:                     {
+// Disabled optional diagnostics:                         if (ReferenceEquals(current, target)) return true;
+// Disabled optional diagnostics:                         current = current is System.Windows.Media.Visual ||
+// Disabled optional diagnostics:                                   current is System.Windows.Media.Media3D.Visual3D
+// Disabled optional diagnostics:                             ? System.Windows.Media.VisualTreeHelper.GetParent(current)
+// Disabled optional diagnostics:                             : System.Windows.LogicalTreeHelper.GetParent(current);
+// Disabled optional diagnostics:                     }
+// Disabled optional diagnostics:                     return false;
+// Disabled optional diagnostics:                 }
+// Disabled optional diagnostics:                 // Keep selection intact for grid gestures and the copy action.
+// Disabled optional diagnostics:                 if (IsWithin(source, table) || IsWithin(source, copy)) return;
+// Disabled optional diagnostics:                 table.UnselectAll();
+// Disabled optional diagnostics:             }), true);
+// Disabled optional diagnostics: 
+// Disabled optional diagnostics:         // Modeless inspector permits File/Help menus and other main-window actions.
+// Disabled optional diagnostics:         // Clear selection when returning to the owner, not when switching to an
+// Disabled optional diagnostics:         // unrelated application. Never treat loss of focus alone as a click.
+// Disabled optional diagnostics:         EventHandler ownerActivated = (_, _) => table.UnselectAll();
+// Disabled optional diagnostics:         Activated += ownerActivated;
+// Disabled optional diagnostics:         window.Closed += (_, _) =>
+// Disabled optional diagnostics:         {
+// Disabled optional diagnostics:             Activated -= ownerActivated;
+// Disabled optional diagnostics:             if (ReferenceEquals(_nativePlanWindow, window)) _nativePlanWindow = null;
+// Disabled optional diagnostics:         };
+// Disabled optional diagnostics:         window.Content = layout;
+// Disabled optional diagnostics:         _nativePlanWindow = window;
+// Disabled optional diagnostics:         window.Show();
+// Disabled optional diagnostics:         window.Activate();
+// Disabled optional diagnostics:     }
+// Disabled optional diagnostics: 
+// Disabled optional diagnostics:     /// <summary>Read-only assessment. Does not save configuration or authorize any mutation.</summary>
+// Disabled optional diagnostics:     private async void RunNativeAssessment_Click(object sender, RoutedEventArgs e)
+// Disabled optional diagnostics:     {
+// Disabled optional diagnostics:         if (IsolatedStartupMode.Enabled) return;
+// Disabled optional diagnostics:         if (_nativeAssessmentCancellation is not null)
+// Disabled optional diagnostics:         {
+// Disabled optional diagnostics:             // Repeated cancellation requests are harmless, including during shutdown.
+// Disabled optional diagnostics:             if (!_nativeAssessmentCancellation.IsCancellationRequested)
+// Disabled optional diagnostics:             {
+// Disabled optional diagnostics:                 _nativeAssessmentCancellation.Cancel();
+// Disabled optional diagnostics:                 StatusText.Text = "Canceling native assessment...";
+// Disabled optional diagnostics:             }
+// Disabled optional diagnostics:             return;
+// Disabled optional diagnostics:         }
+// Disabled optional diagnostics:         if(_workflow.Busy || !_workflow.Verified)return;
+// Disabled optional diagnostics:         _workflow.SetDiagnosticBusy(true);RefreshWorkflowControls();
+// Disabled optional diagnostics:         // Validate required UI dependencies before mutating assessment state.
+// Disabled optional diagnostics:         // A missing control is a recoverable initialization error, not a reason to crash.
+// Disabled optional diagnostics:         Button? inspectButton;
+// Disabled optional diagnostics:         try
+// Disabled optional diagnostics:         {
+// Disabled optional diagnostics:             inspectButton = FindInspectNativePlanButton();
+// Disabled optional diagnostics:             if (inspectButton is null)
+// Disabled optional diagnostics:                 throw new InvalidOperationException(
+// Disabled optional diagnostics:                     "The Inspect Plan control could not be initialized. Restart the application; " +
+// Disabled optional diagnostics:                     "if the issue persists, check the diagnostic log and application installation.");
+// Disabled optional diagnostics:         }
+// Disabled optional diagnostics:         catch (Exception ex)
+// Disabled optional diagnostics:         {
+// Disabled optional diagnostics:             _workflow.SetDiagnosticBusy(false);RefreshWorkflowControls();
+// Disabled optional diagnostics:             StatusText.Text = "Native assessment unavailable";
+// Disabled optional diagnostics:             _events.Add(new LogEvent(DateTime.Now, LogLevel.Red,
+// Disabled optional diagnostics:                 "Unable to start read-only native assessment: " + ex));
+// Disabled optional diagnostics:             RefreshOutput();
+// Disabled optional diagnostics:             MessageBox.Show(this, UserMessages.Explain(ex), "Native Assessment Unavailable",
+// Disabled optional diagnostics:                 MessageBoxButton.OK, MessageBoxImage.Error);
+// Disabled optional diagnostics:             return;
+// Disabled optional diagnostics:         }
+// Disabled optional diagnostics:         // A new assessment invalidates any previously displayed proposed changes.
+// Disabled optional diagnostics:         // Closing the old inspector also releases its event subscriptions.
+// Disabled optional diagnostics:         _nativePlanWindow?.Close();
+// Disabled optional diagnostics:         var started = DateTime.Now;
+// Disabled optional diagnostics:         bool showCompletedPlan = false;
+// Disabled optional diagnostics:         _nativeAssessmentCancellation = new System.Threading.CancellationTokenSource();
+// Disabled optional diagnostics:         // Keep the token local so a closing window cannot replace the token mid-await.
+// Disabled optional diagnostics:         var assessmentToken = _nativeAssessmentCancellation.Token;RefreshWorkflowControls();
+// Disabled optional diagnostics: // Disabled optional diagnostics:         RunNativeAssessmentButton.Content = "Cancel Native Assessment";
+// Disabled optional diagnostics:         RunButton.IsEnabled = false;
+// Disabled optional diagnostics:         ValidateMediaMonkeyButton.IsEnabled = false;
+// Disabled optional diagnostics:         VerifyNativeExporterButton.IsEnabled = false;
+// Disabled optional diagnostics:         _lastNativePlanInspection = null;
+// Disabled optional diagnostics:         inspectButton.IsEnabled = false;
+// Disabled optional diagnostics:         _events.Clear();
+// Disabled optional diagnostics:         RefreshOutput();
+// Disabled optional diagnostics:         _stopwatch = Stopwatch.StartNew();
+// Disabled optional diagnostics:         _timer.Start();
+// Disabled optional diagnostics:         string resultLabel = "Assessment failed";
+// Disabled optional diagnostics:         try
+// Disabled optional diagnostics:         {
+// Disabled optional diagnostics:             // Capture the current form without saving configuration or invoking the sync runner.
+// Disabled optional diagnostics:             ReadConfigFromForm();
+// Disabled optional diagnostics:             var config = _config ?? throw new InvalidOperationException("Configuration is not loaded.");
+// Disabled optional diagnostics:             StatusText.Text = "Native assessment running (read-only)";
+// Disabled optional diagnostics:             var result = await _nativeAssessmentRunner.AssessAsync(config, assessmentToken);
+// Disabled optional diagnostics:             _lastNativePlanInspection = NativePlanInspection.FromAssessment(result);
+// Disabled optional diagnostics:             inspectButton.IsEnabled = true;
+// Disabled optional diagnostics:             showCompletedPlan = true;
+// Disabled optional diagnostics:             resultLabel = $"Read-only: {result.CreateCount} create, {result.UpdateCount} update, {result.UnchangedCount} unchanged, {result.PendingZidooDeleteCount} pending deletion";
+// Disabled optional diagnostics:             StatusText.Text = "Native assessment completed (read-only)";
+// Disabled optional diagnostics:             _events.Add(new LogEvent(DateTime.Now, LogLevel.Green, resultLabel + ". No changes executed."));
+// Disabled optional diagnostics:             RefreshOutput();
+// Disabled optional diagnostics:         }
+// Disabled optional diagnostics:         catch (OperationCanceledException) when (assessmentToken.IsCancellationRequested)
+// Disabled optional diagnostics:         {
+// Disabled optional diagnostics:             resultLabel = "Assessment canceled";
+// Disabled optional diagnostics:             StatusText.Text = resultLabel;
+// Disabled optional diagnostics:             _events.Add(new LogEvent(DateTime.Now, LogLevel.Yellow, resultLabel + ". No changes executed."));
+// Disabled optional diagnostics:             RefreshOutput();
+// Disabled optional diagnostics:         }
+// Disabled optional diagnostics:         catch (Exception ex)
+// Disabled optional diagnostics:         {
+// Disabled optional diagnostics:             StatusText.Text = "Native assessment failed";
+// Disabled optional diagnostics:             DiagnosticReportingService.Shared.Report("Native read-only assessment", ex);
+// Disabled optional diagnostics:             _events.Add(new LogEvent(DateTime.Now, LogLevel.Red, "Read-only native assessment failed: " + ex));
+// Disabled optional diagnostics:             RefreshOutput();
+// Disabled optional diagnostics:         }
+// Disabled optional diagnostics:         finally
+// Disabled optional diagnostics:         {
+// Disabled optional diagnostics:             _timer.Stop();
+// Disabled optional diagnostics:             _stopwatch?.Stop();
+// Disabled optional diagnostics:             _nativeAssessmentCancellation?.Dispose();
+// Disabled optional diagnostics:             _nativeAssessmentCancellation = null;
+// Disabled optional diagnostics: // Disabled optional diagnostics:             RunNativeAssessmentButton.Content = "Run Native Assessment (Read-only)";
+// Disabled optional diagnostics:             RunButton.IsEnabled = true;
+// Disabled optional diagnostics:             ValidateMediaMonkeyButton.IsEnabled = true;
+// Disabled optional diagnostics:             VerifyNativeExporterButton.IsEnabled = true;
+// Disabled optional diagnostics:             // A failed or cancelled assessment must not leave a stale inspect action enabled.
+// Disabled optional diagnostics:             inspectButton.IsEnabled = _lastNativePlanInspection is not null;
+// Disabled optional diagnostics:             _workflow.SetDiagnosticBusy(false);RefreshWorkflowControls();
+// Disabled optional diagnostics:             RecordHistory(started, "Native Read-only Assessment", resultLabel);
+// Disabled optional diagnostics:         }
+// Disabled optional diagnostics:         // Present the validated proposal automatically, only after successful completion
+// Disabled optional diagnostics:         // and after restoring assessment controls. Display errors are non-fatal to the
+// Disabled optional diagnostics:         // already-completed read-only assessment and must be visible to the user.
+// Disabled optional diagnostics:         if (showCompletedPlan && _lastNativePlanInspection is not null)
+// Disabled optional diagnostics:         {
+// Disabled optional diagnostics:             try
+// Disabled optional diagnostics:             {
+// Disabled optional diagnostics:                 InspectNativePlan_Click(this, new RoutedEventArgs());
+// Disabled optional diagnostics:             }
+// Disabled optional diagnostics:             catch (Exception ex)
+// Disabled optional diagnostics:             {
+// Disabled optional diagnostics:                 StatusText.Text = "Assessment completed; plan window unavailable";
+// Disabled optional diagnostics:                 _events.Add(new LogEvent(DateTime.Now, LogLevel.Red,
+// Disabled optional diagnostics:                     "Read-only assessment succeeded, but the plan window could not open: " + ex));
+// Disabled optional diagnostics:                 RefreshOutput();
+// Disabled optional diagnostics:                 MessageBox.Show(this,
+// Disabled optional diagnostics:                     "The read-only assessment completed successfully, but its proposed-change window could not be displayed. " +
+// Disabled optional diagnostics:                     "Use Inspect Plan to try again. Details: " + UserMessages.Explain(ex),
+// Disabled optional diagnostics:                     "Plan Inspection Unavailable", MessageBoxButton.OK, MessageBoxImage.Warning);
+// Disabled optional diagnostics:             }
+// Disabled optional diagnostics:         }
+// Disabled optional diagnostics:     }
+// Disabled optional diagnostics: 
     /// <summary>Saves the current configuration, launches synchronization, updates status, and marks successful configuration Last Known Good.</summary>
     private async void Run_Click(object sender, RoutedEventArgs e) {
         if (IsolatedStartupMode.Enabled) return;
@@ -594,7 +597,7 @@ public partial class MainWindow : Window {
         _syncCancellation=new System.Threading.CancellationTokenSource();
         var token=_syncCancellation.Token;RefreshWorkflowControls();
         RunButton.Content="Cancel Synchronization"; StatusText.Text="Preparing changes"; _events.Clear(); RefreshOutput();
-        ValidateMediaMonkeyButton.IsEnabled=false;VerifyNativeExporterButton.IsEnabled=false;RunNativeAssessmentButton.IsEnabled=false;
+        ValidateMediaMonkeyButton.IsEnabled=false;VerifyNativeExporterButton.IsEnabled=false;
         DateTime runStarted = DateTime.Now;
         _stopwatch=Stopwatch.StartNew(); _timer.Start();
         try {
@@ -625,7 +628,7 @@ public partial class MainWindow : Window {
             _timer.Stop(); _stopwatch?.Stop();
             _syncCancellation?.Dispose();_syncCancellation=null;
             RunButton.Content="4. Run Synchronization";RunButton.IsEnabled=true;
-            ValidateMediaMonkeyButton.IsEnabled=true;VerifyNativeExporterButton.IsEnabled=true;RunNativeAssessmentButton.IsEnabled=true;
+            ValidateMediaMonkeyButton.IsEnabled=true;VerifyNativeExporterButton.IsEnabled=true;
             _workflow.EndRun();_preparedReview=_approvedReview=null;RefreshWorkflowControls();
             RecordHistory(runStarted, "Synchronization", StatusText.Text);
         }
@@ -1052,8 +1055,7 @@ public partial class MainWindow : Window {
 
     /// <summary>Displays product and runtime information.</summary>
     private void About_Click(object sender, RoutedEventArgs e) =>
-        MessageBox.Show($"MediaMonkey Zidoo Sync\nProduct {ApplicationVersionProvider.ProductVersion}\nAssembly {Assembly.GetExecutingAssembly().GetName().Version}\n\nMediaMonkey-managed playlist synchronization through the validated playlist-folder/Zidoo Music workflow.\n\n.NET: {Environment.Version}\nOS: {Environment.OSVersion}",
-        "About MediaMonkey Zidoo Sync",MessageBoxButton.OK,MessageBoxImage.Information);
+        new AboutWindow { Owner = this }.ShowDialog();
 
     /// <summary>Closes the application.</summary>
     private void Exit_Click(object sender, RoutedEventArgs e) => Close();
@@ -1253,19 +1255,20 @@ public partial class MainWindow : Window {
         {
             e.Cancel=true;StatusText.Text="Synchronization active; use Cancel Synchronization and let recovery finish.";return;
         }
-        if (_nativeAssessmentCancellation is { IsCancellationRequested: false } cancellation)
-        {
-            e.Cancel = true;
-            cancellation.Cancel();
-            StatusText.Text = "Canceling assessment before closing. Close again when cancellation completes.";
-            return;
-        }
-        if (_nativeAssessmentCancellation is not null)
-        {
-            e.Cancel = true;
-            StatusText.Text = "Waiting for the assessment to stop before closing.";
-            return;
-        }
+// Disabled optional diagnostics:         if (_nativeAssessmentCancellation is { IsCancellationRequested: false } cancellation)
+// Disabled optional diagnostics:         {
+// Disabled optional diagnostics:             e.Cancel = true;
+// Disabled optional diagnostics:             cancellation.Cancel();
+// Disabled optional diagnostics:             StatusText.Text = "Canceling assessment before closing. Close again when cancellation completes.";
+// Disabled optional diagnostics:             return;
+// Disabled optional diagnostics:         }
+// Disabled optional diagnostics:         if (_nativeAssessmentCancellation is not null)
+// Disabled optional diagnostics:         {
+// Disabled optional diagnostics:             e.Cancel = true;
+// Disabled optional diagnostics:             StatusText.Text = "Waiting for the assessment to stop before closing.";
+// Disabled optional diagnostics:             return;
+// Disabled optional diagnostics:         }
+// Disabled optional diagnostics: 
         var bounds = RestoreBounds;
         _uiState.SelectedTabIndex = MainTabs.SelectedIndex;
         _uiState.ZidooExpanded = ZidooSection.IsExpanded;

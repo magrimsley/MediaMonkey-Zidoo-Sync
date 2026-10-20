@@ -1,4 +1,4 @@
-# Native architecture and recovery — Alpha.60.18.6
+# MM Zidoo Sync native architecture and recovery
 
 WPF is the presentation layer. SynchronizationWorkflow gates validation, exporter verification, plan review and execution. SyncRunner composes the native service; the exporter reads SQLite in read-only mode. NativeProductionSyncService compares reviewed content hashes, owns the NAS run lock and device/power lifecycle, and delegates each playlist operation to NativeProductionTransaction. NativeZidooPlaylistDevice owns model verification, inventory parsing and guarded screen navigation. No synchronization operation launches PowerShell or another backend process. SyncRunner executes native synchronization away from the WPF synchronization context. Progress is queued to the dispatcher asynchronously so device work does not wait for display updates. This is a responsiveness safeguard; it does not establish the cause of the reported laptop freeze.
 
@@ -23,7 +23,9 @@ Real process-kill tests terminate workers at preparation, file publication, devi
 The NAS lock serializes cooperating app runs. Hash and inventory checks detect observable external edits; other software and remote controls do not participate. Device verification establishes playlist identity and track count, not playback of every song or every remote track URI/order. Reachability is the observable power-state criterion; TV/AVR behavior is outside this contract.
 
 Full exceptions are saved in diagnostic logs, never rendered in synchronization output or copied visible text. Migration, installation, offline regression, exact-package Sandbox tests and explicitly authorized live acceptance remain separate scopes. Legacy explicit recovery is retained for old reviewed receipts; new automatic recovery does not weaken its safeguards.
-## Current candidate acceptance blockers
+## Historical Alpha acceptance record (superseded)
+
+The following records development history. CURRENT-STATUS.md supersedes its pending-state wording. Restoration and sampled playback were later confirmed; no full Zidoo-content audit belongs to this version.
 
 Alpha.60.18.1 passed a clean 11-stage offline regression and isolated create/update/cancel/process-termination recovery checks. Its live wake check failed; a later request restored readiness. Alpha.60.18.3 stages bounded repeated wake requests every 15 seconds within the existing readiness timeout, tested with a simulated clock. Live acceptance of that change is pending.
 
