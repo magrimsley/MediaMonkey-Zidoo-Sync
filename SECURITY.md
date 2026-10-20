@@ -1,6 +1,6 @@
 # Security reporting — private Beta
 
-No public security-reporting contact has been selected. Choose a private channel and supported-version policy before public distribution. Do not publish library data, configurations or credentials in reports.
+Report suspected security vulnerabilities privately to [magrimsley@hotmail.com](mailto:magrimsley@hotmail.com). Include the application version, a description of the issue and minimal reproduction steps. Define a supported-version policy before public distribution. Do not publish library data, configurations or credentials in reports.
 
 MM Zidoo Sync Beta has native production synchronization enabled behind the required validation/review gates. Report unexpected writes, unsafe path handling, migration failures and unverifiable recovery with a minimal synthetic reproduction. Preserve transaction evidence after a failure. Do not retry destructive live operations blindly.
 
