@@ -1,51 +1,51 @@
-﻿[
-    {
-        "Package":  "Microsoft.Data.Sqlite",
-        "Version":  "9.0.0",
-        "DeclaredLicense":  "MIT",
-        "ProjectUrl":  "https://docs.microsoft.com/dotnet/standard/data/sqlite/",
-        "LicenseUrl":  "https://licenses.nuget.org/MIT"
-    },
-    {
-        "Package":  "Microsoft.Data.Sqlite.Core",
-        "Version":  "9.0.0",
-        "DeclaredLicense":  "MIT",
-        "ProjectUrl":  "https://docs.microsoft.com/dotnet/standard/data/sqlite/",
-        "LicenseUrl":  "https://licenses.nuget.org/MIT"
-    },
-    {
-        "Package":  "SQLitePCLRaw.bundle_e_sqlite3",
-        "Version":  "2.1.10",
-        "DeclaredLicense":  "Apache-2.0",
-        "ProjectUrl":  "",
-        "LicenseUrl":  "https://licenses.nuget.org/Apache-2.0"
-    },
-    {
-        "Package":  "SQLitePCLRaw.core",
-        "Version":  "2.1.10",
-        "DeclaredLicense":  "Apache-2.0",
-        "ProjectUrl":  "",
-        "LicenseUrl":  "https://licenses.nuget.org/Apache-2.0"
-    },
-    {
-        "Package":  "SQLitePCLRaw.lib.e_sqlite3",
-        "Version":  "2.1.10",
-        "DeclaredLicense":  "Apache-2.0",
-        "ProjectUrl":  "",
-        "LicenseUrl":  "https://licenses.nuget.org/Apache-2.0"
-    },
-    {
-        "Package":  "SQLitePCLRaw.provider.e_sqlite3",
-        "Version":  "2.1.10",
-        "DeclaredLicense":  "Apache-2.0",
-        "ProjectUrl":  "",
-        "LicenseUrl":  "https://licenses.nuget.org/Apache-2.0"
-    },
-    {
-        "Package":  "System.Memory",
-        "Version":  "4.5.3",
-        "DeclaredLicense":  "Review upstream licenseUrl/notices",
-        "ProjectUrl":  "https://dot.net/",
-        "LicenseUrl":  "https://github.com/dotnet/corefx/blob/master/LICENSE.TXT"
-    }
+[
+  {
+    "Package": "Microsoft.Data.Sqlite",
+    "Version": "9.0.0",
+    "DeclaredLicense": "MIT",
+    "ProjectUrl": "https://docs.microsoft.com/dotnet/standard/data/sqlite/",
+    "LicenseUrl": "https://licenses.nuget.org/MIT"
+  },
+  {
+    "Package": "Microsoft.Data.Sqlite.Core",
+    "Version": "9.0.0",
+    "DeclaredLicense": "MIT",
+    "ProjectUrl": "https://docs.microsoft.com/dotnet/standard/data/sqlite/",
+    "LicenseUrl": "https://licenses.nuget.org/MIT"
+  },
+  {
+    "Package": "SQLitePCLRaw.bundle_e_sqlite3",
+    "Version": "2.1.10",
+    "DeclaredLicense": "Apache-2.0",
+    "ProjectUrl": "",
+    "LicenseUrl": "https://licenses.nuget.org/Apache-2.0"
+  },
+  {
+    "Package": "SQLitePCLRaw.core",
+    "Version": "2.1.10",
+    "DeclaredLicense": "Apache-2.0",
+    "ProjectUrl": "",
+    "LicenseUrl": "https://licenses.nuget.org/Apache-2.0"
+  },
+  {
+    "Package": "SQLitePCLRaw.lib.e_sqlite3",
+    "Version": "2.1.10",
+    "DeclaredLicense": "Apache-2.0",
+    "ProjectUrl": "",
+    "LicenseUrl": "https://licenses.nuget.org/Apache-2.0"
+  },
+  {
+    "Package": "SQLitePCLRaw.provider.e_sqlite3",
+    "Version": "2.1.10",
+    "DeclaredLicense": "Apache-2.0",
+    "ProjectUrl": "",
+    "LicenseUrl": "https://licenses.nuget.org/Apache-2.0"
+  },
+  {
+    "Package": "System.Memory",
+    "Version": "4.5.3",
+    "DeclaredLicense": "MIT",
+    "ProjectUrl": "https://dot.net/",
+    "LicenseUrl": "https://github.com/dotnet/corefx/blob/master/LICENSE.TXT"
+  }
 ]

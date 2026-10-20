@@ -1,0 +1,3 @@
+
+# Preserve upstream license and notice bytes.
+ThirdPartyNotices/** -text -whitespace

@@ -1,0 +1,23 @@
+[
+  {
+    "file": "Application.ico",
+    "sha256": "90BC0B73238F788F5423E1F6421B331576A202E924326537E16727DE54B2F0F8",
+    "bytes": 174283,
+    "origin": "User supplied; Gemini-generated, ICO converted locally",
+    "license": "GPL-3.0-only to extent owner holds rights"
+  },
+  {
+    "file": "Application.jpg",
+    "sha256": "B86BA5BCF2F7357FC5E4E42819F315908A5CC958CCC10CB4DCB097D3EB3A777D",
+    "bytes": 665656,
+    "origin": "User supplied; Gemini-generated, ICO converted locally",
+    "license": "GPL-3.0-only to extent owner holds rights"
+  },
+  {
+    "file": "Splash.jpg",
+    "sha256": "811D0114AF750D8C5C0AAC5FD17561F048E1AF78E070C527DD89C934E9B40FF6",
+    "bytes": 750126,
+    "origin": "User supplied; Gemini-generated, ICO converted locally",
+    "license": "GPL-3.0-only to extent owner holds rights"
+  }
+]

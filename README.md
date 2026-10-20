@@ -42,3 +42,4 @@ See [known bugs](KNOWN-BUGS.md), including the intermittent transaction-file sha
 - [Third-party components](THIRD-PARTY-NOTICES.md)
 
 MediaMonkey and Zidoo names identify interoperability targets; no affiliation or endorsement is claimed.
+Artwork origin and permissions: [artwork record](ARTWORK-PROVENANCE.md). Preserve the ThirdPartyNotices directory with redistributed builds.

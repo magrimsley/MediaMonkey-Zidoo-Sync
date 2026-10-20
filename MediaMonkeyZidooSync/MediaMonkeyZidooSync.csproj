@@ -30,5 +30,8 @@
 <Resource Include="Resources\Branding\Splash.jpg" />
 <Content Include="Resources\Branding\Application.ico"><CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory><CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory></Content>
 </ItemGroup>
+  <ItemGroup>
+    <Content Include="..\ThirdPartyNotices\**\*" Link="ThirdPartyNotices\%(RecursiveDir)%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
+    <Content Include="..\LICENSE;..\THIRD-PARTY-NOTICES.md;..\ARTWORK-PROVENANCE.md;..\artwork-inventory.json;..\DONATIONS.md" Link="%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
+  </ItemGroup>
 </Project>
-
