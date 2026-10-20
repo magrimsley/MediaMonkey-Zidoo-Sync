@@ -9,3 +9,10 @@ Google's general terms state that Google does not claim ownership of generated o
 The splash illustration depicts Zidoo branding and a device, plus a monkey/headphone motif associated with the interoperability context. MediaMonkey and Zidoo names and third-party marks remain their owners' property. No affiliation, endorsement or trademark license is claimed. Michael's permission closes the project-owner artwork-license decision; it does not establish permission from either brand owner. The project has not independently verified brand clearance. Keep this limitation visible before broader public distribution; no redesign is authorized by this review.
 
 Asset hashes are recorded in artwork-inventory.json. Preserve original supplied files and avoid describing them as solely human-created.
+
+## Independent-project disclosure
+
+MM Zidoo Sync is an independently developed project. It is not affiliated with, endorsed by, or sponsored by Ventis Media or Zidoo. MediaMonkey and Zidoo names and marks identify interoperability targets and remain the property of their respective owners. This disclaimer clarifies independence; it does not grant trademark rights.
+
+On 2026-10-20 the owner approved retaining the existing artwork with this disclosure for public-distribution preparation. Published-rule review found no explicit permission or specific prohibition for this illustration; that inconclusive result establishes neither clearance nor infringement. The project does not claim brand-owner permission. No artwork change is made by this decision.
+

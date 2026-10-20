@@ -41,5 +41,6 @@ See [known bugs](KNOWN-BUGS.md), including the intermittent transaction-file sha
 - [Code signing](CODE-SIGNING.md)
 - [Third-party components](THIRD-PARTY-NOTICES.md)
 
-MediaMonkey and Zidoo names identify interoperability targets; no affiliation or endorsement is claimed.
+MM Zidoo Sync is an independently developed project. It is not affiliated with, endorsed by, or sponsored by Ventis Media or Zidoo. MediaMonkey and Zidoo names and marks identify interoperability targets and remain the property of their respective owners. This disclaimer clarifies independence; it does not grant trademark rights.
 Artwork origin and permissions: [artwork record](ARTWORK-PROVENANCE.md). Preserve the ThirdPartyNotices directory with redistributed builds.
+
