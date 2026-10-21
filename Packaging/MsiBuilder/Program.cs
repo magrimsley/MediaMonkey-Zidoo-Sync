@@ -105,9 +105,26 @@ Row("InstallUISequence","Action,Condition,Sequence","SetupFailed","UILevel >= 5"
 // Windows Installer caches this icon for Programs and Features independently of the payload.
 var iconPath=Path.Combine(source,"Resources","Branding","Application.ico");
 if(!File.Exists(iconPath))throw new InvalidDataException("Missing application icon.");
+// Icon controls without size flags load the FIRST ICO image and stretch it.
+// Preserve the approved artwork bytes, but give the installer a single highest-resolution frame.
+// Keep the original multi-resolution icon unchanged for the executable and Programs and Features.
+var iconBytes=File.ReadAllBytes(iconPath);
+if(iconBytes.Length<6 || BitConverter.ToUInt16(iconBytes,2)!=1)throw new InvalidDataException("Invalid application ICO.");
+int frameCount=BitConverter.ToUInt16(iconBytes,4);
+if(frameCount==0 || 6+16*frameCount>iconBytes.Length)throw new InvalidDataException("Invalid ICO directory.");
+int best=Enumerable.Range(0,frameCount).OrderByDescending(i=>
+    (iconBytes[6+16*i]==0?256:iconBytes[6+16*i])*(iconBytes[7+16*i]==0?256:iconBytes[7+16*i])).First();
+int entry=6+16*best,imageLength=BitConverter.ToInt32(iconBytes,entry+8),imageOffset=BitConverter.ToInt32(iconBytes,entry+12);
+if(imageLength<=0 || imageOffset<0 || (long)imageOffset+imageLength>iconBytes.Length)throw new InvalidDataException("Invalid ICO frame.");
+var installerIcon=new byte[22+imageLength];
+Array.Copy(iconBytes,installerIcon,6);BitConverter.GetBytes((ushort)1).CopyTo(installerIcon,4);
+Array.Copy(iconBytes,entry,installerIcon,6,16);BitConverter.GetBytes(22).CopyTo(installerIcon,18);
+Array.Copy(iconBytes,imageOffset,installerIcon,22,imageLength);
+var installerIconPath=Path.Combine(work,"InstallerArtwork.ico");File.WriteAllBytes(installerIconPath,installerIcon);
+Console.WriteLine($"Installer artwork uses original { (iconBytes[entry]==0?256:iconBytes[entry]) }x{ (iconBytes[entry+1]==0?256:iconBytes[entry+1]) } frame; image bytes unchanged.");
 dynamic artView=db.OpenView("INSERT INTO `Binary` (`Name`, `Data`) VALUES (?, ?)");
 dynamic artRecord=engine.CreateRecord(2);
-try{artRecord.StringData[1]="InstallerIcon";artRecord.SetStream(2,iconPath);artView.Execute(artRecord);}
+try{artRecord.StringData[1]="InstallerIcon";artRecord.SetStream(2,installerIconPath);artView.Execute(artRecord);}
 finally{artView.Close();Marshal.FinalReleaseComObject(artRecord);Marshal.FinalReleaseComObject(artView);}
 dynamic iconView=db.OpenView("INSERT INTO `Icon` (`Name`, `Data`) VALUES (?, ?)");
 dynamic iconRecord=engine.CreateRecord(2);
