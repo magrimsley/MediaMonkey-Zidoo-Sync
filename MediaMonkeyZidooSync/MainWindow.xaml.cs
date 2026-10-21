@@ -81,7 +81,7 @@ public partial class MainWindow : Window {
     /// <summary>Shows one independently activatable, modeless completion notification.</summary>
     private void ShowCompletionNotification(string message, string title, MessageBoxImage icon)
     {
-        if (_discoveryOverride is not null) return; // Deterministic offline discovery tests never open modal UI.
+        if (_discoveryOverride is not null) return; // Deterministic offline discovery tests never open notification windows.
         if (_completionWindow is not null)
         {
             _completionWindow.Close();
@@ -1136,7 +1136,7 @@ public partial class MainWindow : Window {
         }
         catch(Exception ex)
         {
-            DiagnosticReportingService.Shared.Report("Discover Zidoo", ex);
+            if (_discoveryOverride is null) DiagnosticReportingService.Shared.Report("Discover Zidoo", ex);
             _events.Add(new LogEvent(DateTime.Now, LogLevel.Red, $"Discover Zidoo failed: {UserMessages.Explain(ex)}"));
             RefreshOutput();
             DiscoveryStatus.Text=$"Discovery could not complete: {UserMessages.Explain(ex)}";
