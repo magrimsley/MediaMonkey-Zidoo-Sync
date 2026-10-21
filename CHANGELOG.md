@@ -1,3 +1,13 @@
+## Unreleased first-install acceptance corrections
+
+- Start on Configuration and block synchronization until complete settings have been saved; configuration edits invalidate that permission.
+- Record discovery attempts, including found/no-device/error outcomes, before a report folder is configured. Keep those entries visible after a report-folder change.
+- Derive WOL broadcast from a matching active IPv4 subnet; never assume a /24 mask or guess across unrelated/ambiguous subnets.
+- Add native Browse controls for the MediaMonkey database, shared music/playlist paths and report folder.
+- Remove obsolete Native Assessment Help text, document the standard MediaMonkey database location and identify Zidoo's Chinese developer API page accurately.
+- Offer a native MSI desktop-shortcut checkbox; silent/basic installations can use DESKTOPSHORTCUT=0 or 1. Keep the Start menu entry independent.
+- Add retention and confirmation of unsaved configuration edits to the backlog.
+
 ## Unreleased RC2 acceptance follow-ups
 
 - Embed the application icon for Windows Programs and Features.

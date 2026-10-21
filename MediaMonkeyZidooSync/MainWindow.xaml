@@ -32,7 +32,7 @@
   <TabControl x:Name="MainTabs" Grid.Row="2"
    BorderBrush="{DynamicResource {x:Static SystemColors.ActiveBorderBrushKey}}"
    BorderThickness="1" Padding="1">
-   <TabItem Header="Synchronization">
+   <TabItem x:Name="SynchronizationTab" Header="Synchronization">
     <Grid Margin="14">
      <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="*"/></Grid.RowDefinitions>
      <StackPanel>
@@ -103,7 +103,7 @@
        <Grid Margin="0,8,0,0">
        <Grid.ColumnDefinitions><ColumnDefinition Width="220"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
        <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
-       <TextBlock Text="Database" Grid.Row="0" Margin="0,6"/><TextBox x:Name="MmDb" Grid.Column="1" Grid.Row="0" Margin="4"/>
+       <TextBlock Text="Database" Grid.Row="0" Margin="0,6"/><DockPanel Grid.Column="1" Grid.Row="0"><Button DockPanel.Dock="Right" Content="Browse…" Margin="4" Padding="10,3" Click="BrowseDatabase_Click"/><TextBox x:Name="MmDb" Margin="4"/></DockPanel>
        <TextBlock Text="Playlist Parent" Grid.Row="1" Margin="0,6"/><TextBox x:Name="PlaylistParent" Grid.Column="1" Grid.Row="1" Margin="4"/>
       </Grid>
       </Expander>
@@ -119,8 +119,8 @@
        <TextBlock Text="Share Name" Grid.Row="1" Margin="0,6"/><TextBox x:Name="NasShare" Grid.Column="1" Grid.Row="1" Margin="4"/>
        <TextBlock Text="Music Folder Name" Grid.Row="2" Margin="0,6"/><TextBox x:Name="MusicFolderName" Grid.Column="1" Grid.Row="2" Margin="4"/>
        <TextBlock Text="Playlist Folder Name" Grid.Row="3" Margin="0,6"/><TextBox x:Name="PlaylistFolderName" Grid.Column="1" Grid.Row="3" Margin="4"/>
-       <TextBlock Text="Music Root UNC" Grid.Row="4" Margin="0,6"/><TextBox x:Name="NasMusic" Grid.Column="1" Grid.Row="4" Margin="4"/>
-       <TextBlock Text="Playlist Folder UNC" Grid.Row="5" Margin="0,6"/><TextBox x:Name="PlaylistFolder" Grid.Column="1" Grid.Row="5" Margin="4"/>
+       <TextBlock Text="Music Root UNC" Grid.Row="4" Margin="0,6"/><DockPanel Grid.Column="1" Grid.Row="4"><Button DockPanel.Dock="Right" Content="Browse…" Margin="4" Padding="10,3" Click="BrowseMusic_Click"/><TextBox x:Name="NasMusic" Margin="4"/></DockPanel>
+       <TextBlock Text="Playlist Folder UNC" Grid.Row="5" Margin="0,6"/><DockPanel Grid.Column="1" Grid.Row="5"><Button DockPanel.Dock="Right" Content="Browse…" Margin="4" Padding="10,3" Click="BrowsePlaylists_Click"/><TextBox x:Name="PlaylistFolder" Margin="4"/></DockPanel>
       </Grid>
       </Expander>
 
@@ -130,7 +130,7 @@
         <Grid.RowDefinitions>
          <RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
-        <TextBlock Text="Report / Log Root" Grid.Row="0" Margin="0,6"/><TextBox x:Name="ReportRoot" Grid.Column="1" Grid.Row="0" Margin="4"/>
+        <TextBlock Text="Report / Log Root" Grid.Row="0" Margin="0,6"/><DockPanel Grid.Column="1" Grid.Row="0"><Button DockPanel.Dock="Right" Content="Browse…" Margin="4" Padding="10,3" Click="BrowseReports_Click"/><TextBox x:Name="ReportRoot" Margin="4"/></DockPanel>
         <TextBlock Text="Readiness Timeout (sec)" Grid.Row="1" Margin="0,6"/><TextBox x:Name="ReadinessTimeout" Grid.Column="1" Grid.Row="1" Margin="4"/>
         <TextBlock Text="Cold Boot Stabilization (sec)" Grid.Row="2" Margin="0,6"/><TextBox x:Name="ColdBootSeconds" Grid.Column="1" Grid.Row="2" Margin="4"/>
        </Grid>

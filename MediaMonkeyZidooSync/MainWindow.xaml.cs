@@ -81,6 +81,7 @@ public partial class MainWindow : Window {
     /// <summary>Shows one independently activatable, modeless completion notification.</summary>
     private void ShowCompletionNotification(string message, string title, MessageBoxImage icon)
     {
+        if (_discoveryOverride is not null) return; // Deterministic offline discovery tests never open modal UI.
         if (_completionWindow is not null)
         {
             _completionWindow.Close();
@@ -179,7 +180,8 @@ public partial class MainWindow : Window {
     public MainWindow() : this(IsolatedStartupMode.ResolveRoot()) { }
 
     /// <summary>Isolated configuration root for local UI verification; null uses normal application storage.</summary>
-    public MainWindow(string? isolatedConfigRoot, Action<string>? openRunLog = null) {
+    public MainWindow(string? isolatedConfigRoot, Action<string>? openRunLog = null, Func<Task<IReadOnlyList<ZidooDiscoveryResult>>>? discoverZidoo = null) {
+        _discoveryOverride=discoverZidoo;
         _configService = new ConfigurationService(isolatedConfigRoot);
         _uiStateService = isolatedConfigRoot is null ? new UiStateService() :
             new UiStateService(Path.Combine(isolatedConfigRoot, "ui-state.json"));
@@ -187,7 +189,7 @@ public partial class MainWindow : Window {
         InitializeComponent();
         if (isolatedConfigRoot is null && !IsolatedStartupMode.Enabled) ApplicationBranding.AttachTray(this);
         ConfigurationTab.AddHandler(System.Windows.Controls.Primitives.TextBoxBase.TextChangedEvent,
-            new TextChangedEventHandler((_,_) => InvalidateWorkflow()));
+            new TextChangedEventHandler((_,_) => { _configurationReady=false; InvalidateWorkflow(); }));
         RefreshWorkflowControls();
         if (IsolatedStartupMode.Enabled)
         {
@@ -221,6 +223,26 @@ public partial class MainWindow : Window {
         _timer.Tick += (_,__) => ElapsedText.Text = $"Elapsed: {FormatElapsed(_stopwatch?.Elapsed)}";
     }
 
+    private void BrowseDatabase_Click(object sender,RoutedEventArgs e)
+    {
+        var initial=Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),"MediaMonkey5");
+        var picker=new Microsoft.Win32.OpenFileDialog { Title="Select the MediaMonkey database", Filter="MediaMonkey database (*.DB)|*.DB|All files (*.*)|*.*", CheckFileExists=true };
+        var folder=Path.GetDirectoryName(MmDb.Text);
+        picker.InitialDirectory=Directory.Exists(folder)?folder:Directory.Exists(initial)?initial:Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+        if(picker.ShowDialog(this)==true)MmDb.Text=picker.FileName;
+    }
+    private void BrowseFolder(TextBox field,string title,string fallback)
+    {
+        var picker=new Microsoft.Win32.OpenFolderDialog { Title=title,InitialDirectory=Directory.Exists(field.Text)?field.Text:fallback };
+        if(picker.ShowDialog(this)==true)field.Text=picker.FolderName;
+    }
+    private void BrowseMusic_Click(object sender,RoutedEventArgs e)=>BrowseFolder(NasMusic,"Select the shared music folder",Environment.GetFolderPath(Environment.SpecialFolder.MyMusic));
+    private void BrowsePlaylists_Click(object sender,RoutedEventArgs e)=>BrowseFolder(PlaylistFolder,"Select the shared playlist folder",Directory.Exists(NasMusic.Text)?NasMusic.Text:Environment.GetFolderPath(Environment.SpecialFolder.MyMusic));
+    private void BrowseReports_Click(object sender,RoutedEventArgs e)=>BrowseFolder(ReportRoot,"Select the report and log folder",_configService.Root);
+
+    private readonly Func<Task<IReadOnlyList<ZidooDiscoveryResult>>>? _discoveryOverride;
+    private bool _configurationReady;
+
     private void InvalidateWorkflow()
     {
         _workflow.Invalidate();_preparedReview=_approvedReview=null;
@@ -231,7 +253,8 @@ public partial class MainWindow : Window {
     private void RefreshWorkflowControls()
     {
         if(RunButton is null || ReviewSynchronizationButton is null)return;
-        bool allowed=!IsolatedStartupMode.Enabled;
+        bool allowed=!IsolatedStartupMode.Enabled && _configurationReady;
+        SynchronizationTab.IsEnabled=_configurationReady;
         ValidateMediaMonkeyButton.IsEnabled=allowed && _workflow.CanValidate;
         VerifyNativeExporterButton.IsEnabled=allowed && _workflow.CanVerify;
         ReviewSynchronizationButton.IsEnabled=allowed && _workflow.CanReview && _preparedReview is not null;
@@ -239,7 +262,7 @@ public partial class MainWindow : Window {
 // Disabled optional diagnostics:         RunNativeAssessmentButton.IsEnabled=allowed && (_nativeAssessmentCancellation is not null || (_workflow.CanReview && _workflow.Verified));
 // Disabled optional diagnostics:         InspectNativePlanButton.IsEnabled=allowed && !_workflow.Busy && _lastNativePlanInspection is not null;
         ConfigurationTab.IsEnabled=!_workflow.Busy;
-        WorkflowHint.Text=_workflow.NextStep;
+        WorkflowHint.Text=_configurationReady ? _workflow.NextStep : "Complete and save Configuration before validating playlists.";
     }
 
     private void ReviewSynchronization_Click(object sender,RoutedEventArgs e)
@@ -297,6 +320,15 @@ public partial class MainWindow : Window {
         ReadinessTimeout.Text=_config.Timing.ZidooReadinessTimeoutSeconds.ToString();
         ColdBootSeconds.Text=_config.Timing.ColdBootUiStabilizationSeconds.ToString();
         RefreshHistory();
+        UpdateConfigurationAvailability();
+    }
+
+    private void UpdateConfigurationAvailability()
+    {
+        try { if (_config is null) throw new InvalidDataException(); ConfigurationService.Validate(_config); _configurationReady=true; }
+        catch (InvalidDataException) { _configurationReady=false; }
+        RefreshWorkflowControls();
+        if (!_configurationReady) MainTabs.SelectedItem=ConfigurationTab;
     }
 
     /// <summary>Copies editable UI fields into the in-memory configuration before validation/save/run.</summary>
@@ -318,7 +350,7 @@ public partial class MainWindow : Window {
     /// <summary>Validates, archives, and saves the current Configuration form values.</summary>
     private async void SaveConfig_Click(object sender, RoutedEventArgs e) {
         if (IsolatedStartupMode.Enabled) return;
-        try { ReadConfigFromForm(); await _configService.SaveAsync(_config!); ConfigMessage.Text="Configuration validated, archived, and saved."; RefreshHistory(); }
+        try { ReadConfigFromForm(); await _configService.SaveAsync(_config!); ConfigMessage.Text="Configuration validated, archived, and saved."; RefreshHistory(); UpdateConfigurationAvailability(); }
         catch(Exception ex) { ConfigMessage.Text=$"Configuration was not saved: {UserMessages.Explain(ex)}"; }
     }
 
@@ -656,7 +688,7 @@ public partial class MainWindow : Window {
     /// </summary>
     private async void ValidateMediaMonkey_Click(object sender, RoutedEventArgs e)
     {
-        if(IsolatedStartupMode.Enabled || !_workflow.CanValidate)return;
+        if(IsolatedStartupMode.Enabled || !_configurationReady || !_workflow.CanValidate)return;
         _workflow.BeginValidation();_preparedReview=_approvedReview=null;RefreshWorkflowControls();
         ValidateMediaMonkeyButton.IsEnabled = false;
         RunButton.IsEnabled = false;
@@ -866,11 +898,14 @@ public partial class MainWindow : Window {
         }
     }
 
+    private string HistoryRoot => string.IsNullOrWhiteSpace(_config?.Application.ReportRoot)
+        ? Path.Combine(_configService.Root,"Reports") : _config.Application.ReportRoot;
+
     private void RecordHistory(DateTime started, string operation, string result)
     {
         try
         {
-            string root = _config?.Application.ReportRoot ?? ReportRoot.Text.Trim();
+            string root = HistoryRoot;
             _runHistoryService.Save(root, started, operation, result,
                 _stopwatch?.Elapsed ?? TimeSpan.Zero, _events);
             RefreshRunHistory();
@@ -888,12 +923,15 @@ public partial class MainWindow : Window {
         if (RunHistoryGrid is null || RunHistoryStatus is null) return;
         try
         {
-            string root = _config?.Application.ReportRoot ?? ReportRoot.Text.Trim();
-            var records = _runHistoryService.List(root);
+            string root = HistoryRoot;
+            var records = _runHistoryService.List(root)
+                .Concat(_runHistoryService.List(Path.Combine(_configService.Root,"Reports")))
+                .DistinctBy(record=>record.LogPath,StringComparer.OrdinalIgnoreCase)
+                .OrderByDescending(record=>record.Started).ToList();
             SetRunLogTarget(null);
             RunHistoryGrid.ItemsSource = records;
             RunHistoryStatus.Text = records.Count == 0
-                ? "No structured runs recorded yet. Validate or Verify to create the first entry."
+                ? "No recorded operations yet. Discovery, validation and verification create entries."
                 : $"{records.Count} recorded runs (newest first).";
         }
         catch (Exception ex) { RunHistoryStatus.Text = $"Could not read run history: {UserMessages.Explain(ex)}"; }
@@ -903,7 +941,7 @@ public partial class MainWindow : Window {
     {
         try
         {
-            string root = _config?.Application.ReportRoot ?? ReportRoot.Text.Trim();
+            string root = HistoryRoot;
             // Explicitly separate from the normal run history and do not create directories.
             string directory = Path.Combine(root, "RecoveryPlanReports");
             var rows = new IsolatedRecoveryReportBrowserService().List(directory);
@@ -1055,15 +1093,20 @@ public partial class MainWindow : Window {
     /// </summary>
     private async void DiscoverZidoo_Click(object sender, RoutedEventArgs e)
     {
-        if (IsolatedStartupMode.Enabled) return;
+        if (IsolatedStartupMode.Enabled || _workflow.Busy) return;
+        var discoveryStarted=DateTime.Now;
+        var discoveryEvents=new List<LogEvent>{new(DateTime.Now,LogLevel.Blue,"Started read-only Zidoo discovery; no wake or playlist changes requested.")};
+        string discoveryResult="Failed";
         DiscoverZidooButton.IsEnabled=false;
+        _workflow.SetDiagnosticBusy(true);RefreshWorkflowControls();
         DiscoveryStatus.Text="Searching. Make sure the Zidoo is powered on and connected to this local network...";
         try
         {
-            var progress = new Progress<string>(message => DiscoveryStatus.Text=message);
-            var devices = await _zidooDiscovery.DiscoverAsync(progress);
+            var progress = new Progress<string>(message => { DiscoveryStatus.Text=message; discoveryEvents.Add(new(DateTime.Now,LogLevel.Blue,message)); });
+            var devices = _discoveryOverride is not null ? await _discoveryOverride() : await _zidooDiscovery.DiscoverAsync(progress);
             if (devices.Count == 0)
             {
+                discoveryResult="No device found";
                 DiscoveryStatus.Text="No Zidoo was found. Make sure the Zidoo is powered on and connected to the same local network, then try again. Manual configuration remains available.";
                 ShowCompletionNotification(
                     $"No Zidoo device was identified.\n\nIt may be powered off, unreachable, or not identifiable through discovery.",
@@ -1078,16 +1121,18 @@ public partial class MainWindow : Window {
                 var chooser=new ZidooDiscoveryWindow(devices) { Owner=this };
                 selected=chooser.ShowDialog()==true ? chooser.SelectedDevice : null;
             }
-            if (selected is null) { DiscoveryStatus.Text="Discovery completed; no device was selected."; return; }
+            if (selected is null) { discoveryResult="No device selected"; DiscoveryStatus.Text="Discovery completed; no device was selected."; return; }
 
+            discoveryResult="Device found";
             ZidooIp.Text=selected.IPAddress;
             ZidooMac.Text=selected.MacAddress;
             ExpectedModel.Text=selected.Model;
             ApiPort.Text=ZidooDiscoveryService.DocumentedApiPort.ToString();
+            Broadcast.Text=ZidooDiscoveryService.FindBroadcastAddress(selected.IPAddress) ?? "";
             DiscoveryStatus.Text=selected.IsValidatedModel
                 ? $"Found {selected.Model} at {selected.IPAddress}. Configuration fields were populated; choose Save Configuration to commit them."
                 : $"Found Zidoo model {selected.Model} at {selected.IPAddress}. This model has not been validated by this project. Review before saving.";
-            ShowCompletionNotification($"Discovery completed.\n\nModel: {selected.Model}\nIP address: {selected.IPAddress}\nWired MAC address: {selected.MacAddress}\nFirmware: {selected.Firmware}\nValidated model: {(selected.IsValidatedModel ? "Yes" : "No")}\n\nReview the populated fields and select Save Configuration to save them.", "Zidoo Discovery Completed", selected.IsValidatedModel ? MessageBoxImage.Information : MessageBoxImage.Warning);
+            ShowCompletionNotification($"Discovery completed.\n\nModel: {selected.Model}\nIP address: {selected.IPAddress}\nWired MAC address: {selected.MacAddress}\nWOL broadcast: {(string.IsNullOrWhiteSpace(Broadcast.Text)?"Not determined; enter it manually":Broadcast.Text)}\nFirmware: {selected.Firmware}\nValidated model: {(selected.IsValidatedModel ? "Yes" : "No")}\n\nReview the populated fields and select Save Configuration to save them.", "Zidoo Discovery Completed", selected.IsValidatedModel ? MessageBoxImage.Information : MessageBoxImage.Warning);
         }
         catch(Exception ex)
         {
@@ -1097,7 +1142,14 @@ public partial class MainWindow : Window {
             DiscoveryStatus.Text=$"Discovery could not complete: {UserMessages.Explain(ex)}";
             ShowCompletionNotification($"Discovery could not complete.\n\n{UserMessages.Explain(ex)}", "Zidoo Discovery Error", MessageBoxImage.Error);
         }
-        finally { DiscoverZidooButton.IsEnabled=true; }
+        finally
+        {
+            discoveryEvents.Add(new(DateTime.Now,discoveryResult=="Failed"?LogLevel.Red:LogLevel.Blue,DiscoveryStatus.Text));
+            try { _runHistoryService.Save(HistoryRoot,discoveryStarted,"Zidoo Discovery",discoveryResult,DateTime.Now-discoveryStarted,discoveryEvents); }
+            catch(Exception ex) { ConfigMessage.Text=$"Discovery history could not be saved: {UserMessages.Explain(ex)}"; }
+            DiscoverZidooButton.IsEnabled=true;
+            _workflow.SetDiagnosticBusy(false);RefreshWorkflowControls();RefreshRunHistory();
+        }
     }
 
     /// <summary>Displays product and runtime information.</summary>
@@ -1258,7 +1310,7 @@ public partial class MainWindow : Window {
     {
         try
         {
-            string root = _config?.Application.ReportRoot ?? ReportRoot.Text.Trim();
+            string root = HistoryRoot;
             var latest = _runHistoryService.List(root, 1).FirstOrDefault();
             if (latest is null || !File.Exists(latest.LogPath))
             {

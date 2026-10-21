@@ -17,3 +17,5 @@ The upgrade installs new components transactionally before removing the old prod
 Build output is not proof of acceptance. Record actual tests and limitations in the candidate release notes.
 
 File-table versions use numeric fixed-file metadata, matching Windows Installer, rather than free-form display strings. Each field must fit 0–65535. For example, msquic.dll displays 2.5.10.154561281 but its fixed version is 2.5.10.0. Full-payload acceptance is necessary because a tiny fixture cannot detect this metadata defect.
+
+Unreleased installer follow-up: full interactive installation offers a Create a desktop shortcut checkbox. The Start menu entry is independent. For silent/basic installation use DESKTOPSHORTCUT=0 to omit the desktop shortcut or DESKTOPSHORTCUT=1 to create it (default). NOSHORTCUTS=1 remains an isolated-test option. Full interactive visual acceptance is still pending.

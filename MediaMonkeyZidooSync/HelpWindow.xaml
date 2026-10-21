@@ -61,7 +61,7 @@
                 Margin="0,16,0,0" Visibility="Collapsed">
      <TextBlock FontSize="14">
       <Hyperlink NavigateUri="https://apidoc.zidoo.tv/"
-                 RequestNavigate="ZidooDocumentation_RequestNavigate">Visit the Zidoo Network API documentation</Hyperlink>
+                 RequestNavigate="ZidooDocumentation_RequestNavigate">Zidoo developer API reference (Chinese; not a setup guide)</Hyperlink>
      </TextBlock>
      <TextBlock FontSize="14" Margin="0,8,0,0">
       <Hyperlink NavigateUri="https://www.zidoo.tv/Support/guide/guide_target/xqwZ8QMj6ZVKKmVViAFMcQ%3D%3D.html"

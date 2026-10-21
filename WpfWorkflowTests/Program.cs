@@ -55,7 +55,14 @@ internal static class Program
             var verify=Field<Button>(window,"VerifyNativeExporterButton");
             var review=Field<Button>(window,"ReviewSynchronizationButton");
             var run=Field<Button>(window,"RunButton");
-            Check(validate.IsEnabled && !verify.IsEnabled && !review.IsEnabled && !run.IsEnabled,"Only validation is enabled at startup");
+            Check(!validate.IsEnabled && !verify.IsEnabled && !review.IsEnabled && !run.IsEnabled,"No configuration disables all synchronization steps");
+            Check(!Field<TabItem>(window,"SynchronizationTab").IsEnabled && ReferenceEquals(Field<TabControl>(window,"MainTabs").SelectedItem,Field<TabItem>(window,"ConfigurationTab")),"First startup selects Configuration and blocks Synchronization");
+            typeof(MainWindow).GetField("_configurationReady",BindingFlags.Instance|BindingFlags.NonPublic)!.SetValue(window,true);
+            typeof(MainWindow).GetMethod("RefreshWorkflowControls",BindingFlags.Instance|BindingFlags.NonPublic)!.Invoke(window,null);
+            Check(validate.IsEnabled,"Saved valid configuration enables validation");
+            Check(ZidooDiscoveryService.BroadcastForSubnet("192.168.1.160","192.168.1.20","255.255.255.0")=="192.168.1.255","Discovery derives the matching subnet broadcast");
+            Check(ZidooDiscoveryService.BroadcastForSubnet("10.0.3.50","10.0.2.1","255.255.254.0")=="10.0.3.255","Broadcast calculation respects non-24-bit masks");
+            Check(ZidooDiscoveryService.BroadcastForSubnet("192.168.2.20","192.168.1.20","255.255.255.0") is null,"Discovery does not guess a broadcast for an unrelated subnet");
             Check(typeof(MainWindow).GetField("RecoverSynchronizationButton",BindingFlags.Instance|BindingFlags.NonPublic) is null,"Unrequested recovery button removed");
             var flow=Field<SynchronizationWorkflow>(window,"_workflow");
             void Refresh()=>typeof(MainWindow).GetMethod("RefreshWorkflowControls",BindingFlags.Instance|BindingFlags.NonPublic)!.Invoke(window,null);
@@ -155,8 +162,26 @@ internal static class Program
             var reopenedWindow=new MainWindow(root);reopenedWindow.Show();Pump(500);
             var reopenedTabs=Field<TabControl>(reopenedWindow,"MainTabs");var reopenedGrid=Field<DataGrid>(reopenedWindow,"RunHistoryGrid");
             Console.WriteLine($"Restored layout: tab={reopenedTabs.SelectedIndex}, width={reopenedGrid.Columns[1].Width.Value}, order={reopenedGrid.Columns[1].DisplayIndex}");
-            Check(reopenedTabs.SelectedIndex==2 && reopenedGrid.Columns[1].Width.Value==333 && reopenedGrid.Columns[1].DisplayIndex==0,"Saved layout restores from the same version-independent profile");
+            Check(reopenedTabs.SelectedIndex==1 && reopenedGrid.Columns[1].Width.Value==333 && reopenedGrid.Columns[1].DisplayIndex==0,"Grid layout restores while incomplete configuration takes precedence over the saved tab");
             reopenedWindow.Close();Pump();
+            foreach(var outcome in new[]{"empty","found","failed"})
+            {
+                var discoveryRoot=Path.Combine(root,"Discovery-"+outcome);
+                Func<Task<IReadOnlyList<ZidooDiscoveryResult>>> response=()=>outcome=="failed"
+                    ? Task.FromException<IReadOnlyList<ZidooDiscoveryResult>>(new IOException("offline discovery fixture"))
+                    : Task.FromResult<IReadOnlyList<ZidooDiscoveryResult>>(outcome=="found"
+                        ? new[]{new ZidooDiscoveryResult("192.0.2.10","TEST","offline","00:11:22:33:44:55","","test",true)}
+                        : Array.Empty<ZidooDiscoveryResult>());
+                var discoveryWindow=new MainWindow(discoveryRoot,discoverZidoo:response);discoveryWindow.Show();Pump(300);
+                Invoke(discoveryWindow,"DiscoverZidoo_Click");Pump(300);
+                var entries=new RunHistoryService().List(Path.Combine(discoveryRoot,"Reports"));
+                Check(entries.Count==1 && entries[0].Operation=="Zidoo Discovery" && entries[0].Result==(outcome=="empty"?"No device found":outcome=="found"?"Device found":"Failed"),"Discovery records the "+outcome+" outcome before configuration exists");
+                Check(File.Exists(entries[0].LogPath) && File.ReadAllText(entries[0].LogPath).Contains("no wake or playlist changes"),"Discovery "+outcome+" has an openable independent audit log");
+                var model=Field<MediaMonkeyZidooSync.Models.AppConfig>(discoveryWindow,"_config");model.Application.ReportRoot=Path.Combine(discoveryRoot,"NewReports");
+                Invoke(discoveryWindow,"RefreshRunHistory_Click");
+                Check(Field<DataGrid>(discoveryWindow,"RunHistoryGrid").Items.Count==1,"Discovery history remains visible after changing the report folder: "+outcome);
+                discoveryWindow.Close();Pump();
+            }
             app.Shutdown();
 
             var svc = new ConfigurationService(root);
