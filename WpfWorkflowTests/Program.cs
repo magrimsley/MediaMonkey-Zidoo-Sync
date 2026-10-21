@@ -185,6 +185,8 @@ internal static class Program
             }
             var savedRoot=Path.Combine(root,"SavedStartup");
             var savedConfig=new MediaMonkeyZidooSync.Models.AppConfig();
+            savedConfig.Zidoo.ApiPort=9529;savedConfig.Zidoo.WolPort=9517;savedConfig.Zidoo.PlaylistGridColumns=5;
+            savedConfig.Timing.ZidooReadinessTimeoutSeconds=120;savedConfig.Timing.ColdBootUiStabilizationSeconds=20;
             savedConfig.Application.ReportRoot=Path.Combine(savedRoot,"Reports");
             savedConfig.MediaMonkey.DatabasePath=Path.Combine(savedRoot,"offline.db");savedConfig.MediaMonkey.PlaylistParent="TEST";
             savedConfig.Zidoo.IPAddress="192.0.2.1";savedConfig.Zidoo.MacAddress="001122334455";savedConfig.Zidoo.ExpectedModel="TEST";savedConfig.Zidoo.BroadcastAddress="192.0.2.255";
