@@ -77,7 +77,7 @@ foreach(var exit in new[]{("SetupComplete","Setup completed successfully.","Choo
     Row("ControlEvent","Dialog_,Control_,Event,Argument,Condition,Ordering",exit.Item1,"Finish","EndDialog","Return","1",1);
 }
 foreach(var dialog in new[]{"InstallOptions","InstallProgress","SetupComplete","SetupCancelled","SetupFailed"})
-    Row("Control","Dialog_,Control,Type,X,Y,Width,Height,Attributes,Text",dialog,"BrandIcon","Icon",318,10,32,32,5242881,"InstallerIcon");
+    Row("Control","Dialog_,Control,Type,X,Y,Width,Height,Attributes,Text",dialog,"BrandIcon","Icon",318,10,32,32,1,"InstallerIcon");
 foreach(var table in new[]{"InstallExecuteSequence","InstallUISequence"})Table(table,"`Action` CHAR(72) NOT NULL, `Condition` CHAR(255), `Sequence` SHORT","`Action`");
 foreach(var p in new Dictionary<string,string>{["ProductCode"]=product,["UpgradeCode"]=upgrade,["ProductName"]="MM Zidoo Sync "+app,["ProductVersion"]=version.ToString(),["ProductLanguage"]="1033",["Manufacturer"]="Michael Grimsley",["INSTALLLEVEL"]="1",["MSIINSTALLPERUSER"]="1",["DESKTOPSHORTCUT"]="1",["DefaultUIFont"]="InstallerFont",["ARPNOMODIFY"]="1",["ARPPRODUCTICON"]="Application.ico",["ARPURLINFOABOUT"]="https://github.com/magrimsley/MediaMonkey-Zidoo-Sync",["ARPCOMMENTS"]="Application "+app+"; installer revision "+version+". Independent project; unsigned.",["SecureCustomProperties"]="OLDPRODUCTS;NEWERFOUND;INSTALLFOLDER;NOSHORTCUTS;DESKTOPSHORTCUT"})Row("Property","Property,Value",p.Key,p.Value);
 void Dir(string id,string? parent,string name)=>Row("Directory","Directory,Directory_Parent,DefaultDir",id,parent,name);
