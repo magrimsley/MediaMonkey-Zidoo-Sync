@@ -1,3 +1,9 @@
+## 1.1.0-rc.3 — prepared candidate
+
+- Apply the clarified startup rule: Configuration only before complete saved configuration; otherwise always Synchronization.
+- Include the accumulated RC2 first-install fixes in a new application/file/MSI version identity, rather than repackaging RC2.
+- See RC3_RELEASE_NOTES.md for the included changes and limits.
+
 ## Unreleased first-install acceptance corrections
 
 - Start on Configuration and block synchronization until complete settings have been saved; configuration edits invalidate that permission.

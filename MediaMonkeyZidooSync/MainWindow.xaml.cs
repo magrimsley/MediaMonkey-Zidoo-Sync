@@ -255,6 +255,7 @@ public partial class MainWindow : Window {
         if(RunButton is null || ReviewSynchronizationButton is null)return;
         bool allowed=!IsolatedStartupMode.Enabled && _configurationReady;
         SynchronizationTab.IsEnabled=_configurationReady;
+        RunHistoryTab.IsEnabled=_configurationReady;
         ValidateMediaMonkeyButton.IsEnabled=allowed && _workflow.CanValidate;
         VerifyNativeExporterButton.IsEnabled=allowed && _workflow.CanVerify;
         ReviewSynchronizationButton.IsEnabled=allowed && _workflow.CanReview && _preparedReview is not null;
@@ -328,7 +329,7 @@ public partial class MainWindow : Window {
         try { if (_config is null) throw new InvalidDataException(); ConfigurationService.Validate(_config); _configurationReady=true; }
         catch (InvalidDataException) { _configurationReady=false; }
         RefreshWorkflowControls();
-        if (!_configurationReady) MainTabs.SelectedItem=ConfigurationTab;
+        MainTabs.SelectedItem=_configurationReady ? SynchronizationTab : ConfigurationTab;
     }
 
     /// <summary>Copies editable UI fields into the in-memory configuration before validation/save/run.</summary>
@@ -1328,7 +1329,8 @@ public partial class MainWindow : Window {
     private async Task RestoreUiStateAsync()
     {
         _uiState = await _uiStateService.LoadAsync();
-        MainTabs.SelectedIndex = Math.Clamp(_uiState.SelectedTabIndex, 0, MainTabs.Items.Count - 1);
+        // Startup navigation follows saved-configuration readiness, not the previously open tab.
+        MainTabs.SelectedItem=ConfigurationTab;
         ZidooSection.IsExpanded = _uiState.ZidooExpanded;
         MediaMonkeySection.IsExpanded = _uiState.MediaMonkeyExpanded;
         PlaylistStorageSection.IsExpanded = _uiState.PlaylistStorageExpanded;

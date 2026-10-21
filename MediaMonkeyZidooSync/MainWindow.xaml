@@ -160,7 +160,7 @@
     </ScrollViewer>
    </TabItem>
 
-   <TabItem Header="Run History / Logs">
+   <TabItem x:Name="RunHistoryTab" Header="Run History / Logs">
     <Grid Margin="16">
      <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
      <Expander Header="Run History / Logs" IsExpanded="True" Grid.Row="0">

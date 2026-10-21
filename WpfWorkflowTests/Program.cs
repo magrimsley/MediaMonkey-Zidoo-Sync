@@ -47,7 +47,7 @@ internal static class Program
             string? openedLog = null;
             var window = new MainWindow(root, path => openedLog = path);
             window.Show(); Pump(400);
-            Check(window.Title=="MM Zidoo Sync" && typeof(MainWindow).Assembly.GetName().Name=="MMZidooSync" && ApplicationVersionProvider.ProductVersion=="1.1.0-rc.2", "RC product name, assembly and version match approved identity");
+            Check(window.Title=="MM Zidoo Sync" && typeof(MainWindow).Assembly.GetName().Name=="MMZidooSync" && ApplicationVersionProvider.ProductVersion=="1.1.0-rc.3", "RC product name, assembly and version match approved identity");
             Check(typeof(MainWindow).GetMethod("RunNativeAssessment_Click", BindingFlags.Instance | BindingFlags.NonPublic) is null && typeof(MainWindow).GetMethod("InspectNativePlan_Click", BindingFlags.Instance | BindingFlags.NonPublic) is null, "Optional assessment handlers are excluded from compilation");
             Check(window.FindName("RunNativeAssessmentButton") is null && window.FindName("InspectNativePlanButton") is null, "Optional diagnostics controls are absent");
             Check(window.Icon is not null, "Main window loads application artwork");
@@ -57,6 +57,7 @@ internal static class Program
             var run=Field<Button>(window,"RunButton");
             Check(!validate.IsEnabled && !verify.IsEnabled && !review.IsEnabled && !run.IsEnabled,"No configuration disables all synchronization steps");
             Check(!Field<TabItem>(window,"SynchronizationTab").IsEnabled && ReferenceEquals(Field<TabControl>(window,"MainTabs").SelectedItem,Field<TabItem>(window,"ConfigurationTab")),"First startup selects Configuration and blocks Synchronization");
+            Check(!Field<TabItem>(window,"RunHistoryTab").IsEnabled,"Without saved configuration all other tabs are disabled");
             typeof(MainWindow).GetField("_configurationReady",BindingFlags.Instance|BindingFlags.NonPublic)!.SetValue(window,true);
             typeof(MainWindow).GetMethod("RefreshWorkflowControls",BindingFlags.Instance|BindingFlags.NonPublic)!.Invoke(window,null);
             Check(validate.IsEnabled,"Saved valid configuration enables validation");
@@ -182,6 +183,19 @@ internal static class Program
                 Check(Field<DataGrid>(discoveryWindow,"RunHistoryGrid").Items.Count==1,"Discovery history remains visible after changing the report folder: "+outcome);
                 discoveryWindow.Close();Pump();
             }
+            var savedRoot=Path.Combine(root,"SavedStartup");
+            var savedConfig=new MediaMonkeyZidooSync.Models.AppConfig();
+            savedConfig.Application.ReportRoot=Path.Combine(savedRoot,"Reports");
+            savedConfig.MediaMonkey.DatabasePath=Path.Combine(savedRoot,"offline.db");savedConfig.MediaMonkey.PlaylistParent="TEST";
+            savedConfig.Zidoo.IPAddress="192.0.2.1";savedConfig.Zidoo.MacAddress="001122334455";savedConfig.Zidoo.ExpectedModel="TEST";savedConfig.Zidoo.BroadcastAddress="192.0.2.255";
+            savedConfig.NAS.Host="offline.invalid";savedConfig.NAS.ShareName="test";savedConfig.NAS.MusicFolderName="music";savedConfig.NAS.PlaylistFolderName="lists";
+            savedConfig.NAS.MusicRootUNC=@"\\offline.invalid\test\music";savedConfig.NAS.PlaylistFolderUNC=@"\\offline.invalid\test\lists";
+            new ConfigurationService(savedRoot).SaveAsync(savedConfig).GetAwaiter().GetResult();
+            new UiStateService(Path.Combine(savedRoot,"ui-state.json")).SaveAsync(new MediaMonkeyZidooSync.Models.UiState{SelectedTabIndex=2}).GetAwaiter().GetResult();
+            var savedWindow=new MainWindow(savedRoot);savedWindow.Show();Pump(500);
+            Check(Field<TabControl>(savedWindow,"MainTabs").SelectedIndex==0,"Saved complete configuration always starts on Synchronization despite a saved History tab");
+            Check(Field<TabItem>(savedWindow,"RunHistoryTab").IsEnabled && Field<Button>(savedWindow,"ValidateMediaMonkeyButton").IsEnabled,"Saved complete configuration enables other tabs and validation");
+            savedWindow.Close();Pump();
             app.Shutdown();
 
             var svc = new ConfigurationService(root);
