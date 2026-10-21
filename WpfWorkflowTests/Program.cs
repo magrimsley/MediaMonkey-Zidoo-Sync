@@ -47,7 +47,7 @@ internal static class Program
             string? openedLog = null;
             var window = new MainWindow(root, path => openedLog = path);
             window.Show(); Pump(400);
-            Check(window.Title=="MM Zidoo Sync" && typeof(MainWindow).Assembly.GetName().Name=="MMZidooSync" && ApplicationVersionProvider.ProductVersion=="1.1.0-rc.7", "RC product name, assembly and version match approved identity");
+            Check(window.Title=="MM Zidoo Sync" && typeof(MainWindow).Assembly.GetName().Name=="MMZidooSync" && ApplicationVersionProvider.ProductVersion=="1.1.0-rc.8", "RC product name, assembly and version match approved identity");
             Check(typeof(MainWindow).GetMethod("RunNativeAssessment_Click", BindingFlags.Instance | BindingFlags.NonPublic) is null && typeof(MainWindow).GetMethod("InspectNativePlan_Click", BindingFlags.Instance | BindingFlags.NonPublic) is null, "Optional assessment handlers are excluded from compilation");
             Check(window.FindName("RunNativeAssessmentButton") is null && window.FindName("InspectNativePlanButton") is null, "Optional diagnostics controls are absent");
             Check(window.Icon is not null, "Main window loads application artwork");
@@ -148,7 +148,7 @@ internal static class Program
             if(!string.IsNullOrWhiteSpace(artifacts)){
                 var configPreview=new System.Windows.Media.Imaging.RenderTargetBitmap((int)help.ActualWidth,(int)help.ActualHeight,96,96,System.Windows.Media.PixelFormats.Pbgra32);configPreview.Render(help);var configEncoder=new System.Windows.Media.Imaging.PngBitmapEncoder();configEncoder.Frames.Add(System.Windows.Media.Imaging.BitmapFrame.Create(configPreview));using(var png=File.Create(Path.Combine(artifacts,"configuration-help-preview.png")))configEncoder.Save(png);
             }
-            help.SelectTopic("ConfigurationFiles");Pump();Check(new System.Windows.Documents.TextRange(helpDocument.ContentStart,helpDocument.ContentEnd).Text.Contains("HistoryKeepCount"),"Help documents operational and presentation JSON files");
+            Check(configHelp.Contains("Load Configuration") && !configHelp.Contains("choose A Zidoo, or"),"Configuration Help explains loading settings and generic playlist storage");
             help.Close();            var history=Field<DataGrid>(window,"RunHistoryGrid");
             var tabs=Field<TabControl>(window,"MainTabs");
             var historyTab=tabs.Items.OfType<TabItem>().Single(tab=>Equals(tab.Header,"Run History / Logs"));
@@ -289,6 +289,15 @@ internal static class Program
             File.SetAttributes(jazzPath,FileAttributes.Hidden);
             var hiddenPlan=new MediaMonkeyExportTransactionPlanner().PrepareAsync(planConfig).GetAwaiter().GetResult();
             Check(hiddenPlan.Items.Single(item=>item.FileName=="Jazz.m3u").Action==PlaylistTransactionAction.Create,"Actual native planning excludes hidden M3Us from the frozen baseline");
+            var backupMethod=typeof(NativeProductionSyncService).GetMethod("RecoverySources",BindingFlags.Static|BindingFlags.NonPublic)!;
+            var physicalHash=Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(File.ReadAllBytes(jazzPath)));
+            var visible=FrozenPlaylistFiles.Enumerate(planConfig.NAS.PlaylistFolderUNC).ToDictionary(path=>Path.GetFileName(path)!,path=>path,StringComparer.OrdinalIgnoreCase);
+            var sources=(System.Collections.Generic.Dictionary<string,string>)backupMethod.Invoke(null,new object[]{planConfig.NAS.PlaylistFolderUNC,visible,new[]{("Jazz.m3u",physicalHash)}})!;
+            Check(!visible.ContainsKey("Jazz.m3u") && sources["Jazz.m3u"]==jazzPath,"Recovery includes a physical hidden target while the frozen planning baseline still excludes it");
+            bool changedRefused=false;
+            try{backupMethod.Invoke(null,new object[]{planConfig.NAS.PlaylistFolderUNC,visible,new[]{("Jazz.m3u","WRONG")}});}catch(TargetInvocationException error)when(error.InnerException is InvalidDataException){changedRefused=true;}
+            Check(changedRefused,"Recovery preparation refuses target bytes that differ from the reviewed hash");
+            Check(UserMessages.Explain(new InvalidDataException("Original file cannot reproduce device track count: Hootie & Smash Mouth.m3u")).Contains("Hootie & Smash Mouth.m3u"),"Visible failure keeps the actual playlist-specific reason");
             File.SetAttributes(jazzPath,FileAttributes.Normal);Microsoft.Data.Sqlite.SqliteConnection.ClearAllPools();
             var savedRoot=Path.Combine(root,"SavedStartup");
             var savedConfig=new MediaMonkeyZidooSync.Models.AppConfig();
@@ -308,6 +317,13 @@ internal static class Program
             var savedWindow=new MainWindow(savedRoot);savedWindow.Show();Pump(500);
             Check(Field<TabControl>(savedWindow,"MainTabs").SelectedIndex==0,"Saved complete configuration always starts on Synchronization despite a saved History tab");
             Check(Field<TabItem>(savedWindow,"RunHistoryTab").IsEnabled && Field<Button>(savedWindow,"ValidateMediaMonkeyButton").IsEnabled,"Saved complete configuration enables other tabs and validation");
+            Field<TabControl>(savedWindow,"MainTabs").SelectedItem=Field<TabItem>(savedWindow,"ConfigurationTab");
+            Invoke(savedWindow,"SaveConfig_Click");Pump(500);
+            Check(ReferenceEquals(Field<TabControl>(savedWindow,"MainTabs").SelectedItem,Field<TabItem>(savedWindow,"ConfigurationTab")),"Saving complete settings stays on Configuration");
+            var savedHelp=new HelpWindow("Configuration");savedHelp.Show();Pump();
+            var topics=Field<ListBox>(savedHelp,"Topics");
+            Check(!topics.Items.Cast<ListBoxItem>().Any(item=>(string?)item.Tag=="ConfigurationFiles"),"Help leaves JSON reference details in the packaged README");
+            savedHelp.Close();
             savedWindow.Close();Pump();
             app.Shutdown();
 

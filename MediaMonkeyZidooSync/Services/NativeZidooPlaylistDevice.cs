@@ -1,4 +1,6 @@
 using System.Net.Http;
+using System.Net;
+using System.Net.Sockets;
 using System.IO;
 using System.Text.Json;
 using MediaMonkeyZidooSync.Models;
@@ -12,16 +14,20 @@ public sealed class NativeZidooPlaylistDevice : IProductionPlaylistDevice
     public event Action<string>? Output;
     private readonly HttpClient _http;
     private readonly AppConfig _config;
+    private readonly Func<string,CancellationToken,Task<IPAddress[]>> _resolve;
+    private string? _shareHost;
     private readonly Func<int, CancellationToken, Task> _delay;
     private readonly SemaphoreSlim _gate = new(1, 1);
     private static readonly HashSet<string> AllowedKeys = new(StringComparer.Ordinal)
         { "Key.Up", "Key.Down", "Key.Left", "Key.Right", "Key.Ok", "Key.Select", "Key.Back" };
 
     public NativeZidooPlaylistDevice(HttpClient http, AppConfig config,
-        Func<int, CancellationToken, Task>? delay = null)
+        Func<int, CancellationToken, Task>? delay = null,
+        Func<string,CancellationToken,Task<IPAddress[]>>? resolve = null)
     {
         _http = http;
         _config = config;
+        _resolve=resolve ?? ((host,ct)=>Dns.GetHostAddressesAsync(host,ct));
         _delay = delay ?? ((ms, ct) => Task.Delay(ms, ct));
         if (http.BaseAddress is null || string.IsNullOrWhiteSpace(config.Zidoo.ExpectedModel) ||
             config.Zidoo.PlaylistGridColumns is < 1 or > 20)
@@ -158,7 +164,7 @@ public sealed class NativeZidooPlaylistDevice : IProductionPlaylistDevice
             throw new InvalidDataException("Playlist inventory changed during grid refresh; recovery required.");
     }
 
-    private string EncodedShare => Uri.EscapeDataString("/mnt/smb/" + _config.NAS.Host + "#" + _config.NAS.ShareName);
+    private string EncodedShare => Uri.EscapeDataString("/mnt/smb/" + (_shareHost ?? _config.NAS.Host) + "#" + _config.NAS.ShareName);
     private string EncodedMusic => EncodedShare + "%2F" + Uri.EscapeDataString(_config.NAS.MusicFolderName);
     private string EncodedPlaylists => EncodedMusic + "%2F" + Uri.EscapeDataString(_config.NAS.PlaylistFolderName);
 
@@ -176,11 +182,35 @@ public sealed class NativeZidooPlaylistDevice : IProductionPlaylistDevice
 
     public async Task PreflightDirectoriesAsync(CancellationToken ct=default)
     {
+        try { await CheckDirectoriesAsync(ct); return; }
+        catch(InvalidDataException first)
+        {
+            if(_shareHost is not null || IPAddress.TryParse(_config.NAS.Host,out _))throw;
+            IPAddress[] addresses;
+            try { addresses=await _resolve(_config.NAS.Host,ct); }
+            catch(SocketException) { throw new InvalidDataException(first.Message+" Windows could not resolve storage host '"+_config.NAS.Host+"'.",first); }
+            var matches=new List<string>();
+            foreach(var address in addresses.Where(x=>x.AddressFamily==AddressFamily.InterNetwork).Distinct())
+            {
+                _shareHost=address.ToString();
+                try { await CheckDirectoriesAsync(ct); matches.Add(_shareHost); }
+                catch(InvalidDataException) { }
+                finally { _shareHost=null; }
+            }
+            if(matches.Count!=1)throw new InvalidDataException(first.Message+" Resolved storage addresses with a unique folder match: "+matches.Count+". No playlist changes started.",first);
+            _shareHost=matches[0];
+            Output?.Invoke("Located storage host '"+_config.NAS.Host+"' on Zidoo as "+_shareHost+". Saved settings remain unchanged.");
+        }
+    }
+
+    private async Task CheckDirectoriesAsync(CancellationToken ct)
+    {
         var share=await List(EncodedShare,false,ct);
+        int musicMatches=share.Count(x=>x.Equals(_config.NAS.MusicFolderName,StringComparison.OrdinalIgnoreCase));
+        if(musicMatches!=1)throw new InvalidDataException("Zidoo returned "+musicMatches+" matches for music folder '"+_config.NAS.MusicFolderName+"' in share '"+(_shareHost??_config.NAS.Host)+"/"+_config.NAS.ShareName+"'. Expected one.");
         var music=await List(EncodedMusic,false,ct);
-        if(share.Count(x=>x.Equals(_config.NAS.MusicFolderName,StringComparison.OrdinalIgnoreCase))!=1 ||
-           music.Count(x=>x.Equals(_config.NAS.PlaylistFolderName,StringComparison.OrdinalIgnoreCase))!=1)
-            throw new InvalidDataException("Configured import directory is missing or ambiguous.");
+        int playlistMatches=music.Count(x=>x.Equals(_config.NAS.PlaylistFolderName,StringComparison.OrdinalIgnoreCase));
+        if(playlistMatches!=1)throw new InvalidDataException("Zidoo returned "+playlistMatches+" matches for playlist folder '"+_config.NAS.PlaylistFolderName+"' inside '"+_config.NAS.MusicFolderName+"'. Expected one.");
         _=await List(EncodedPlaylists,true,ct);
     }
 

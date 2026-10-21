@@ -17,6 +17,21 @@ public sealed class NativeProductionSyncService
     public int LastRunCompletedChanges {get;private set;}
     public bool LastRunRecovered {get;private set;}
     private sealed record Work(string FileName, byte[]? Content, int Count, string? OldHash, bool IsCreate=false);
+    internal static Dictionary<string,string> RecoverySources(string root, IReadOnlyDictionary<string,string> baseline,
+        IEnumerable<(string FileName,string SHA256)> targets)
+    {
+        var sources=new Dictionary<string,string>(baseline,StringComparer.OrdinalIgnoreCase);
+        foreach(var target in targets)
+        {
+            if(target.FileName!=Path.GetFileName(target.FileName))throw new InvalidDataException("Recovery target must be a playlist filename.");
+            string path=Path.Combine(root,target.FileName);
+            NativeInterruptedRecovery.NoLink(path);
+            if(!File.Exists(path) || Hash(File.ReadAllBytes(path))!=target.SHA256)
+                throw new InvalidDataException("Playlist changed before recovery backup: "+target.FileName);
+            sources[target.FileName]=path;
+        }
+        return sources;
+    }
     private static string Hash(byte[] bytes) => Convert.ToHexString(SHA256.HashData(bytes));
 
     public async Task<bool> RecoverPendingAsync(AppConfig config,Func<string,bool> confirm,CancellationToken ct=default)
@@ -180,7 +195,10 @@ public sealed class NativeProductionSyncService
             }
             string baselineFolder=Path.Combine(evidence,"Baseline");Directory.CreateDirectory(baselineFolder);
             var baselineFiles=new List<object>();
-            foreach(var entry in existing)
+            // Keep the frozen visible-file baseline for planning; additionally protect
+            // physical target files (including hidden files) before any mutation.
+            var recoverySources=RecoverySources(root,existing,changes.Where(x=>x.OldHash is not null).Select(x=>(x.FileName,x.OldHash!)));
+            foreach(var entry in recoverySources)
             {
                 byte[] content=await File.ReadAllBytesAsync(entry.Value,ct);
                 string backup=Path.Combine(baselineFolder,entry.Key);
@@ -202,9 +220,9 @@ public sealed class NativeProductionSyncService
             }
             var transaction=new NativeProductionTransaction(device);
             var compensatedFailures=await ApplyTransactionsAsync(
-                changes.Select(item=>new NativeProductionTransaction.Change(item.FileName,item.Content,item.Count,item.OldHash)),
+                changes.Select(item=>new NativeProductionTransaction.Change(item.FileName,item.Content,item.Count,item.OldHash,item.IsCreate)),
                 (item,token)=>transaction.ApplyAsync(root,evidence,item,token),
-                item=>Output?.Invoke("Starting "+(item.NewContent is null?"delete":item.ExpectedOldSHA256 is null?"create":"update")+" (not yet completed): "+item.FileName),
+                item=>Output?.Invoke("Starting "+(item.NewContent is null?"delete":item.IsCreate?"create":"update")+" (not yet completed): "+item.FileName),
                 item=>Output?.Invoke("Could not synchronize "+item.FileName+". Its previous state was restored and verified. Continuing with the remaining playlists."),ct,
                 item=>Output?.Invoke("Completed and verified: "+item.FileName));
             var finalInventory=await device.InventoryAsync(ct);

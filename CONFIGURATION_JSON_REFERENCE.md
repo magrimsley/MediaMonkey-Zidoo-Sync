@@ -1,6 +1,6 @@
 # Configuration JSON reference
 
-Use Load Configuration JSON in Configuration to browse saved settings; review and save before using them. The picker starts at the per-user current configuration folder. Import preserves the original JSON.
+Use Load Configuration in Configuration to browse saved settings; review and save before using them. The picker starts at the per-user current configuration folder. Import preserves the original JSON.
 
 The application stores the current file at `%LOCALAPPDATA%\MediaMonkey Zidoo Sync\Configuration\Current\MediaMonkey-Zidoo-Config-v1.0.0.json`. Archive and LastKnownGood keep copies. The v1.0.0 suffix identifies the compatibility format, not the application build. Ordinary upgrades and uninstall preserve preferences.
 
@@ -19,3 +19,5 @@ Save Configuration permits incomplete drafts. The application enables synchroniz
 AppData provides persistent per-user storage. Choose another Report / Log Root if desired; Windows can remove Temp content. History entries to keep bounds indexed run history. Delete Selected Run and Delete All History request confirmation and remove logs without changing music or settings.
 
 Windows Installer owns its title-bar and Preparing to remove icons. Native MSI Dialog authoring provides no per-dialog title-bar icon field; ARPPRODUCTICON brands Programs and Features. The custom setup pages display app artwork inside their content area. Changing the system-owned window icons requires a different external setup interface; this MSI preserves native Windows installation/uninstallation behavior.
+
+Load Configuration opens any saved configuration for review; Save Configuration activates the reviewed values. Restore Selected Archive first archives the current settings, then restores the selected internal snapshot.

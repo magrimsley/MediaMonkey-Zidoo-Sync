@@ -151,10 +151,10 @@
        </StackPanel>
       </Expander>
       <WrapPanel Margin="0,20,0,0">
-       <Button Content="Load Configuration JSON…" Padding="16,7" Click="ImportConfig_Click"/>
        <Button Content="Save Configuration" Padding="16,7" Click="SaveConfig_Click"/>
        <Button Content="Restore Last Known Good" Padding="16,7" Margin="10,0,0,0" Click="RestoreConfig_Click"/>
        <Button Content="Refresh History" Padding="16,7" Margin="10,0,0,0" Click="RefreshHistory_Click"/>
+       <Button Content="Load Configuration" Padding="16,7" Margin="10,0,0,0" Click="ImportConfig_Click"/>
       </WrapPanel>
       <TextBlock x:Name="ConfigMessage" Margin="0,12,0,0" TextWrapping="Wrap"/>
 

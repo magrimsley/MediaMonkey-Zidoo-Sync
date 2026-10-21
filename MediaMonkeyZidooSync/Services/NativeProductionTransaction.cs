@@ -20,7 +20,7 @@ public sealed class NativeProductionTransaction
     private readonly Action<string>? _checkpoint;
     public NativeProductionTransaction(IProductionPlaylistDevice device, Action<string>? checkpoint = null)
     { _device = device; _checkpoint = checkpoint; }
-    public sealed record Change(string FileName, byte[]? NewContent, int ExpectedCount, string? ExpectedOldSHA256);
+    public sealed record Change(string FileName, byte[]? NewContent, int ExpectedCount, string? ExpectedOldSHA256, bool IsCreate = false);
 
     private static string Hash(byte[] data) => Convert.ToHexString(SHA256.HashData(data));
     private static int TrackCount(byte[] data) => Encoding.UTF8.GetString(data).TrimStart('\uFEFF')
@@ -56,7 +56,7 @@ public sealed class NativeProductionTransaction
         var original = before.SingleOrDefault(x => x.Name == name);
         if(change.NewContent is not null && TrackCount(change.NewContent)!=change.ExpectedCount)
             throw new InvalidDataException("Candidate M3U track count differs from the approved transaction.");
-        bool preserveExisting = old is null && change.NewContent is not null && original is not null && change.ExpectedCount > 0;
+        bool preserveExisting = (old is null || change.IsCreate) && change.NewContent is not null && original is not null && change.ExpectedCount > 0;
         if (preserveExisting && original!.Count != change.ExpectedCount)
             throw new InvalidDataException("Existing device playlist differs from the proposed creation; no changes made.");
         // An existing matching creation is verified without deleting or reimporting it.

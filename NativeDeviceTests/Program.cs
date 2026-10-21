@@ -26,6 +26,7 @@ Reject("[null]");
 Reject("[" + string.Join(",", Enumerable.Range(0,500).Select(i => "{\"obj\":{\"id\":"+i+",\"name\":\"P"+i+"\"},\"count\":1}")) + "]");
 Console.WriteLine($"PASS: {checks} native device inventory assertions; no device contacted.");
 await DeviceChecks.Run();
+await RC8Checks.Run();
 await SortOrderChecks.Run();
 await ReadinessChecks.Run();
 await TransactionChecks.Run();

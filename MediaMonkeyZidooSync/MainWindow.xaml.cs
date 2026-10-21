@@ -420,7 +420,7 @@ public partial class MainWindow : Window {
         try {
             ReadConfigFromForm();
             await _configService.SaveDraftAsync(_config!);
-            RefreshHistory(); UpdateConfigurationAvailability();
+            RefreshHistory(); UpdateConfigurationAvailability(); MainTabs.SelectedItem=ConfigurationTab;
             ConfigMessage.Text=_configurationReady ? "Configuration saved. Synchronization is available."
                 : "Setup progress saved. Complete the remaining settings before synchronizing. " + ConfigurationReadinessMessage();
         }
