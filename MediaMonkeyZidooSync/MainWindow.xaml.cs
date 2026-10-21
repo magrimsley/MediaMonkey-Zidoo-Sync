@@ -242,20 +242,20 @@ public partial class MainWindow : Window {
     }
     private void ApplyMusicLocation(string path) {
         var location=StorageSetupService.ParseMusic(path);
-        NasMusic.Text=location.Path;NasHost.Text=location.Host;NasShare.Text=location.Share;MusicFolderName.Text=location.Music;
+        NasMusic.Text=location.Path;NasHost.Text=location.Host;NasShare.Text=location.Share;if(location.Music.Length>0)MusicFolderName.Text=location.Music;
         ConfigMessage.Text="Music location selected. Now choose the folder containing your M3U playlist files.";
     }
     private void ApplyPlaylistLocation(string path) {
         var name=StorageSetupService.PlaylistName(NasMusic.Text,path);
-        PlaylistFolder.Text=path.TrimEnd('\\');PlaylistFolderName.Text=name;
-        ConfigMessage.Text="Playlist folder selected. Review these settings and save configuration.";
+        PlaylistFolder.Text=path.TrimEnd('\\');if(name.Length>0)PlaylistFolderName.Text=name;
+        ConfigMessage.Text="Playlist folder selected. Review the saved folder names used by Zidoo and save configuration. The selected path controls which M3U files the application compares.";
     }
     private void BrowseMusic_Click(object sender,RoutedEventArgs e) {
-        var picker=new Microsoft.Win32.OpenFolderDialog{Title="Choose Music inside your shared network folder",InitialDirectory=Directory.Exists(NasMusic.Text)?NasMusic.Text:Environment.GetFolderPath(Environment.SpecialFolder.MyMusic)};
+        var picker=new Microsoft.Win32.OpenFolderDialog{Title="Choose your shared music root",InitialDirectory=Directory.Exists(NasMusic.Text)?NasMusic.Text:Environment.GetFolderPath(Environment.SpecialFolder.MyMusic)};
         if(picker.ShowDialog(this)==true)try{ApplyMusicLocation(picker.FolderName);}catch(InvalidDataException ex){ConfigMessage.Text=ex.Message;}
     }
     private void BrowsePlaylists_Click(object sender,RoutedEventArgs e) {
-        var picker=new Microsoft.Win32.OpenFolderDialog{Title="Choose the folder containing your M3U playlists (for example A Zidoo)",InitialDirectory=Directory.Exists(NasMusic.Text)?NasMusic.Text:Environment.GetFolderPath(Environment.SpecialFolder.MyMusic)};
+        var picker=new Microsoft.Win32.OpenFolderDialog{Title="Choose your configured M3U playlist folder",InitialDirectory=Directory.Exists(NasMusic.Text)?NasMusic.Text:Environment.GetFolderPath(Environment.SpecialFolder.MyMusic)};
         if(picker.ShowDialog(this)==true)try{ApplyPlaylistLocation(picker.FolderName);}catch(InvalidDataException ex){ConfigMessage.Text=ex.Message;}
     }
     private void ApplyImportedConfiguration(AppConfig config) {
@@ -336,7 +336,7 @@ public partial class MainWindow : Window {
         var heading=new TextBlock{Text=review.Count==0?(HasPendingRecovery()?"No new playlist differences were found, but a retained transaction needs reconciliation. After review, Run Synchronization uses the existing recovery checks before proceeding.":"No playlist changes are needed. This run will not contact or wake Zidoo."):
             "Review the proposed playlist changes below. Missing playlists may also be restored from your playlist files. After accepting, use Run Synchronization.",TextWrapping=TextWrapping.Wrap,Margin=new Thickness(0,0,0,12)};
         DockPanel.SetDock(heading,Dock.Top);layout.Children.Add(heading);
-        var details=review.Select(item=>(item.CandidateSHA256 is null?"Delete":item.OriginalSHA256 is null?"Create":"Update")+": "+
+        var details=review.Select(item=>(item.ChangeType ?? (item.CandidateSHA256 is null?"Delete":item.OriginalSHA256 is null?"Create":"Update"))+": "+
             Path.GetFileNameWithoutExtension(item.FileName)+(item.CandidateSHA256 is null?"":" ("+item.ExpectedCount+" tracks)"));
         layout.Children.Add(new TextBox{Text=string.Join(Environment.NewLine,details),IsReadOnly=true,AcceptsReturn=true,VerticalScrollBarVisibility=ScrollBarVisibility.Auto,TextWrapping=TextWrapping.Wrap,Padding=new Thickness(10)});
         window.Content=layout;

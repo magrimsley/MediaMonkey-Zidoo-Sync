@@ -38,7 +38,7 @@ public sealed class MediaMonkeyExportTransactionPlanner
         if (!Directory.Exists(folder))
             throw new DirectoryNotFoundException($"Playlist storage is unavailable: {folder}");
 
-        var existing = Directory.EnumerateFiles(folder, "*.m3u", SearchOption.TopDirectoryOnly)
+        var existing = FrozenPlaylistFiles.Enumerate(folder)
             .Select(path => new { Path = path, Name = Path.GetFileName(path) })
             .Where(x => !string.IsNullOrWhiteSpace(x.Name))
             .ToDictionary(x => x.Name!, x => x.Path, StringComparer.OrdinalIgnoreCase);
@@ -57,9 +57,9 @@ public sealed class MediaMonkeyExportTransactionPlanner
                 continue;
             }
 
-            string[] lines = await File.ReadAllLinesAsync(path, ct);
+            byte[] bytes = await File.ReadAllBytesAsync(path, ct);
             items.Add(new(playlist.M3UFile,
-                lines.SequenceEqual(playlist.Lines, StringComparer.Ordinal)
+                bytes.SequenceEqual(FrozenM3uContent.Bytes(playlist.Lines))
                     ? PlaylistTransactionAction.Unchanged : PlaylistTransactionAction.Update));
         }
 

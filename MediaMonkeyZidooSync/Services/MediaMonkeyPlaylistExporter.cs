@@ -201,7 +201,7 @@ public sealed class MediaMonkeyPlaylistExporter
                 File.Move(temp, item.TargetPath, true);
             }
 
-            foreach (var file in Directory.EnumerateFiles(outputFolder, "*.m3u", SearchOption.TopDirectoryOnly))
+            foreach (var file in FrozenPlaylistFiles.Enumerate(outputFolder))
             {
                 if (!generatedNames.Contains(Path.GetFileName(file)))
                 {

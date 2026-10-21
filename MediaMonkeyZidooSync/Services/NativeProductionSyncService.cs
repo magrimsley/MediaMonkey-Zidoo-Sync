@@ -16,9 +16,8 @@ public sealed class NativeProductionSyncService
     public bool LastRunVerifiedDevice {get;private set;}
     public int LastRunCompletedChanges {get;private set;}
     public bool LastRunRecovered {get;private set;}
-    private sealed record Work(string FileName, byte[]? Content, int Count, string? OldHash);
+    private sealed record Work(string FileName, byte[]? Content, int Count, string? OldHash, bool IsCreate=false);
     private static string Hash(byte[] bytes) => Convert.ToHexString(SHA256.HashData(bytes));
-    private static readonly UTF8Encoding M3uEncoding = new(true);
 
     public async Task<bool> RecoverPendingAsync(AppConfig config,Func<string,bool> confirm,CancellationToken ct=default)
     {
@@ -51,9 +50,8 @@ public sealed class NativeProductionSyncService
         Output?.Invoke("Original "+original.Name+" restored and verified. Other playlists unchanged. Recovery completed.");return true;
     }
 
-    public sealed record ReviewedChange(string FileName,int ExpectedCount,string? OriginalSHA256,string? CandidateSHA256=null);
-    private static byte[] ContentBytes(IEnumerable<string> lines)=>M3uEncoding.GetPreamble()
-        .Concat(M3uEncoding.GetBytes(string.Join(Environment.NewLine,lines)+Environment.NewLine)).ToArray();
+    public sealed record ReviewedChange(string FileName,int ExpectedCount,string? OriginalSHA256,string? CandidateSHA256=null,string? ChangeType=null);
+    private static byte[] ContentBytes(IEnumerable<string> lines)=>FrozenM3uContent.Bytes(lines);
 
     public async Task<IReadOnlyList<ReviewedChange>> PrepareReviewAsync(AppConfig config,CancellationToken ct=default)
     {
@@ -69,7 +67,7 @@ public sealed class NativeProductionSyncService
             string? oldHash=File.Exists(path)?Hash(await File.ReadAllBytesAsync(path,ct)):null;
             bool deletion=item.Action==PlaylistTransactionAction.PendingZidooDelete;
             if(!deletion&&!prepared.ContainsKey(item.FileName))throw new InvalidDataException("MediaMonkey changed during planning; prepare again.");
-            review.Add(new(item.FileName,deletion?0:counts[item.FileName],oldHash,deletion?null:Hash(ContentBytes(prepared[item.FileName].Lines))));
+            review.Add(new(item.FileName,deletion?0:counts[item.FileName],oldHash,deletion?null:Hash(ContentBytes(prepared[item.FileName].Lines)),deletion?"Delete":item.Action.ToString()));
         }
         return review.AsReadOnly();
     }
@@ -117,7 +115,7 @@ public sealed class NativeProductionSyncService
         }
         var exporter = new MediaMonkeyPlaylistExporter();
         var prepared = await exporter.ValidateAsync(config,ct);
-        var existing = Directory.EnumerateFiles(root,"*.m3u").ToDictionary(path=>Path.GetFileName(path),StringComparer.OrdinalIgnoreCase);
+        var existing = FrozenPlaylistFiles.Enumerate(root).ToDictionary(path=>Path.GetFileName(path),StringComparer.OrdinalIgnoreCase);
         var expected = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         var changes = new List<Work>();
         foreach(var playlist in prepared.PreparedPlaylists)
@@ -125,15 +123,19 @@ public sealed class NativeProductionSyncService
             if(!expected.Add(playlist.M3UFile))throw new InvalidDataException("Duplicate authoritative playlist filename.");
             byte[] content = ContentBytes(playlist.Lines);
             string? oldHash=null;
-            if(existing.TryGetValue(playlist.M3UFile,out var oldPath))
+            bool inBaseline=existing.TryGetValue(playlist.M3UFile,out var oldPath);
+            oldPath??=Path.Combine(root,playlist.M3UFile);
+            // Discovery follows the visible frozen baseline. Physical files still require
+            // a reviewed hash and backup, including hidden files at a candidate's target.
+            if(File.Exists(oldPath))
             {
                 if((File.GetAttributes(oldPath)&FileAttributes.ReparsePoint)!=0)throw new IOException("Linked playlist refused.");
                 var old=await File.ReadAllBytesAsync(oldPath,ct);oldHash=Hash(old);
-                // Match logical M3U lines, preserving no-change/no-wake behavior across encodings.
-                if((await File.ReadAllLinesAsync(oldPath,ct)).SequenceEqual(playlist.Lines,StringComparer.Ordinal))continue;
+                // The frozen orchestrator compares SHA-256 of exact staged/baseline bytes.
+                if(inBaseline && string.Equals(oldHash,Hash(content),StringComparison.Ordinal))continue;
             }
             int count=prepared.PlaylistMap.Single(x=>x.M3UFile==playlist.M3UFile).TrackCount;
-            changes.Add(new(playlist.M3UFile,content,count,oldHash));
+            changes.Add(new(playlist.M3UFile,content,count,oldHash,!inBaseline));
         }
         foreach(var entry in existing.Where(x=>!expected.Contains(x.Key!)).OrderBy(x=>x.Key,StringComparer.OrdinalIgnoreCase))
         {
@@ -147,7 +149,7 @@ public sealed class NativeProductionSyncService
         if(changes.Count==0){Output?.Invoke("No playlist file changes; Zidoo was not contacted or awakened.");return 0;}
         string evidence=Path.Combine(Environment.ExpandEnvironmentVariables(config.Application.ReportRoot),"NativeSync-"+DateTime.Now.ToString("yyyyMMdd-HHmmss-fff")+"-"+Guid.NewGuid().ToString("N")[..6]);
         Directory.CreateDirectory(evidence);
-        await File.WriteAllTextAsync(Path.Combine(evidence,"plan.json"),JsonSerializer.Serialize(changes.Select(x=>new{x.FileName,Action=x.Content is null?"Delete":x.OldHash is null?"Create":"Update",x.Count,x.OldHash}),new JsonSerializerOptions{WriteIndented=true}),ct);
+        await File.WriteAllTextAsync(Path.Combine(evidence,"plan.json"),JsonSerializer.Serialize(changes.Select(x=>new{x.FileName,Action=x.Content is null?"Delete":x.IsCreate?"Create":"Update",x.Count,x.OldHash}),new JsonSerializerOptions{WriteIndented=true}),ct);
         using var handler=new HttpClientHandler{AllowAutoRedirect=false,UseProxy=false};
         using var http=new HttpClient(handler){BaseAddress=new UriBuilder("http",config.Zidoo.IPAddress,config.Zidoo.ApiPort).Uri,Timeout=TimeSpan.FromSeconds(15)};
         var device=new NativeZidooPlaylistDevice(http,config);device.Output+=message=>Output?.Invoke(message);

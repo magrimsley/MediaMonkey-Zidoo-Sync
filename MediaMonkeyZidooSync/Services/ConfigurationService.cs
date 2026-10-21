@@ -234,8 +234,6 @@ public sealed class ConfigurationService {
         if (!c.NAS.MusicRootUNC.StartsWith(@"\\") || !c.NAS.PlaylistFolderUNC.StartsWith(@"\\"))
             throw new InvalidDataException("NAS paths must be UNC paths beginning with \\\\.");
 
-        if (string.Equals(c.NAS.MusicRootUNC.TrimEnd('\\'),c.NAS.PlaylistFolderUNC.TrimEnd('\\'),StringComparison.OrdinalIgnoreCase))
-            throw new InvalidDataException("Music Root and Playlist Folder point to the same folder. Choose the folder containing your M3U playlist files, for example the A Zidoo folder inside Music.");
         if (c.Application.HistoryKeepCount < 0) throw new InvalidDataException("History entries to keep cannot be negative.");
         Required(c.MediaMonkey.DatabasePath, "MediaMonkey Database Path");
         Required(c.MediaMonkey.PlaylistParent, "MediaMonkey Playlist Parent");

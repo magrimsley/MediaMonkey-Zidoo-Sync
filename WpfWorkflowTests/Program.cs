@@ -47,7 +47,7 @@ internal static class Program
             string? openedLog = null;
             var window = new MainWindow(root, path => openedLog = path);
             window.Show(); Pump(400);
-            Check(window.Title=="MM Zidoo Sync" && typeof(MainWindow).Assembly.GetName().Name=="MMZidooSync" && ApplicationVersionProvider.ProductVersion=="1.1.0-rc.5", "RC product name, assembly and version match approved identity");
+            Check(window.Title=="MM Zidoo Sync" && typeof(MainWindow).Assembly.GetName().Name=="MMZidooSync" && ApplicationVersionProvider.ProductVersion=="1.1.0-rc.6", "RC product name, assembly and version match approved identity");
             Check(typeof(MainWindow).GetMethod("RunNativeAssessment_Click", BindingFlags.Instance | BindingFlags.NonPublic) is null && typeof(MainWindow).GetMethod("InspectNativePlan_Click", BindingFlags.Instance | BindingFlags.NonPublic) is null, "Optional assessment handlers are excluded from compilation");
             Check(window.FindName("RunNativeAssessmentButton") is null && window.FindName("InspectNativePlanButton") is null, "Optional diagnostics controls are absent");
             Check(window.Icon is not null, "Main window loads application artwork");
@@ -226,11 +226,23 @@ internal static class Program
                 Check(Field<DataGrid>(discoveryWindow,"RunHistoryGrid").Items.Count==1,"Discovery history remains visible after changing the report folder: "+outcome);
                 discoveryWindow.Close();Pump();
             }
+            var byteFixture=Path.Combine(root,"frozen-bytes.m3u");var frozenLines=new[]{"#EXTM3U","../Artist/Track.flac"};
+            File.WriteAllLines(byteFixture,frozenLines,new System.Text.UTF8Encoding(true));
+            Check(File.ReadAllBytes(byteFixture).SequenceEqual(FrozenM3uContent.Bytes(frozenLines)),"Native candidate bytes match the frozen UTF-8 BOM Windows WriteAllLines output");
+            File.WriteAllText(byteFixture,string.Join("\n",frozenLines)+"\n",new System.Text.UTF8Encoding(false));
+            Check(File.ReadAllLines(byteFixture).SequenceEqual(frozenLines) && !File.ReadAllBytes(byteFixture).SequenceEqual(FrozenM3uContent.Bytes(frozenLines)),"Matching text with different BOM or line endings remains a byte-level change under the frozen process");
+            var scope=Path.Combine(root,"FrozenFileScope");Directory.CreateDirectory(scope);
+            foreach(var name in new[]{"visible.m3u","hidden.m3u","system.m3u","ignore.txt"})File.WriteAllText(Path.Combine(scope,name),"fixture");
+            File.SetAttributes(Path.Combine(scope,"hidden.m3u"),FileAttributes.Hidden);
+            File.SetAttributes(Path.Combine(scope,"system.m3u"),FileAttributes.System);
+            Directory.CreateDirectory(Path.Combine(scope,"Child"));File.WriteAllText(Path.Combine(scope,"Child","nested.m3u"),"fixture");
+            Check(FrozenPlaylistFiles.Enumerate(scope).Select(Path.GetFileName).SequenceEqual(new[]{"visible.m3u"}),"Native M3U enumeration matches frozen nonrecursive Get-ChildItem without Force: hidden/system files stay outside the baseline");
             var location=StorageSetupService.ParseMusic(@"\\Server\Share\Music");
             Check(location.Host=="Server" && location.Share=="Share" && location.Music=="Music","Network folder selection derives host, share and music name");
             Check(StorageSetupService.PlaylistName(@"\\Server\Share\Music",@"\\Server\Share\Music\A Zidoo")=="A Zidoo","Playlist selection derives child folder name");
-            bool sameFolderRejected=false;try{StorageSetupService.PlaylistName(@"\\Server\Share\Music",@"\\Server\Share\Music");}catch(InvalidDataException){sameFolderRejected=true;}
-            Check(sameFolderRejected,"Folder chooser refuses Music as the playlist folder");
+            Check(StorageSetupService.PlaylistName(@"\\Server\Share\Music",@"\\Server\Share\Music")=="","Folder chooser permits equal roots without inventing a navigation name");
+            Check(StorageSetupService.PlaylistName(@"\\Server\Share\Music",@"\\Server\OtherShare\Lists")=="","Folder chooser permits independent playlist locations without replacing manual navigation settings");
+            Check(StorageSetupService.ParseMusic(@"\\Server\Share\Music\Archive").Path==@"\\Server\Share\Music\Archive","Music browser preserves nested paths instead of rejecting their layout");
             bool localRejected=false;try{StorageSetupService.ParseMusic(@"C:\Music");}catch(InvalidDataException){localRejected=true;}
             Check(localRejected,"Network setup refuses local-only music paths");
             var importFile=Path.Combine(root,"saved-import.json");File.WriteAllText(importFile,"{\"MediaMonkey\":{\"PlaylistParent\":\"My playlists\"}}");
@@ -265,6 +277,19 @@ internal static class Program
             var dbBytes=File.ReadAllBytes(parentDb);var parents=PlaylistParentService.ListAsync(parentDb).GetAwaiter().GetResult();
             Check(parents.Single(x=>x.Name=="Imported Playlists").Descendants==3 && parents.Single(x=>x.Name=="Rock").Descendants==1,"Parent picker counts recursive child playlists and shows groups");
             Check(dbBytes.SequenceEqual(File.ReadAllBytes(parentDb)),"Parent picker leaves MediaMonkey database unchanged");
+            using(var sql=new Microsoft.Data.Sqlite.SqliteConnection("Data Source="+parentDb+";Pooling=False")){sql.Open();using var command=sql.CreateCommand();command.CommandText="CREATE TABLE PlaylistSongs(IDPlaylist INTEGER,IDPlaylistSong INTEGER,IDSong INTEGER,SongOrder INTEGER);CREATE TABLE Songs(ID INTEGER,SongPath TEXT,Artist TEXT,SongTitle TEXT,SongLength INTEGER)";command.ExecuteNonQuery();}
+            var planFolder=Path.Combine(root,"FrozenPlan");Directory.CreateDirectory(planFolder);
+            var planConfig=new MediaMonkeyZidooSync.Models.AppConfig();planConfig.MediaMonkey.DatabasePath=parentDb;planConfig.MediaMonkey.PlaylistParent="Imported Playlists";planConfig.NAS.MusicRootUNC=root;planConfig.NAS.PlaylistFolderUNC=planFolder;planConfig.Application.ReportRoot=Path.Combine(root,"FrozenPlanReports");
+            var jazzPath=Path.Combine(planFolder,"Jazz.m3u");File.WriteAllText(jazzPath,"#EXTM3U\n#EXTENC: UTF-8\n#PLAYLIST:Jazz\n",new System.Text.UTF8Encoding(false));
+            var bytePlan=new MediaMonkeyExportTransactionPlanner().PrepareAsync(planConfig).GetAwaiter().GetResult();
+            Check(bytePlan.Items.Single(item=>item.FileName=="Jazz.m3u").Action==PlaylistTransactionAction.Update,"Actual native planning classifies identical text with different frozen bytes as UPDATE");
+            File.WriteAllBytes(jazzPath,FrozenM3uContent.Bytes(new[]{"#EXTM3U","#EXTENC: UTF-8","#PLAYLIST:Jazz"}));
+            var samePlan=new MediaMonkeyExportTransactionPlanner().PrepareAsync(planConfig).GetAwaiter().GetResult();
+            Check(samePlan.Items.Single(item=>item.FileName=="Jazz.m3u").Action==PlaylistTransactionAction.Unchanged,"Actual native planning leaves exact frozen-byte matches unchanged");
+            File.SetAttributes(jazzPath,FileAttributes.Hidden);
+            var hiddenPlan=new MediaMonkeyExportTransactionPlanner().PrepareAsync(planConfig).GetAwaiter().GetResult();
+            Check(hiddenPlan.Items.Single(item=>item.FileName=="Jazz.m3u").Action==PlaylistTransactionAction.Create,"Actual native planning excludes hidden M3Us from the frozen baseline");
+            File.SetAttributes(jazzPath,FileAttributes.Normal);Microsoft.Data.Sqlite.SqliteConnection.ClearAllPools();
             var savedRoot=Path.Combine(root,"SavedStartup");
             var savedConfig=new MediaMonkeyZidooSync.Models.AppConfig();
             savedConfig.Zidoo.ApiPort=9529;savedConfig.Zidoo.WolPort=9517;savedConfig.Zidoo.PlaylistGridColumns=5;
@@ -275,8 +300,8 @@ internal static class Program
             savedConfig.NAS.Host="offline.invalid";savedConfig.NAS.ShareName="test";savedConfig.NAS.MusicFolderName="music";savedConfig.NAS.PlaylistFolderName="lists";
             savedConfig.NAS.MusicRootUNC=@"\\offline.invalid\test\music";savedConfig.NAS.PlaylistFolderUNC=@"\\offline.invalid\test\lists";
             var correctPlaylistFolder=savedConfig.NAS.PlaylistFolderUNC;savedConfig.NAS.PlaylistFolderUNC=savedConfig.NAS.MusicRootUNC;
-            bool equalFolderRejected=false;try{ConfigurationService.Validate(savedConfig);}catch(InvalidDataException ex){equalFolderRejected=ex.Message.Contains("same folder");}
-            Check(equalFolderRejected,"Saved settings cannot enable synchronization when Music and Playlist Folder point to the same location");
+            ConfigurationService.Validate(savedConfig);
+            Check(savedConfig.NAS.PlaylistFolderUNC==savedConfig.NAS.MusicRootUNC,"Configuration retains the frozen process's permission to use the same music and playlist folder");
             savedConfig.NAS.PlaylistFolderUNC=correctPlaylistFolder;
             new ConfigurationService(savedRoot).SaveAsync(savedConfig).GetAwaiter().GetResult();
             new UiStateService(Path.Combine(savedRoot,"ui-state.json")).SaveAsync(new MediaMonkeyZidooSync.Models.UiState{SelectedTabIndex=2}).GetAwaiter().GetResult();
