@@ -1,3 +1,9 @@
+## Unreleased RC2 acceptance follow-ups
+
+- Embed the application icon for Windows Programs and Features.
+- Highlight the Run History cell selected by mouse or keyboard while retaining selectable text and the exact log target; keep the highlight when opening its log.
+- Owner confirmed the MSI entry appeared and uninstall removed it; MediaMonkey change detection worked. No updates were sent to Zidoo in this check.
+
 # MM Zidoo Sync — current
 
 Prepared candidate: 1.1.0-rc.2; registered installation and public release remain RC1. See RC2_RELEASE_NOTES.md and CURRENT-STATUS.md. Historical entries retain their original scope.

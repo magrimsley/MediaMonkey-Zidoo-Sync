@@ -946,7 +946,20 @@ public partial class MainWindow : Window {
     {
         for (var node = source as DependencyObject; node is not null && !ReferenceEquals(node, RunHistoryGrid); node = ParentOf(node))
             if (node is FrameworkElement { DataContext: RunHistoryService.RunRecord run })
-            { SetRunLogTarget(run); return; }
+            {
+                // Text selection consumes the normal DataGrid click; retain a visible cell target.
+                if (source is DependencyObject origin && FindAncestor<DataGridCell>(origin) is { } cell)
+                {
+                    var target = new DataGridCellInfo(run, cell.Column);
+                    RunHistoryGrid.CurrentCell = target;
+                    if (!RunHistoryGrid.SelectedCells.Contains(target))
+                    {
+                        RunHistoryGrid.SelectedCells.Clear();
+                        RunHistoryGrid.SelectedCells.Add(target);
+                    }
+                }
+                SetRunLogTarget(run); return;
+            }
     }
 
     private void OpenRunLog_Click(object sender, RoutedEventArgs e)

@@ -130,6 +130,10 @@ internal static class Program
             actualBox.RaiseEvent(new System.Windows.Input.MouseButtonEventArgs(System.Windows.Input.Mouse.PrimaryDevice,0,System.Windows.Input.MouseButton.Left)
                 {RoutedEvent=System.Windows.Input.Mouse.PreviewMouseDownEvent});
             Check(Field<Button>(window,"OpenSelectedLogButton").IsEnabled && history.SelectedItems.Count==0,"Clicking selectable log text identifies a run without selecting its row");
+            var highlightedCell=Descendants(history).OfType<DataGridCell>().Single(cell=>cell.Content is ContentPresenter presenter && Descendants(presenter).OfType<TextBox>().Any(box=>ReferenceEquals(box,actualBox)));
+            Check(highlightedCell.IsSelected && Equals(highlightedCell.Background,SystemColors.HighlightBrush),"Clicked log cell has a visible system selection highlight");
+            Field<Button>(window,"OpenSelectedLogButton").Focus();Pump();
+            Check(highlightedCell.IsSelected && Equals(highlightedCell.Background,SystemColors.HighlightBrush),"Log highlight persists when focus moves to Open Selected Log");
             Invoke(window,"OpenRunLog_Click");
             Check(openedLog==actualLog,"Open Selected Log opens the clicked cell's exact log after focus moves to its button");
             flow.BeginValidation();flow.EndValidation(true);flow.BeginVerification();flow.EndVerification(true,false);Refresh();

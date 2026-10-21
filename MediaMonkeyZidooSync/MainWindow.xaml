@@ -181,15 +181,16 @@
          <Setter Property="Background" Value="Transparent"/>
          <Setter Property="Padding" Value="3,2"/>
          <Setter Property="TextWrapping" Value="NoWrap"/>
-         <Setter Property="Foreground" Value="{Binding Foreground, RelativeSource={RelativeSource AncestorType=DataGrid}}"/>
+         <Setter Property="Foreground" Value="{Binding Foreground, RelativeSource={RelativeSource AncestorType=DataGridCell}}"/>
          <Setter Property="HorizontalScrollBarVisibility" Value="Hidden"/>
          <Setter Property="VerticalScrollBarVisibility" Value="Disabled"/>
         </Style>
         <Style TargetType="DataGridCell">
          <Style.Triggers>
           <Trigger Property="IsSelected" Value="True">
-           <Setter Property="Background" Value="Transparent"/>
-           <Setter Property="BorderBrush" Value="Transparent"/>
+           <Setter Property="Background" Value="{DynamicResource {x:Static SystemColors.HighlightBrushKey}}"/>
+           <Setter Property="Foreground" Value="{DynamicResource {x:Static SystemColors.HighlightTextBrushKey}}"/>
+           <Setter Property="BorderBrush" Value="{DynamicResource {x:Static SystemColors.HighlightBrushKey}}"/>
           </Trigger>
          </Style.Triggers>
         </Style>
