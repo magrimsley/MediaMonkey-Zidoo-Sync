@@ -34,3 +34,4 @@ LocalOnly/
 *.tgz
 *.gz
 *.Local.sln
+*.msi

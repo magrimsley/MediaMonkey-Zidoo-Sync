@@ -134,7 +134,9 @@ public partial class MainWindow : Window {
     }
 
     private readonly ConfigurationService _configService;
-    private readonly UiStateService _uiStateService = new();
+    private readonly UiStateService _uiStateService;
+    private readonly Action<string> _openRunLog;
+    private RunHistoryService.RunRecord? _selectedRunLog;
     private UiState _uiState = new();
     private readonly SyncRunner _runner = new();
     private System.Threading.CancellationTokenSource? _syncCancellation;
@@ -177,8 +179,11 @@ public partial class MainWindow : Window {
     public MainWindow() : this(IsolatedStartupMode.ResolveRoot()) { }
 
     /// <summary>Isolated configuration root for local UI verification; null uses normal application storage.</summary>
-    public MainWindow(string? isolatedConfigRoot) {
+    public MainWindow(string? isolatedConfigRoot, Action<string>? openRunLog = null) {
         _configService = new ConfigurationService(isolatedConfigRoot);
+        _uiStateService = isolatedConfigRoot is null ? new UiStateService() :
+            new UiStateService(Path.Combine(isolatedConfigRoot, "ui-state.json"));
+        _openRunLog = openRunLog ?? (path => Process.Start(new ProcessStartInfo(path) { UseShellExecute = true }));
         InitializeComponent();
         if (isolatedConfigRoot is null && !IsolatedStartupMode.Enabled) ApplicationBranding.AttachTray(this);
         ConfigurationTab.AddHandler(System.Windows.Controls.Primitives.TextBoxBase.TextChangedEvent,
@@ -194,6 +199,14 @@ public partial class MainWindow : Window {
         // Apply consistent blank-row-area selection clearing to all read-only history grids.
         GridSelectionBehavior.Attach(ConfigHistoryGrid);
         GridSelectionBehavior.Attach(RunHistoryGrid);
+        RunHistoryGrid.AddHandler(System.Windows.Input.Mouse.PreviewMouseDownEvent,
+            new System.Windows.Input.MouseButtonEventHandler(CaptureRunLogTarget), true);
+        RunHistoryGrid.AddHandler(System.Windows.Input.Keyboard.GotKeyboardFocusEvent,
+            new System.Windows.Input.KeyboardFocusChangedEventHandler(CaptureRunLogFocus), true);
+        RunHistoryGrid.SelectedCellsChanged += (_, _) =>
+        {
+            if (RunHistoryGrid.CurrentCell.Item is RunHistoryService.RunRecord run) SetRunLogTarget(run);
+        };
         GridSelectionBehavior.Attach(RecoveryReportGrid);
         // Clear output selection when the user clicks elsewhere in the window.
         PreviewMouseDown += OutputWindow_PreviewMouseDown;
@@ -201,8 +214,8 @@ public partial class MainWindow : Window {
         Deactivated += (_, _) => ClearHistoryGridSelections();
         OutputRichText.LostKeyboardFocus += OutputRichText_LostKeyboardFocus;
         ProductVersionText.Text = $"Product {ApplicationVersionProvider.ProductVersion}";
-        if (isolatedConfigRoot is null) _ = RestoreUiStateAsync();
-        Loaded += async (_,__) => await LoadConfigurationAsync();
+        
+        Loaded += async (_,__) => { await RestoreUiStateAsync(); await LoadConfigurationAsync(); };
         _runner.Output += e => Dispatcher.InvokeAsync(() => { _events.Add(e); RefreshOutput(); });
 // Disabled optional diagnostics:         _nativeAssessmentRunner.Output += e => Dispatcher.InvokeAsync(() => { _events.Add(e); RefreshOutput(); });
         _timer.Tick += (_,__) => ElapsedText.Text = $"Elapsed: {FormatElapsed(_stopwatch?.Elapsed)}";
@@ -240,7 +253,7 @@ public partial class MainWindow : Window {
         var accept=new Button{Content="Use Reviewed Plan",Padding=new Thickness(16,6,16,6),Margin=new Thickness(10,0,0,0)};
         back.Click+=(_,_)=>window.DialogResult=false;accept.Click+=(_,_)=>window.DialogResult=true;
         footer.Children.Add(back);footer.Children.Add(accept);DockPanel.SetDock(footer,Dock.Bottom);layout.Children.Add(footer);
-        var heading=new TextBlock{Text=review.Count==0?"No playlist changes are needed. This run will not contact or wake Zidoo.":
+        var heading=new TextBlock{Text=review.Count==0?(HasPendingRecovery()?"No new playlist differences were found, but a retained transaction needs reconciliation. After review, Run Synchronization uses the existing recovery checks before proceeding.":"No playlist changes are needed. This run will not contact or wake Zidoo."):
             "Review the proposed playlist changes below. Missing playlists may also be restored from your playlist files. After accepting, use Run Synchronization.",TextWrapping=TextWrapping.Wrap,Margin=new Thickness(0,0,0,12)};
         DockPanel.SetDock(heading,Dock.Top);layout.Children.Add(heading);
         var details=review.Select(item=>(item.CandidateSHA256 is null?"Delete":item.OriginalSHA256 is null?"Create":"Update")+": "+
@@ -810,7 +823,8 @@ public partial class MainWindow : Window {
             VerifyNativeExporterButton.IsEnabled = true;
             ValidateMediaMonkeyButton.IsEnabled = true;
             RunButton.IsEnabled = true;
-            _workflow.EndVerification(failure is null && result is not null && plan is not null && _preparedReview is not null);RefreshWorkflowControls();
+            _workflow.EndVerification(failure is null && result is not null && plan is not null && _preparedReview is not null,
+                _preparedReview is { Count: > 0 } || HasPendingRecovery());RefreshWorkflowControls();
             RecordHistory(runStarted, "Native Exporter Verification", StatusText.Text);
         }
 
@@ -876,6 +890,7 @@ public partial class MainWindow : Window {
         {
             string root = _config?.Application.ReportRoot ?? ReportRoot.Text.Trim();
             var records = _runHistoryService.List(root);
+            SetRunLogTarget(null);
             RunHistoryGrid.ItemsSource = records;
             RunHistoryStatus.Text = records.Count == 0
                 ? "No structured runs recorded yet. Validate or Verify to create the first entry."
@@ -915,9 +930,28 @@ public partial class MainWindow : Window {
 
     private void RefreshRunHistory_Click(object sender, RoutedEventArgs e) => RefreshRunHistory();
 
+    // The existing locked recovery path must remain actionable even if exports match.
+    private bool HasPendingRecovery() => _config is not null && !string.IsNullOrWhiteSpace(_config.NAS.PlaylistFolderUNC) &&
+        (File.Exists(Path.Combine(_config.NAS.PlaylistFolderUNC, ".mmzs-production-pending.json")) ||
+         File.Exists(NativeProductionRunState.Marker(_config.NAS.PlaylistFolderUNC)));
+    private void SetRunLogTarget(RunHistoryService.RunRecord? run)
+    {
+        _selectedRunLog = run;
+        OpenSelectedLogButton.IsEnabled = run is not null;
+    }
+
+    private void CaptureRunLogTarget(object sender, System.Windows.Input.MouseButtonEventArgs e) => CaptureRunLogSource(e.OriginalSource);
+    private void CaptureRunLogFocus(object sender, System.Windows.Input.KeyboardFocusChangedEventArgs e) => CaptureRunLogSource(e.OriginalSource);
+    private void CaptureRunLogSource(object source)
+    {
+        for (var node = source as DependencyObject; node is not null && !ReferenceEquals(node, RunHistoryGrid); node = ParentOf(node))
+            if (node is FrameworkElement { DataContext: RunHistoryService.RunRecord run })
+            { SetRunLogTarget(run); return; }
+    }
+
     private void OpenRunLog_Click(object sender, RoutedEventArgs e)
     {
-        var selected = RunHistoryGrid.SelectedItem as RunHistoryService.RunRecord
+        var selected = _selectedRunLog ?? RunHistoryGrid.SelectedItem as RunHistoryService.RunRecord
             ?? RunHistoryGrid.CurrentCell.Item as RunHistoryService.RunRecord;
         if (selected is null)
         {
@@ -928,7 +962,7 @@ public partial class MainWindow : Window {
         {
             if (!File.Exists(selected.LogPath))
                 throw new FileNotFoundException("The selected run log is unavailable.");
-            Process.Start(new ProcessStartInfo(selected.LogPath) { UseShellExecute = true });
+            _openRunLog(selected.LogPath);
         }
         catch (Exception ex) { RunHistoryStatus.Text = $"Could not open log: {UserMessages.Explain(ex)}"; }
     }
@@ -1120,7 +1154,11 @@ public partial class MainWindow : Window {
 
         foreach (var grid in new[] { ConfigHistoryGrid, RunHistoryGrid, RecoveryReportGrid })
         {
-            if (!IsInside(source, grid)) grid.UnselectAll();
+            if (!IsInside(source, grid))
+            {
+                grid.UnselectAll();
+                if (ReferenceEquals(grid, RunHistoryGrid)) SetRunLogTarget(null);
+            }
         }
     }
 
@@ -1128,6 +1166,7 @@ public partial class MainWindow : Window {
     {
         ConfigHistoryGrid.UnselectAll();
         RunHistoryGrid.UnselectAll();
+        SetRunLogTarget(null);
         RecoveryReportGrid.UnselectAll();
     }
 
@@ -1224,7 +1263,7 @@ public partial class MainWindow : Window {
     private async Task RestoreUiStateAsync()
     {
         _uiState = await _uiStateService.LoadAsync();
-        MainTabs.SelectedIndex = 0;
+        MainTabs.SelectedIndex = Math.Clamp(_uiState.SelectedTabIndex, 0, MainTabs.Items.Count - 1);
         ZidooSection.IsExpanded = _uiState.ZidooExpanded;
         MediaMonkeySection.IsExpanded = _uiState.MediaMonkeyExpanded;
         PlaylistStorageSection.IsExpanded = _uiState.PlaylistStorageExpanded;
@@ -1245,6 +1284,19 @@ public partial class MainWindow : Window {
             Left = left; Top = top;
         }
         if (_uiState.Maximized) WindowState = WindowState.Maximized;
+        foreach (var grid in new[] { ConfigHistoryGrid, RunHistoryGrid, RecoveryReportGrid })
+        {
+            if (_uiState.GridColumns is null || !_uiState.GridColumns.TryGetValue(grid.Name, out var columns) || columns is null) continue;
+            foreach (var saved in columns.OrderBy(c => c.DisplayIndex))
+            {
+                var column = grid.Columns.FirstOrDefault(c => Equals(c.Header?.ToString(), saved.Header));
+                if (column is null) continue;
+                if (Enum.TryParse<DataGridLengthUnitType>(saved.WidthUnit, out var unit) && Enum.IsDefined(unit) &&
+                    double.IsFinite(saved.Width) && saved.Width >= 0)
+                    column.Width = new DataGridLength(saved.Width, unit);
+                if (saved.DisplayIndex >= 0 && saved.DisplayIndex < grid.Columns.Count) column.DisplayIndex = saved.DisplayIndex;
+            }
+        }
         RefreshOutput();
     }
 
@@ -1283,6 +1335,16 @@ public partial class MainWindow : Window {
         _uiState.WindowWidth = bounds.Width; _uiState.WindowHeight = bounds.Height;
         _uiState.WindowLeft = bounds.Left; _uiState.WindowTop = bounds.Top;
         _uiState.Maximized = WindowState == WindowState.Maximized;
+        _uiState.GridColumns = new();
+        foreach (var grid in new[] { ConfigHistoryGrid, RunHistoryGrid, RecoveryReportGrid })
+            _uiState.GridColumns[grid.Name] = grid.Columns.Select(c => new GridColumnState
+            {
+                Header = c.Header?.ToString() ?? "", DisplayIndex = c.DisplayIndex,
+                Width = c.Width.Value, WidthUnit = c.Width.UnitType.ToString()
+            }).ToList();
         _uiStateService.SaveOnClosing(_uiState);
     }
 }
+
+
+

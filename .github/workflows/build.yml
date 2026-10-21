@@ -33,3 +33,6 @@ jobs:
         run: dotnet run --project NativeDeviceTests/NativeDeviceTests.csproj -c Release --nologo
       - name: Unsigned Windows build; no publication
         run: dotnet publish MediaMonkeyZidooSync/MediaMonkeyZidooSync.csproj -c Release -r win-x64 --self-contained true -o artifacts/windows --nologo
+
+      - name: Build unsigned MSI with native Windows tools
+        run: dotnet run --project Packaging/MsiBuilder/MsiBuilder.csproj -c Release -- artifacts/windows artifacts/MM-Zidoo-Sync.msi 1.1.2

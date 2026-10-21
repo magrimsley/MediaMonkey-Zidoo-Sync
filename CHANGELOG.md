@@ -1,6 +1,13 @@
 # MM Zidoo Sync — current
 
-Current local build:1.1-beta.1. See BETA1_RELEASE_NOTES.md, CURRENT-STATUS.md and KNOWN-BUGS.md. The entries below are historical and retain their original version-specific scope.
+Prepared candidate: 1.1.0-rc.2; registered installation and public release remain RC1. See RC2_RELEASE_NOTES.md and CURRENT-STATUS.md. Historical entries retain their original scope.
+
+## 1.1.0-rc.2 (prepared; release approval pending)
+
+- Preserve version-independent layout and selected Run History log behavior; keep clean no-change Review/Run disabled while preserving reviewed recovery.
+- Add a native, script-free per-user MSI alongside the portable package.
+- Author MSI file versions from numeric fixed-file metadata. Free-form display versions such as msquic.dll 2.5.10.154561281 violate MSI limits; its numeric version is 2.5.10.0.
+- Full local MSI checks passed: fresh RC2, RC1-payload upgrade, all 423 payload hashes, repair, downgrade refusal, shortcuts, uninstall and data retention. User configuration and registered legacy RC1 remained unchanged.
 
 # MediaMonkey Zidoo Sync — 1.1-alpha.54
 

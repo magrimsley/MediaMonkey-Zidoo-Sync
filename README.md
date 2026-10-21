@@ -1,6 +1,6 @@
 # MM Zidoo Sync
 
-Windows WPF application, version **1.1.0-rc.1**, for synchronizing managed MediaMonkey playlists with NAS M3U files and persistent Zidoo Music playlists. The application and synchronization engine are entirely native C#. PowerShell supports build, testing and installation only.
+Windows WPF application, version **1.1.0-rc.2**, for synchronizing managed MediaMonkey playlists with NAS M3U files and persistent Zidoo Music playlists. The application and synchronization engine are entirely native C#. PowerShell supports build, testing and installation only.
 
 Follow **Validate MediaMonkey → Verify Native Exporter → Review Changes → Run Synchronization**. Configuration changes and completed, cancelled or failed runs require the checks again. Errors are presented in plain language; detailed exceptions are retained in diagnostic logs. Successful verified synchronization is green, intentional cancellation is yellow. Appearance follows the Windows color scheme.
 
@@ -43,3 +43,6 @@ See [known bugs](KNOWN-BUGS.md), including the intermittent transaction-file sha
 
 MM Zidoo Sync is an independently developed project. It is not affiliated with, endorsed by, or sponsored by Ventis Media or Zidoo. MediaMonkey and Zidoo names and marks identify interoperability targets and remain the property of their respective owners. This disclaimer clarifies independence; it does not grant trademark rights.
 Artwork origin and permissions: [artwork record](ARTWORK-PROVENANCE.md). Preserve the ThirdPartyNotices directory with redistributed builds.
+
+MSI installation and version-independent user-data retention: [installer guide](Packaging/MSI-README.md). UI layout uses the same per-user state file across versions.
+

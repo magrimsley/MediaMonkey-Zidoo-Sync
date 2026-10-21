@@ -8,9 +8,9 @@
     <AssemblyName>MMZidooSync</AssemblyName><Product>MM Zidoo Sync</Product><AssemblyTitle>MM Zidoo Sync</AssemblyTitle>
     <RootNamespace>MediaMonkeyZidooSync</RootNamespace>
     <VersionPrefix>1.1.0</VersionPrefix>
-    <VersionSuffix>rc.1</VersionSuffix>
+    <VersionSuffix>rc.2</VersionSuffix>
     <BuildNumber Condition="'$(BuildNumber)' == ''">0</BuildNumber>
-    <RevisionNumber Condition="'$(RevisionNumber)' == ''">0</RevisionNumber>
+    <RevisionNumber Condition="'$(RevisionNumber)' == ''">2</RevisionNumber>
     <AssemblyVersion>1.1.$(BuildNumber).$(RevisionNumber)</AssemblyVersion>
     <FileVersion>1.1.$(BuildNumber).$(RevisionNumber)</FileVersion>
     <Deterministic>false</Deterministic>
@@ -35,3 +35,5 @@
     <Content Include="..\LICENSE;..\THIRD-PARTY-NOTICES.md;..\ARTWORK-PROVENANCE.md;..\artwork-inventory.json;..\DONATIONS.md" Link="%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
   </ItemGroup>
 </Project>
+
+

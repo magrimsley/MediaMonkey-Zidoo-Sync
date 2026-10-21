@@ -10,6 +10,7 @@ namespace MediaMonkeyZidooSync.Models;
 /// <summary>Presentation choices that survive application restarts.</summary>
 public sealed class UiState
 {
+    public Dictionary<string, List<GridColumnState>> GridColumns { get; set; } = new();
     /// <summary>Zero-based selected main-tab index.</summary>
     public int SelectedTabIndex { get; set; }
     /// <summary>Zidoo section expansion state.</summary>
@@ -40,4 +41,12 @@ public sealed class UiState
     public double? WindowTop { get; set; }
     /// <summary>Whether the window was maximized.</summary>
     public bool Maximized { get; set; }
+}
+
+public sealed class GridColumnState
+{
+    public string Header { get; set; } = "";
+    public int DisplayIndex { get; set; }
+    public double Width { get; set; }
+    public string WidthUnit { get; set; } = "Pixel";
 }
