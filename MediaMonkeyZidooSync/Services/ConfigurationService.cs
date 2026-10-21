@@ -114,6 +114,13 @@ public sealed class ConfigurationService {
         await WriteAsync(CurrentPath, config);
     }
 
+    /// <summary>Archives and saves setup progress without approving it for synchronization.</summary>
+    public async Task SaveDraftAsync(AppConfig config) {
+        ArgumentNullException.ThrowIfNull(config);
+        ArchiveCurrent("PreSaveDraft");
+        await WriteAsync(CurrentPath, config);
+    }
+
     /// <summary>Copies the current configuration into a timestamped archive folder.</summary>
     /// <param name="reason">Human-readable archive reason encoded in the folder name.</param>
     /// <returns>The archive directory, or null when no current configuration exists.</returns>

@@ -42,10 +42,10 @@
                FontSize="24" FontWeight="SemiBold" Margin="0,0,0,14"/>
 
     <StackPanel x:Name="ColorLegend" Grid.Row="1" Visibility="Collapsed" Margin="0,0,0,16">
-     <StackPanel Orientation="Horizontal" Margin="0,3"><Ellipse Width="14" Height="14" Fill="DodgerBlue" Margin="0,0,8,0"/><TextBlock FontWeight="SemiBold">Blue — Information</TextBlock></StackPanel>
-     <StackPanel Orientation="Horizontal" Margin="0,3"><Ellipse Width="14" Height="14" Fill="Goldenrod" Margin="0,0,8,0"/><TextBlock FontWeight="SemiBold">Yellow — Warning / Recovery</TextBlock></StackPanel>
-     <StackPanel Orientation="Horizontal" Margin="0,3"><Ellipse Width="14" Height="14" Fill="ForestGreen" Margin="0,0,8,0"/><TextBlock FontWeight="SemiBold">Green — Success / Commit</TextBlock></StackPanel>
-     <StackPanel Orientation="Horizontal" Margin="0,3"><Ellipse Width="14" Height="14" Fill="Red" Margin="0,0,8,0"/><TextBlock FontWeight="SemiBold">Red — Error</TextBlock></StackPanel>
+     <StackPanel Orientation="Horizontal" Margin="0,3"><Ellipse Width="14" Height="14" Fill="DodgerBlue" Margin="0,0,8,0"/><TextBlock FontWeight="SemiBold">Blue â€” Information</TextBlock></StackPanel>
+     <StackPanel Orientation="Horizontal" Margin="0,3"><Ellipse Width="14" Height="14" Fill="Goldenrod" Margin="0,0,8,0"/><TextBlock FontWeight="SemiBold">Yellow â€” Warning / Recovery</TextBlock></StackPanel>
+     <StackPanel Orientation="Horizontal" Margin="0,3"><Ellipse Width="14" Height="14" Fill="ForestGreen" Margin="0,0,8,0"/><TextBlock FontWeight="SemiBold">Green â€” Success / Commit</TextBlock></StackPanel>
+     <StackPanel Orientation="Horizontal" Margin="0,3"><Ellipse Width="14" Height="14" Fill="Red" Margin="0,0,8,0"/><TextBlock FontWeight="SemiBold">Red â€” Error</TextBlock></StackPanel>
     </StackPanel>
 
     <FlowDocumentScrollViewer x:Name="TopicBody" Grid.Row="2" FontSize="14"
@@ -59,10 +59,6 @@
 
     <StackPanel x:Name="ZidooDocumentationLinks" Grid.Row="3"
                 Margin="0,16,0,0" Visibility="Collapsed">
-     <TextBlock FontSize="14">
-      <Hyperlink NavigateUri="https://apidoc.zidoo.tv/"
-                 RequestNavigate="ZidooDocumentation_RequestNavigate">Zidoo developer API reference (Chinese; not a setup guide)</Hyperlink>
-     </TextBlock>
      <TextBlock FontSize="14" Margin="0,8,0,0">
       <Hyperlink NavigateUri="https://www.zidoo.tv/Support/guide/guide_target/xqwZ8QMj6ZVKKmVViAFMcQ%3D%3D.html"
                  RequestNavigate="ZidooDocumentation_RequestNavigate">How to get the Ethernet MAC Address of a ZIDOO Box</Hyperlink>

@@ -27,9 +27,9 @@ internal static class Program
     private static T Field<T>(object obj, string name) where T : class =>
         (T)(obj.GetType().GetField(name, BindingFlags.Instance | BindingFlags.NonPublic)!
             .GetValue(obj) ?? throw new Exception("Missing " + name));
-    private static void Invoke(object obj, string name) =>
+    private static void Invoke(object obj, string name) { var prior=SynchronizationContext.Current; try { SynchronizationContext.SetSynchronizationContext(new DispatcherSynchronizationContext(Dispatcher.CurrentDispatcher));
         obj.GetType().GetMethod(name, BindingFlags.Instance | BindingFlags.NonPublic)!
-            .Invoke(obj, new object[] { obj, new RoutedEventArgs() });
+            .Invoke(obj, new object[] { obj, new RoutedEventArgs() }); } finally { SynchronizationContext.SetSynchronizationContext(prior); } }
     [STAThread]
     private static int Main()
     {
@@ -47,7 +47,7 @@ internal static class Program
             string? openedLog = null;
             var window = new MainWindow(root, path => openedLog = path);
             window.Show(); Pump(400);
-            Check(window.Title=="MM Zidoo Sync" && typeof(MainWindow).Assembly.GetName().Name=="MMZidooSync" && ApplicationVersionProvider.ProductVersion=="1.1.0-rc.3", "RC product name, assembly and version match approved identity");
+            Check(window.Title=="MM Zidoo Sync" && typeof(MainWindow).Assembly.GetName().Name=="MMZidooSync" && ApplicationVersionProvider.ProductVersion=="1.1.0-rc.4", "RC product name, assembly and version match approved identity");
             Check(typeof(MainWindow).GetMethod("RunNativeAssessment_Click", BindingFlags.Instance | BindingFlags.NonPublic) is null && typeof(MainWindow).GetMethod("InspectNativePlan_Click", BindingFlags.Instance | BindingFlags.NonPublic) is null, "Optional assessment handlers are excluded from compilation");
             Check(window.FindName("RunNativeAssessmentButton") is null && window.FindName("InspectNativePlanButton") is null, "Optional diagnostics controls are absent");
             Check(window.Icon is not null, "Main window loads application artwork");
@@ -57,7 +57,27 @@ internal static class Program
             var run=Field<Button>(window,"RunButton");
             Check(!validate.IsEnabled && !verify.IsEnabled && !review.IsEnabled && !run.IsEnabled,"No configuration disables all synchronization steps");
             Check(!Field<TabItem>(window,"SynchronizationTab").IsEnabled && ReferenceEquals(Field<TabControl>(window,"MainTabs").SelectedItem,Field<TabItem>(window,"ConfigurationTab")),"First startup selects Configuration and blocks Synchronization");
-            Check(!Field<TabItem>(window,"RunHistoryTab").IsEnabled,"Without saved configuration all other tabs are disabled");
+            Check(Field<TabItem>(window,"RunHistoryTab").IsEnabled,"Incomplete setup keeps Run History available");
+            var draftRoot=Path.Combine(root,"DraftSetup");
+            var draftWindow=new MainWindow(draftRoot,path=>openedLog=path);draftWindow.Show();Pump(300);
+            Field<TextBox>(draftWindow,"ZidooIp").Text="192.0.2.42";
+            Invoke(draftWindow,"SaveConfig_Click");Pump(400);
+            var draftService=new ConfigurationService(draftRoot);
+            var savedDraft=draftService.LoadAsync(Path.Combine(AppContext.BaseDirectory,"Resources","MediaMonkey-Zidoo-Config-v1.0.0.json")).GetAwaiter().GetResult();
+            Check(savedDraft.Zidoo.IPAddress=="192.0.2.42" && string.IsNullOrEmpty(savedDraft.MediaMonkey.PlaylistParent),"Partial setup saves and reloads without all required fields");
+            Check(!Field<Button>(draftWindow,"ValidateMediaMonkeyButton").IsEnabled && Field<TabItem>(draftWindow,"RunHistoryTab").IsEnabled && Field<TextBlock>(draftWindow,"ConfigMessage").Text.Contains("Setup progress saved"),"Saved draft keeps synchronization blocked and history accessible");
+            var draftLog=Field<string>(draftWindow,"_configurationLogPath");
+            Check(File.Exists(draftLog) && new RunHistoryService().List(Path.Combine(draftRoot,"Reports")).Any(x=>x.Result=="Draft saved"),"Partial save creates an openable setup history log");
+            Invoke(draftWindow,"OpenConfigurationLog_Click");Check(openedLog==draftLog,"Configuration opens the exact setup log without changing tabs");
+            Field<TextBox>(draftWindow,"ApiPort").Text="bad";Invoke(draftWindow,"SaveConfig_Click");Pump(300);
+            var failedSetupLog=Field<string>(draftWindow,"_configurationLogPath");
+            Check(Field<TextBlock>(draftWindow,"ConfigMessage").Text.Contains("Zidoo API Port") && File.ReadAllText(failedSetupLog).Contains("InvalidDataException"),"Invalid numeric input names the field and records diagnostic details");
+            Check(new ConfigurationService(draftRoot).LoadAsync(Path.Combine(AppContext.BaseDirectory,"Resources","MediaMonkey-Zidoo-Config-v1.0.0.json")).GetAwaiter().GetResult().Zidoo.ApiPort==savedDraft.Zidoo.ApiPort,"Failed save preserves the previous persisted draft");
+            Field<TextBox>(draftWindow,"ApiPort").Text=savedDraft.Zidoo.ApiPort.ToString();
+            draftWindow.Close();Pump();
+            var draftReopened=new MainWindow(draftRoot);draftReopened.Show();Pump(300);
+            Check(Field<TextBox>(draftReopened,"ZidooIp").Text=="192.0.2.42" && Field<TabControl>(draftReopened,"MainTabs").SelectedIndex==1 && Field<TabItem>(draftReopened,"RunHistoryTab").IsEnabled,"Restart restores the draft and keeps Configuration and Logs available");
+            draftReopened.Close();Pump();
             typeof(MainWindow).GetField("_configurationReady",BindingFlags.Instance|BindingFlags.NonPublic)!.SetValue(window,true);
             typeof(MainWindow).GetMethod("RefreshWorkflowControls",BindingFlags.Instance|BindingFlags.NonPublic)!.Invoke(window,null);
             Check(validate.IsEnabled,"Saved valid configuration enables validation");
@@ -106,6 +126,10 @@ internal static class Program
             var artifacts=Environment.GetEnvironmentVariable("MMZS_UI_ARTIFACT_DIRECTORY");
             if(!string.IsNullOrWhiteSpace(artifacts)){Directory.CreateDirectory(artifacts);File.Copy(Path.Combine(root,"help-preview.png"),Path.Combine(artifacts,"help-preview.png"),true);
                 var mainPreview=new System.Windows.Media.Imaging.RenderTargetBitmap((int)window.ActualWidth,(int)window.ActualHeight,96,96,System.Windows.Media.PixelFormats.Pbgra32);mainPreview.Render(window);var mainEncoder=new System.Windows.Media.Imaging.PngBitmapEncoder();mainEncoder.Frames.Add(System.Windows.Media.Imaging.BitmapFrame.Create(mainPreview));using(var png=File.Create(Path.Combine(artifacts,"main-preview.png")))mainEncoder.Save(png);}
+            help.SelectTopic("Configuration");Pump();
+            var configHelp=new System.Windows.Documents.TextRange(helpDocument.ContentStart,helpDocument.ContentEnd).Text;
+            Check(configHelp.Contains(@"\\MusicServer\Media\Music") && configHelp.Contains("Host = MusicServer") && configHelp.Contains("exact name, including capitalization") && configHelp.Contains("Save your progress"),"Configuration Help explains storage names, playlist parent and partial saves");
+            Check(!System.Windows.Markup.XamlWriter.Save(help).Contains("apidoc.zidoo.tv"),"End-user Help omits the unlocalized developer API link");
             help.Close();            var history=Field<DataGrid>(window,"RunHistoryGrid");
             var tabs=Field<TabControl>(window,"MainTabs");
             var historyTab=tabs.Items.OfType<TabItem>().Single(tab=>Equals(tab.Header,"Run History / Logs"));

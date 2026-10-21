@@ -138,6 +138,7 @@ public partial class MainWindow : Window {
     private readonly UiStateService _uiStateService;
     private readonly Action<string> _openRunLog;
     private RunHistoryService.RunRecord? _selectedRunLog;
+    private string? _configurationLogPath;
     private UiState _uiState = new();
     private readonly SyncRunner _runner = new();
     private System.Threading.CancellationTokenSource? _syncCancellation;
@@ -255,7 +256,7 @@ public partial class MainWindow : Window {
         if(RunButton is null || ReviewSynchronizationButton is null)return;
         bool allowed=!IsolatedStartupMode.Enabled && _configurationReady;
         SynchronizationTab.IsEnabled=_configurationReady;
-        RunHistoryTab.IsEnabled=_configurationReady;
+        RunHistoryTab.IsEnabled=true;
         ValidateMediaMonkeyButton.IsEnabled=allowed && _workflow.CanValidate;
         VerifyNativeExporterButton.IsEnabled=allowed && _workflow.CanVerify;
         ReviewSynchronizationButton.IsEnabled=allowed && _workflow.CanReview && _preparedReview is not null;
@@ -332,27 +333,69 @@ public partial class MainWindow : Window {
         MainTabs.SelectedItem=_configurationReady ? SynchronizationTab : ConfigurationTab;
     }
 
+    private static int ReadSetupNumber(string text, string label) {
+        if (string.IsNullOrWhiteSpace(text)) return 0; // Keep incomplete setup; full validation still blocks synchronization.
+        if (!int.TryParse(text, out int value)) throw new InvalidDataException($"Enter a whole number for {label}, or clear it to finish later.");
+        return value;
+    }
+
     /// <summary>Copies editable UI fields into the in-memory configuration before validation/save/run.</summary>
     private void ReadConfigFromForm() {
         if (_config is null) throw new InvalidOperationException("Configuration is not loaded.");
         _config.Zidoo.IPAddress=ZidooIp.Text.Trim(); _config.Zidoo.MacAddress=ZidooMac.Text.Trim();
-        _config.Zidoo.ExpectedModel=ExpectedModel.Text.Trim(); _config.Zidoo.ApiPort=int.Parse(ApiPort.Text);
-        _config.Zidoo.BroadcastAddress=Broadcast.Text.Trim(); _config.Zidoo.WolPort=int.Parse(WolPort.Text);
-        _config.Zidoo.PlaylistGridColumns=int.Parse(GridColumns.Text);
+        _config.Zidoo.ExpectedModel=ExpectedModel.Text.Trim(); _config.Zidoo.ApiPort=ReadSetupNumber(ApiPort.Text,"Zidoo API Port");
+        _config.Zidoo.BroadcastAddress=Broadcast.Text.Trim(); _config.Zidoo.WolPort=ReadSetupNumber(WolPort.Text,"WOL Port");
+        _config.Zidoo.PlaylistGridColumns=ReadSetupNumber(GridColumns.Text,"Playlist Grid Columns");
         _config.MediaMonkey.DatabasePath=MmDb.Text.Trim(); _config.MediaMonkey.PlaylistParent=PlaylistParent.Text.Trim();
         _config.NAS.Host=NasHost.Text.Trim(); _config.NAS.ShareName=NasShare.Text.Trim();
         _config.NAS.MusicFolderName=MusicFolderName.Text.Trim(); _config.NAS.PlaylistFolderName=PlaylistFolderName.Text.Trim();
         _config.NAS.MusicRootUNC=NasMusic.Text.Trim(); _config.NAS.PlaylistFolderUNC=PlaylistFolder.Text.Trim();
         _config.Application.ReportRoot=ReportRoot.Text.Trim();
-        _config.Timing.ZidooReadinessTimeoutSeconds=int.Parse(ReadinessTimeout.Text);
-        _config.Timing.ColdBootUiStabilizationSeconds=int.Parse(ColdBootSeconds.Text);
+        _config.Timing.ZidooReadinessTimeoutSeconds=ReadSetupNumber(ReadinessTimeout.Text,"Readiness Timeout");
+        _config.Timing.ColdBootUiStabilizationSeconds=ReadSetupNumber(ColdBootSeconds.Text,"Cold-Boot Stabilization");
     }
 
-    /// <summary>Validates, archives, and saves the current Configuration form values.</summary>
+    /// <summary>Archives and saves setup progress, then checks synchronization readiness.</summary>
     private async void SaveConfig_Click(object sender, RoutedEventArgs e) {
         if (IsolatedStartupMode.Enabled) return;
-        try { ReadConfigFromForm(); await _configService.SaveAsync(_config!); ConfigMessage.Text="Configuration validated, archived, and saved."; RefreshHistory(); UpdateConfigurationAvailability(); }
-        catch(Exception ex) { ConfigMessage.Text=$"Configuration was not saved: {UserMessages.Explain(ex)}"; }
+        var started=DateTime.Now;
+        Exception? failure=null;
+        try {
+            ReadConfigFromForm();
+            await _configService.SaveDraftAsync(_config!);
+            RefreshHistory(); UpdateConfigurationAvailability();
+            ConfigMessage.Text=_configurationReady ? "Configuration saved. Synchronization is available."
+                : "Setup progress saved. Complete the remaining settings before synchronizing. " + ConfigurationReadinessMessage();
+        }
+        catch(Exception ex) {
+            failure=ex;
+            _configurationReady=false; RefreshWorkflowControls();
+            ConfigMessage.Text="Could not save configuration. " + (ex is InvalidDataException ? ex.Message
+                : "Check that Windows allows this application to write to its settings folder.");
+        }
+        try {
+            // Always keep setup diagnostics in the local profile, even when the report path is incomplete or invalid.
+            var record=_runHistoryService.Save(Path.Combine(_configService.Root,"Reports"),started,
+                "Save Configuration",failure is null ? (_configurationReady ? "Saved" : "Draft saved") : "Failed",
+                DateTime.Now-started,new[]{new LogEvent(DateTime.Now,failure is null ? LogLevel.Green : LogLevel.Red,ConfigMessage.Text)
+                    {DiagnosticDetails=failure?.ToString()}});
+            _configurationLogPath=record.LogPath; OpenConfigurationLogButton.IsEnabled=true;
+            ConfigMessage.Text+="\nLog: " + record.LogPath;
+            RefreshRunHistory();
+        } catch(Exception logError) {
+            ConfigMessage.Text+="\nCould not write the setup log in " + Path.Combine(_configService.Root,"Reports") + ". " + logError.Message;
+        }
+    }
+
+    private string ConfigurationReadinessMessage() {
+        try { ConfigurationService.Validate(_config!); return ""; }
+        catch(InvalidDataException ex) { return ex.Message; }
+    }
+
+    private void OpenConfigurationLog_Click(object sender,RoutedEventArgs e) {
+        if (_configurationLogPath is null) return;
+        try { _openRunLog(_configurationLogPath); }
+        catch(Exception ex) { ConfigMessage.Text="Could not open the setup log: " + _configurationLogPath + "\n" + ex.Message; }
     }
 
     /// <summary>Restores Last Known Good and reloads the Configuration form.</summary>

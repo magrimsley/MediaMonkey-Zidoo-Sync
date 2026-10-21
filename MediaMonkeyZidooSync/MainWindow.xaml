@@ -151,6 +151,7 @@
       </Expander>
       <StackPanel Orientation="Horizontal" Margin="0,20,0,0">
        <Button Content="Save Configuration" Padding="16,7" Click="SaveConfig_Click"/>
+       <Button x:Name="OpenConfigurationLogButton" Content="Open Setup Log" IsEnabled="False" Padding="16,7" Margin="10,0,0,0" Click="OpenConfigurationLog_Click"/>
        <Button Content="Restore Last Known Good" Padding="16,7" Margin="10,0,0,0" Click="RestoreConfig_Click"/>
        <Button Content="Refresh History" Padding="16,7" Margin="10,0,0,0" Click="RefreshHistory_Click"/>
       </StackPanel>
