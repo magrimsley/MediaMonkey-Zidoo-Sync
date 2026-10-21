@@ -23,7 +23,7 @@ public static class GridSelectionBehavior
         if (sender is not DataGrid grid || e.OriginalSource is not DependencyObject source) return;
         for (DependencyObject? node = source; node is not null;)
         {
-            if (node is DataGridRow || node is DataGridCell || node is DataGridColumnHeader) return;
+            if (node is ScrollBar || node is Thumb || node is DataGridRow || node is DataGridCell || node is DataGridColumnHeader) return;
             if (ReferenceEquals(node, grid))
             {
                 grid.UnselectAll();

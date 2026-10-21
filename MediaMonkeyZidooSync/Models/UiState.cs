@@ -10,6 +10,8 @@ namespace MediaMonkeyZidooSync.Models;
 /// <summary>Presentation choices that survive application restarts.</summary>
 public sealed class UiState
 {
+    public bool RunHistoryExpanded { get; set; } = true;
+    public bool RecoveryExpanded { get; set; }
     public Dictionary<string, List<GridColumnState>> GridColumns { get; set; } = new();
     /// <summary>Zero-based selected main-tab index.</summary>
     public int SelectedTabIndex { get; set; }

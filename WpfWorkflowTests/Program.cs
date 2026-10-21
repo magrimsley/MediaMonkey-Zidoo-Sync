@@ -47,7 +47,7 @@ internal static class Program
             string? openedLog = null;
             var window = new MainWindow(root, path => openedLog = path);
             window.Show(); Pump(400);
-            Check(window.Title=="MM Zidoo Sync" && typeof(MainWindow).Assembly.GetName().Name=="MMZidooSync" && ApplicationVersionProvider.ProductVersion=="1.1.0-rc.4", "RC product name, assembly and version match approved identity");
+            Check(window.Title=="MM Zidoo Sync" && typeof(MainWindow).Assembly.GetName().Name=="MMZidooSync" && ApplicationVersionProvider.ProductVersion=="1.1.0-rc.5", "RC product name, assembly and version match approved identity");
             Check(typeof(MainWindow).GetMethod("RunNativeAssessment_Click", BindingFlags.Instance | BindingFlags.NonPublic) is null && typeof(MainWindow).GetMethod("InspectNativePlan_Click", BindingFlags.Instance | BindingFlags.NonPublic) is null, "Optional assessment handlers are excluded from compilation");
             Check(window.FindName("RunNativeAssessmentButton") is null && window.FindName("InspectNativePlanButton") is null, "Optional diagnostics controls are absent");
             Check(window.Icon is not null, "Main window loads application artwork");
@@ -68,7 +68,7 @@ internal static class Program
             Check(!Field<Button>(draftWindow,"ValidateMediaMonkeyButton").IsEnabled && Field<TabItem>(draftWindow,"RunHistoryTab").IsEnabled && Field<TextBlock>(draftWindow,"ConfigMessage").Text.Contains("Setup progress saved"),"Saved draft keeps synchronization blocked and history accessible");
             var draftLog=Field<string>(draftWindow,"_configurationLogPath");
             Check(File.Exists(draftLog) && new RunHistoryService().List(Path.Combine(draftRoot,"Reports")).Any(x=>x.Result=="Draft saved"),"Partial save creates an openable setup history log");
-            Invoke(draftWindow,"OpenConfigurationLog_Click");Check(openedLog==draftLog,"Configuration opens the exact setup log without changing tabs");
+            Check(draftWindow.FindName("OpenConfigurationLogButton") is null,"Setup log button removed; history provides log access");
             Field<TextBox>(draftWindow,"ApiPort").Text="bad";Invoke(draftWindow,"SaveConfig_Click");Pump(300);
             var failedSetupLog=Field<string>(draftWindow,"_configurationLogPath");
             Check(Field<TextBlock>(draftWindow,"ConfigMessage").Text.Contains("Zidoo API Port") && File.ReadAllText(failedSetupLog).Contains("InvalidDataException"),"Invalid numeric input names the field and records diagnostic details");
@@ -81,6 +81,20 @@ internal static class Program
             typeof(MainWindow).GetField("_configurationReady",BindingFlags.Instance|BindingFlags.NonPublic)!.SetValue(window,true);
             typeof(MainWindow).GetMethod("RefreshWorkflowControls",BindingFlags.Instance|BindingFlags.NonPublic)!.Invoke(window,null);
             Check(validate.IsEnabled,"Saved valid configuration enables validation");
+            Field<TabControl>(window,"MainTabs").SelectedItem=Field<TabItem>(window,"SynchronizationTab");
+            var output=Field<RichTextBox>(window,"OutputRichText");var outputEvents=Field<System.Collections.Generic.List<MediaMonkeyZidooSync.Models.LogEvent>>(window,"_events");
+            for(int index=0;index<200;index++)outputEvents.Add(new(DateTime.Now,MediaMonkeyZidooSync.Models.LogLevel.Blue,"Scroll position fixture line "+index));
+            void RedrawOutput()=>typeof(MainWindow).GetMethod("RefreshOutput",BindingFlags.Instance|BindingFlags.NonPublic)!.Invoke(window,null);
+            RedrawOutput();Pump(300);output.ScrollToVerticalOffset(50);Pump();var readingOffset=output.VerticalOffset;RedrawOutput();Pump();
+            Check(readingOffset>0 && Math.Abs(output.VerticalOffset-readingOffset)<2,"Output updates preserve the reader's scrolled position");
+            var oldParagraphs=output.Document.Blocks.Count;
+            output.RaiseEvent(new System.Windows.Controls.Primitives.DragStartedEventArgs(0,0){RoutedEvent=System.Windows.Controls.Primitives.Thumb.DragStartedEvent});
+            outputEvents.Add(new(DateTime.Now,MediaMonkeyZidooSync.Models.LogLevel.Blue,"Event during scrollbar drag"));RedrawOutput();
+            Check(output.Document.Blocks.Count==oldParagraphs,"Output does not redraw while the scrollbar thumb is being dragged");
+            output.RaiseEvent(new System.Windows.Controls.Primitives.DragCompletedEventArgs(0,0,false){RoutedEvent=System.Windows.Controls.Primitives.Thumb.DragCompletedEvent});Pump();
+            Check(output.Document.Blocks.Count==oldParagraphs+1 && Math.Abs(output.VerticalOffset-readingOffset)<2,"Ending scrollbar dragging displays new events without jumping to the bottom");
+            outputEvents.Clear();RedrawOutput();
+
             Check(ZidooDiscoveryService.BroadcastForSubnet("192.168.1.160","192.168.1.20","255.255.255.0")=="192.168.1.255","Discovery derives the matching subnet broadcast");
             Check(ZidooDiscoveryService.BroadcastForSubnet("10.0.3.50","10.0.2.1","255.255.254.0")=="10.0.3.255","Broadcast calculation respects non-24-bit masks");
             Check(ZidooDiscoveryService.BroadcastForSubnet("192.168.2.20","192.168.1.20","255.255.255.0") is null,"Discovery does not guess a broadcast for an unrelated subnet");
@@ -130,6 +144,11 @@ internal static class Program
             var configHelp=new System.Windows.Documents.TextRange(helpDocument.ContentStart,helpDocument.ContentEnd).Text;
             Check(configHelp.Contains(@"\\MusicServer\Media\Music") && configHelp.Contains("Host = MusicServer") && configHelp.Contains("exact name, including capitalization") && configHelp.Contains("Save your progress"),"Configuration Help explains storage names, playlist parent and partial saves");
             Check(!System.Windows.Markup.XamlWriter.Save(help).Contains("apidoc.zidoo.tv"),"End-user Help omits the unlocalized developer API link");
+            Check(helpDocument.Blocks.OfType<System.Windows.Documents.BlockUIContainer>().Any(block=>block.Child is Image image&&image.Source is not null) && helpDocument.Blocks.OfType<System.Windows.Documents.BlockUIContainer>().Any(block=>block.Child is StackPanel),"Configuration Help contains the MediaMonkey picture and folder diagram");
+            if(!string.IsNullOrWhiteSpace(artifacts)){
+                var configPreview=new System.Windows.Media.Imaging.RenderTargetBitmap((int)help.ActualWidth,(int)help.ActualHeight,96,96,System.Windows.Media.PixelFormats.Pbgra32);configPreview.Render(help);var configEncoder=new System.Windows.Media.Imaging.PngBitmapEncoder();configEncoder.Frames.Add(System.Windows.Media.Imaging.BitmapFrame.Create(configPreview));using(var png=File.Create(Path.Combine(artifacts,"configuration-help-preview.png")))configEncoder.Save(png);
+            }
+            help.SelectTopic("ConfigurationFiles");Pump();Check(new System.Windows.Documents.TextRange(helpDocument.ContentStart,helpDocument.ContentEnd).Text.Contains("HistoryKeepCount"),"Help documents operational and presentation JSON files");
             help.Close();            var history=Field<DataGrid>(window,"RunHistoryGrid");
             var tabs=Field<TabControl>(window,"MainTabs");
             var historyTab=tabs.Items.OfType<TabItem>().Single(tab=>Equals(tab.Header,"Run History / Logs"));
@@ -207,6 +226,45 @@ internal static class Program
                 Check(Field<DataGrid>(discoveryWindow,"RunHistoryGrid").Items.Count==1,"Discovery history remains visible after changing the report folder: "+outcome);
                 discoveryWindow.Close();Pump();
             }
+            var location=StorageSetupService.ParseMusic(@"\\Server\Share\Music");
+            Check(location.Host=="Server" && location.Share=="Share" && location.Music=="Music","Network folder selection derives host, share and music name");
+            Check(StorageSetupService.PlaylistName(@"\\Server\Share\Music",@"\\Server\Share\Music\A Zidoo")=="A Zidoo","Playlist selection derives child folder name");
+            bool sameFolderRejected=false;try{StorageSetupService.PlaylistName(@"\\Server\Share\Music",@"\\Server\Share\Music");}catch(InvalidDataException){sameFolderRejected=true;}
+            Check(sameFolderRejected,"Folder chooser refuses Music as the playlist folder");
+            bool localRejected=false;try{StorageSetupService.ParseMusic(@"C:\Music");}catch(InvalidDataException){localRejected=true;}
+            Check(localRejected,"Network setup refuses local-only music paths");
+            var importFile=Path.Combine(root,"saved-import.json");File.WriteAllText(importFile,"{\"MediaMonkey\":{\"PlaylistParent\":\"My playlists\"}}");
+            var imported=ConfigurationService.ReadImportAsync(importFile).GetAwaiter().GetResult();
+            Check(imported.MediaMonkey.PlaylistParent=="My playlists" && imported.Zidoo is not null,"Configuration import supports incomplete saved JSON");
+            var importHash=File.ReadAllText(importFile);
+            var importWindow=new MainWindow(Path.Combine(root,"ImportUI"));importWindow.Show();Pump(300);
+            typeof(MainWindow).GetMethod("ApplyImportedConfiguration",BindingFlags.Instance|BindingFlags.NonPublic)!.Invoke(importWindow,new object[]{imported});
+            Check(Field<TextBox>(importWindow,"PlaylistParent").Text=="My playlists" && !Field<TabItem>(importWindow,"SynchronizationTab").IsEnabled,"Imported values populate the form and require saving before synchronization");
+            Check(File.ReadAllText(importFile)==importHash,"Loading a configuration preserves the source file");
+            Invoke(importWindow,"HelpGuide_Click");Pump();
+            var childHelp=Field<HelpWindow>(importWindow,"_helpWindow");
+            Field<Expander>(importWindow,"RunHistorySection").IsExpanded=false;Field<Expander>(importWindow,"RecoverySection").IsExpanded=true;
+            importWindow.Close();Pump();Check(!childHelp.IsVisible,"Closing the main window also closes Help");
+            var restoredHistory=new MainWindow(Path.Combine(root,"ImportUI"));restoredHistory.Show();Pump(300);
+            Check(!Field<Expander>(restoredHistory,"RunHistorySection").IsExpanded && Field<Expander>(restoredHistory,"RecoverySection").IsExpanded,"History and recovery section expansion survive restart");restoredHistory.Close();Pump();
+            File.WriteAllText(importFile,"{\"LogPath\":\"C:\\\\outside.log\"}");bool wrongJson=false;try{ConfigurationService.ReadImportAsync(importFile).GetAwaiter().GetResult();}catch(InvalidDataException){wrongJson=true;}
+            Check(wrongJson,"Configuration import rejects history JSON");
+            File.WriteAllText(importFile,"{\"NAS\":null}");bool nullJson=false;try{ConfigurationService.ReadImportAsync(importFile).GetAwaiter().GetResult();}catch(InvalidDataException){nullJson=true;}
+            Check(nullJson,"Configuration import rejects null configuration sections");
+            var historyRoot=Path.Combine(root,"Retention");var histories=new RunHistoryService();
+            var recoverySentinel=Path.Combine(historyRoot,"pending-recovery.json");Directory.CreateDirectory(historyRoot);File.WriteAllText(recoverySentinel,"retain recovery");
+            for(int index=0;index<4;index++)histories.Save(historyRoot,DateTime.Now.AddMinutes(index),"offline","Complete",TimeSpan.Zero,Array.Empty<MediaMonkeyZidooSync.Models.LogEvent>());
+            histories.Prune(historyRoot,2);var retained=histories.List(historyRoot);
+            Check(retained.Count==2 && Directory.GetFiles(Path.Combine(historyRoot,"RunHistory"),"*.log").Length==2,"Retention removes old indexed log/index pairs");
+            histories.Prune(historyRoot,0);Check(histories.List(historyRoot).Count==2,"Retention zero keeps all history");
+            var outside=Path.Combine(root,"outside.log");File.WriteAllText(outside,"keep");bool unsafeDelete=false;try{histories.Delete(historyRoot,retained[0] with{LogPath=outside});}catch(InvalidDataException){unsafeDelete=true;}
+            Check(unsafeDelete && File.ReadAllText(outside)=="keep","History cleanup refuses paths outside its own history folder");
+            histories.Delete(historyRoot,retained[0]);Check(histories.List(historyRoot).Count==1 && File.ReadAllText(recoverySentinel)=="retain recovery","Selected history deletion preserves recovery data");
+            var parentDb=Path.Combine(root,"parent-picker.db");
+            using(var sql=new Microsoft.Data.Sqlite.SqliteConnection("Data Source="+parentDb+";Pooling=False")){sql.Open();using var command=sql.CreateCommand();command.CommandText="CREATE TABLE Playlists(IDPlaylist INTEGER,PlaylistName TEXT,ParentPlaylist INTEGER);INSERT INTO Playlists VALUES(1,'Imported Playlists',0),(2,'Jazz',1),(3,'Rock',1),(4,'Deep Rock',3),(5,'Other',0)";command.ExecuteNonQuery();}
+            var dbBytes=File.ReadAllBytes(parentDb);var parents=PlaylistParentService.ListAsync(parentDb).GetAwaiter().GetResult();
+            Check(parents.Single(x=>x.Name=="Imported Playlists").Descendants==3 && parents.Single(x=>x.Name=="Rock").Descendants==1,"Parent picker counts recursive child playlists and shows groups");
+            Check(dbBytes.SequenceEqual(File.ReadAllBytes(parentDb)),"Parent picker leaves MediaMonkey database unchanged");
             var savedRoot=Path.Combine(root,"SavedStartup");
             var savedConfig=new MediaMonkeyZidooSync.Models.AppConfig();
             savedConfig.Zidoo.ApiPort=9529;savedConfig.Zidoo.WolPort=9517;savedConfig.Zidoo.PlaylistGridColumns=5;
@@ -216,6 +274,10 @@ internal static class Program
             savedConfig.Zidoo.IPAddress="192.0.2.1";savedConfig.Zidoo.MacAddress="001122334455";savedConfig.Zidoo.ExpectedModel="TEST";savedConfig.Zidoo.BroadcastAddress="192.0.2.255";
             savedConfig.NAS.Host="offline.invalid";savedConfig.NAS.ShareName="test";savedConfig.NAS.MusicFolderName="music";savedConfig.NAS.PlaylistFolderName="lists";
             savedConfig.NAS.MusicRootUNC=@"\\offline.invalid\test\music";savedConfig.NAS.PlaylistFolderUNC=@"\\offline.invalid\test\lists";
+            var correctPlaylistFolder=savedConfig.NAS.PlaylistFolderUNC;savedConfig.NAS.PlaylistFolderUNC=savedConfig.NAS.MusicRootUNC;
+            bool equalFolderRejected=false;try{ConfigurationService.Validate(savedConfig);}catch(InvalidDataException ex){equalFolderRejected=ex.Message.Contains("same folder");}
+            Check(equalFolderRejected,"Saved settings cannot enable synchronization when Music and Playlist Folder point to the same location");
+            savedConfig.NAS.PlaylistFolderUNC=correctPlaylistFolder;
             new ConfigurationService(savedRoot).SaveAsync(savedConfig).GetAwaiter().GetResult();
             new UiStateService(Path.Combine(savedRoot,"ui-state.json")).SaveAsync(new MediaMonkeyZidooSync.Models.UiState{SelectedTabIndex=2}).GetAwaiter().GetResult();
             var savedWindow=new MainWindow(savedRoot);savedWindow.Show();Pump(500);

@@ -104,7 +104,7 @@
        <Grid.ColumnDefinitions><ColumnDefinition Width="220"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
        <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
        <TextBlock Text="Database" Grid.Row="0" Margin="0,6"/><DockPanel Grid.Column="1" Grid.Row="0"><Button DockPanel.Dock="Right" Content="Browse…" Margin="4" Padding="10,3" Click="BrowseDatabase_Click"/><TextBox x:Name="MmDb" Margin="4"/></DockPanel>
-       <TextBlock Text="Playlist Parent" Grid.Row="1" Margin="0,6"/><TextBox x:Name="PlaylistParent" Grid.Column="1" Grid.Row="1" Margin="4"/>
+       <TextBlock Text="Playlist Parent" Grid.Row="1" Margin="0,6"/><DockPanel Grid.Column="1" Grid.Row="1"><Button DockPanel.Dock="Right" Content="Choose…" Margin="4" Padding="10,3" Click="ChoosePlaylistParent_Click"/><TextBox x:Name="PlaylistParent" Margin="4"/></DockPanel>
       </Grid>
       </Expander>
 
@@ -115,10 +115,10 @@
         <RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/>
         <RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/>
        </Grid.RowDefinitions>
-       <TextBlock Text="Host" Grid.Row="0" Margin="0,6"/><TextBox x:Name="NasHost" Grid.Column="1" Grid.Row="0" Margin="4"/>
-       <TextBlock Text="Share Name" Grid.Row="1" Margin="0,6"/><TextBox x:Name="NasShare" Grid.Column="1" Grid.Row="1" Margin="4"/>
-       <TextBlock Text="Music Folder Name" Grid.Row="2" Margin="0,6"/><TextBox x:Name="MusicFolderName" Grid.Column="1" Grid.Row="2" Margin="4"/>
-       <TextBlock Text="Playlist Folder Name" Grid.Row="3" Margin="0,6"/><TextBox x:Name="PlaylistFolderName" Grid.Column="1" Grid.Row="3" Margin="4"/>
+       <TextBlock Text="Host" Grid.Row="0" Margin="0,6"/><DockPanel Grid.Column="1" Grid.Row="0"><Button DockPanel.Dock="Right" Content="Browse music location…" Margin="4" Padding="10,3" Click="BrowseMusic_Click"/><TextBox x:Name="NasHost" Margin="4"/></DockPanel>
+       <TextBlock Text="Share Name" Grid.Row="1" Margin="0,6"/><DockPanel Grid.Column="1" Grid.Row="1"><Button DockPanel.Dock="Right" Content="Browse…" Margin="4" Padding="10,3" Click="BrowseMusic_Click"/><TextBox x:Name="NasShare" Margin="4"/></DockPanel>
+       <TextBlock Text="Music Folder Name" Grid.Row="2" Margin="0,6"/><DockPanel Grid.Column="1" Grid.Row="2"><Button DockPanel.Dock="Right" Content="Browse…" Margin="4" Padding="10,3" Click="BrowseMusic_Click"/><TextBox x:Name="MusicFolderName" Margin="4"/></DockPanel>
+       <TextBlock Text="Playlist Folder Name" Grid.Row="3" Margin="0,6"/><DockPanel Grid.Column="1" Grid.Row="3"><Button DockPanel.Dock="Right" Content="Browse…" Margin="4" Padding="10,3" Click="BrowsePlaylists_Click"/><TextBox x:Name="PlaylistFolderName" Margin="4"/></DockPanel>
        <TextBlock Text="Music Root UNC" Grid.Row="4" Margin="0,6"/><DockPanel Grid.Column="1" Grid.Row="4"><Button DockPanel.Dock="Right" Content="Browse…" Margin="4" Padding="10,3" Click="BrowseMusic_Click"/><TextBox x:Name="NasMusic" Margin="4"/></DockPanel>
        <TextBlock Text="Playlist Folder UNC" Grid.Row="5" Margin="0,6"/><DockPanel Grid.Column="1" Grid.Row="5"><Button DockPanel.Dock="Right" Content="Browse…" Margin="4" Padding="10,3" Click="BrowsePlaylists_Click"/><TextBox x:Name="PlaylistFolder" Margin="4"/></DockPanel>
       </Grid>
@@ -128,11 +128,12 @@
        <Grid Margin="0,8,0,0">
         <Grid.ColumnDefinitions><ColumnDefinition Width="220"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
-         <RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/>
+         <RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
         <TextBlock Text="Report / Log Root" Grid.Row="0" Margin="0,6"/><DockPanel Grid.Column="1" Grid.Row="0"><Button DockPanel.Dock="Right" Content="Browse…" Margin="4" Padding="10,3" Click="BrowseReports_Click"/><TextBox x:Name="ReportRoot" Margin="4"/></DockPanel>
         <TextBlock Text="Readiness Timeout (sec)" Grid.Row="1" Margin="0,6"/><TextBox x:Name="ReadinessTimeout" Grid.Column="1" Grid.Row="1" Margin="4"/>
         <TextBlock Text="Cold Boot Stabilization (sec)" Grid.Row="2" Margin="0,6"/><TextBox x:Name="ColdBootSeconds" Grid.Column="1" Grid.Row="2" Margin="4"/>
+        <TextBlock Text="History entries to keep (0 = all)" Grid.Row="3" Margin="0,6"/><TextBox x:Name="HistoryKeepCount" Grid.Column="1" Grid.Row="3" Margin="4"/>
        </Grid>
       </Expander>
 
@@ -149,12 +150,12 @@
         <Button Content="Restore Selected Archive" Padding="16,7" HorizontalAlignment="Left" Margin="0,8,0,0" Click="RestoreArchive_Click"/>
        </StackPanel>
       </Expander>
-      <StackPanel Orientation="Horizontal" Margin="0,20,0,0">
+      <WrapPanel Margin="0,20,0,0">
+       <Button Content="Load Configuration JSON…" Padding="16,7" Click="ImportConfig_Click"/>
        <Button Content="Save Configuration" Padding="16,7" Click="SaveConfig_Click"/>
-       <Button x:Name="OpenConfigurationLogButton" Content="Open Setup Log" IsEnabled="False" Padding="16,7" Margin="10,0,0,0" Click="OpenConfigurationLog_Click"/>
        <Button Content="Restore Last Known Good" Padding="16,7" Margin="10,0,0,0" Click="RestoreConfig_Click"/>
        <Button Content="Refresh History" Padding="16,7" Margin="10,0,0,0" Click="RefreshHistory_Click"/>
-      </StackPanel>
+      </WrapPanel>
       <TextBlock x:Name="ConfigMessage" Margin="0,12,0,0" TextWrapping="Wrap"/>
 
      </StackPanel>
@@ -162,15 +163,15 @@
    </TabItem>
 
    <TabItem x:Name="RunHistoryTab" Header="Run History / Logs">
-    <Grid Margin="16">
+    <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled"><Grid Margin="16">
      <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
-     <Expander Header="Run History / Logs" IsExpanded="True" Grid.Row="0">
+     <Expander x:Name="RunHistorySection" Header="Run History / Logs" IsExpanded="True" Grid.Row="0">
      <DockPanel Margin="0,8,0,0">
-      <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Margin="0,0,0,12">
-       <Button Content="Refresh Runs" Padding="14,7" Click="RefreshRunHistory_Click"/>
+      <WrapPanel DockPanel.Dock="Top" Margin="0,0,0,12">
+       <Button Content="Delete Selected Run…" Padding="14,7" Margin="0,0,10,0" Click="DeleteRun_Click"/><Button Content="Delete All History…" Padding="14,7" Margin="0,0,10,0" Click="DeleteAllRuns_Click"/><Button Content="Refresh Runs" Padding="14,7" Click="RefreshRunHistory_Click"/>
        <Button x:Name="OpenSelectedLogButton" Content="Open Selected Log" IsEnabled="False" Padding="14,7" Margin="10,0,0,0" Click="OpenRunLog_Click"/>
        <TextBlock x:Name="RunHistoryStatus" Margin="14,8,0,0" TextWrapping="Wrap"/>
-      </StackPanel>
+      </WrapPanel>
       <DataGrid x:Name="RunHistoryGrid" Height="390" AutoGenerateColumns="False" IsReadOnly="True"
                 CanUserAddRows="False" SelectionMode="Extended" SelectionUnit="CellOrRowHeader"
                 HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto" RowHeaderWidth="20">
@@ -216,7 +217,7 @@
       </DataGrid>
      </DockPanel>
      </Expander>
-     <Expander Header="Recovery Diagnostics (Read-only)" Grid.Row="1" IsExpanded="False" Margin="0,12,0,0">
+     <Expander x:Name="RecoverySection" Header="Recovery Diagnostics (Read-only)" Grid.Row="1" IsExpanded="False" Margin="0,12,0,0">
       <DockPanel Margin="0,8,0,0">
        <StackPanel DockPanel.Dock="Top" Margin="0,0,0,8">
         <Button Content="Refresh Recovery Reports" Padding="14,7" HorizontalAlignment="Left" Click="RefreshRecoveryReports_Click"/>
@@ -235,7 +236,7 @@
        </DataGrid>
       </DockPanel>
      </Expander>
-    </Grid>
+    </Grid></ScrollViewer>
    </TabItem>
   </TabControl>
 

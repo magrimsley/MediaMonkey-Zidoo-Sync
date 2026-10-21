@@ -8,9 +8,9 @@
     <AssemblyName>MMZidooSync</AssemblyName><Product>MM Zidoo Sync</Product><AssemblyTitle>MM Zidoo Sync</AssemblyTitle>
     <RootNamespace>MediaMonkeyZidooSync</RootNamespace>
     <VersionPrefix>1.1.0</VersionPrefix>
-    <VersionSuffix>rc.4</VersionSuffix>
+    <VersionSuffix>rc.5</VersionSuffix>
     <BuildNumber Condition="'$(BuildNumber)' == ''">0</BuildNumber>
-    <RevisionNumber Condition="'$(RevisionNumber)' == ''">4</RevisionNumber>
+    <RevisionNumber Condition="'$(RevisionNumber)' == ''">5</RevisionNumber>
     <AssemblyVersion>1.1.$(BuildNumber).$(RevisionNumber)</AssemblyVersion>
     <FileVersion>1.1.$(BuildNumber).$(RevisionNumber)</FileVersion>
     <Deterministic>false</Deterministic>
@@ -28,11 +28,12 @@
 <ItemGroup>
 <Resource Include="Resources\Branding\Application.ico" />
 <Resource Include="Resources\Branding\Splash.jpg" />
+<Resource Include="Resources\Help\PlaylistParent.png" />
 <Content Include="Resources\Branding\Application.ico"><CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory><CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory></Content>
 </ItemGroup>
   <ItemGroup>
     <Content Include="..\ThirdPartyNotices\**\*" Link="ThirdPartyNotices\%(RecursiveDir)%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
-    <Content Include="..\LICENSE;..\THIRD-PARTY-NOTICES.md;..\ARTWORK-PROVENANCE.md;..\artwork-inventory.json;..\DONATIONS.md" Link="%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
+    <Content Include="..\LICENSE;..\THIRD-PARTY-NOTICES.md;..\ARTWORK-PROVENANCE.md;..\artwork-inventory.json;..\DONATIONS.md;..\CONFIGURATION_JSON_REFERENCE.md" Link="%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
   </ItemGroup>
 </Project>
 

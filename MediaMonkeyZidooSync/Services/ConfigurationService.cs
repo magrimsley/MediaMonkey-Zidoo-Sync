@@ -114,6 +114,19 @@ public sealed class ConfigurationService {
         await WriteAsync(CurrentPath, config);
     }
 
+    /// <summary>Reads a user-selected JSON configuration without changing it or current settings.</summary>
+    public static async Task<AppConfig> ReadImportAsync(string path) {
+        if (new FileInfo(path).Length > 4*1024*1024) throw new InvalidDataException("Choose a configuration JSON smaller than 4 MB.");
+        var text=await File.ReadAllTextAsync(path);
+        using var document=JsonDocument.Parse(text);
+        string[] sections={"Application","Zidoo","NAS","MediaMonkey","Timing"};
+        if(document.RootElement.ValueKind!=JsonValueKind.Object || !document.RootElement.EnumerateObject().Any(p=>sections.Contains(p.Name,StringComparer.OrdinalIgnoreCase)))
+            throw new InvalidDataException("This JSON does not contain an MM Zidoo Sync configuration.");
+        foreach(var section in document.RootElement.EnumerateObject().Where(p=>sections.Contains(p.Name,StringComparer.OrdinalIgnoreCase)))
+            if(section.Value.ValueKind!=JsonValueKind.Object) throw new InvalidDataException($"The {section.Name} section must contain settings.");
+        return JsonSerializer.Deserialize<AppConfig>(text,JsonOptions) ?? throw new InvalidDataException("The configuration is empty.");
+    }
+
     /// <summary>Archives and saves setup progress without approving it for synchronization.</summary>
     public async Task SaveDraftAsync(AppConfig config) {
         ArgumentNullException.ThrowIfNull(config);
@@ -221,6 +234,9 @@ public sealed class ConfigurationService {
         if (!c.NAS.MusicRootUNC.StartsWith(@"\\") || !c.NAS.PlaylistFolderUNC.StartsWith(@"\\"))
             throw new InvalidDataException("NAS paths must be UNC paths beginning with \\\\.");
 
+        if (string.Equals(c.NAS.MusicRootUNC.TrimEnd('\\'),c.NAS.PlaylistFolderUNC.TrimEnd('\\'),StringComparison.OrdinalIgnoreCase))
+            throw new InvalidDataException("Music Root and Playlist Folder point to the same folder. Choose the folder containing your M3U playlist files, for example the A Zidoo folder inside Music.");
+        if (c.Application.HistoryKeepCount < 0) throw new InvalidDataException("History entries to keep cannot be negative.");
         Required(c.MediaMonkey.DatabasePath, "MediaMonkey Database Path");
         Required(c.MediaMonkey.PlaylistParent, "MediaMonkey Playlist Parent");
         if (c.Timing.ZidooReadinessTimeoutSeconds < 1) throw new InvalidDataException("Zidoo readiness timeout must be positive.");

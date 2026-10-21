@@ -19,6 +19,7 @@
     <ListBoxItem Tag="GettingStarted">Getting Started</ListBoxItem>
     <ListBoxItem Tag="Synchronization">Synchronization</ListBoxItem>
     <ListBoxItem Tag="Configuration">Configuration</ListBoxItem>
+    <ListBoxItem Tag="ConfigurationFiles">Configuration JSON Files</ListBoxItem>
     <ListBoxItem Tag="StatusColors">Status / Output Colors</ListBoxItem>
     <ListBoxItem Tag="Archive">Configuration Archive</ListBoxItem>
     <ListBoxItem Tag="LastKnownGood">Last Known Good</ListBoxItem>
@@ -42,10 +43,10 @@
                FontSize="24" FontWeight="SemiBold" Margin="0,0,0,14"/>
 
     <StackPanel x:Name="ColorLegend" Grid.Row="1" Visibility="Collapsed" Margin="0,0,0,16">
-     <StackPanel Orientation="Horizontal" Margin="0,3"><Ellipse Width="14" Height="14" Fill="DodgerBlue" Margin="0,0,8,0"/><TextBlock FontWeight="SemiBold">Blue â€” Information</TextBlock></StackPanel>
-     <StackPanel Orientation="Horizontal" Margin="0,3"><Ellipse Width="14" Height="14" Fill="Goldenrod" Margin="0,0,8,0"/><TextBlock FontWeight="SemiBold">Yellow â€” Warning / Recovery</TextBlock></StackPanel>
-     <StackPanel Orientation="Horizontal" Margin="0,3"><Ellipse Width="14" Height="14" Fill="ForestGreen" Margin="0,0,8,0"/><TextBlock FontWeight="SemiBold">Green â€” Success / Commit</TextBlock></StackPanel>
-     <StackPanel Orientation="Horizontal" Margin="0,3"><Ellipse Width="14" Height="14" Fill="Red" Margin="0,0,8,0"/><TextBlock FontWeight="SemiBold">Red â€” Error</TextBlock></StackPanel>
+     <StackPanel Orientation="Horizontal" Margin="0,3"><Ellipse Width="14" Height="14" Fill="DodgerBlue" Margin="0,0,8,0"/><TextBlock FontWeight="SemiBold">Blue — Information</TextBlock></StackPanel>
+     <StackPanel Orientation="Horizontal" Margin="0,3"><Ellipse Width="14" Height="14" Fill="Goldenrod" Margin="0,0,8,0"/><TextBlock FontWeight="SemiBold">Yellow — Warning / Recovery</TextBlock></StackPanel>
+     <StackPanel Orientation="Horizontal" Margin="0,3"><Ellipse Width="14" Height="14" Fill="ForestGreen" Margin="0,0,8,0"/><TextBlock FontWeight="SemiBold">Green — Success / Commit</TextBlock></StackPanel>
+     <StackPanel Orientation="Horizontal" Margin="0,3"><Ellipse Width="14" Height="14" Fill="Red" Margin="0,0,8,0"/><TextBlock FontWeight="SemiBold">Red — Error</TextBlock></StackPanel>
     </StackPanel>
 
     <FlowDocumentScrollViewer x:Name="TopicBody" Grid.Row="2" FontSize="14"

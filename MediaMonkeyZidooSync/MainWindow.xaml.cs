@@ -139,6 +139,7 @@ public partial class MainWindow : Window {
     private readonly Action<string> _openRunLog;
     private RunHistoryService.RunRecord? _selectedRunLog;
     private string? _configurationLogPath;
+    private bool _outputScrollDrag;
     private UiState _uiState = new();
     private readonly SyncRunner _runner = new();
     private System.Threading.CancellationTokenSource? _syncCancellation;
@@ -188,6 +189,8 @@ public partial class MainWindow : Window {
             new UiStateService(Path.Combine(isolatedConfigRoot, "ui-state.json"));
         _openRunLog = openRunLog ?? (path => Process.Start(new ProcessStartInfo(path) { UseShellExecute = true }));
         InitializeComponent();
+        OutputRichText.AddHandler(System.Windows.Controls.Primitives.Thumb.DragStartedEvent,new System.Windows.Controls.Primitives.DragStartedEventHandler((_,_)=>_outputScrollDrag=true),true);
+        OutputRichText.AddHandler(System.Windows.Controls.Primitives.Thumb.DragCompletedEvent,new System.Windows.Controls.Primitives.DragCompletedEventHandler((_,_)=>{_outputScrollDrag=false;RefreshOutput();}),true);
         if (isolatedConfigRoot is null && !IsolatedStartupMode.Enabled) ApplicationBranding.AttachTray(this);
         ConfigurationTab.AddHandler(System.Windows.Controls.Primitives.TextBoxBase.TextChangedEvent,
             new TextChangedEventHandler((_,_) => { _configurationReady=false; InvalidateWorkflow(); }));
@@ -237,8 +240,60 @@ public partial class MainWindow : Window {
         var picker=new Microsoft.Win32.OpenFolderDialog { Title=title,InitialDirectory=Directory.Exists(field.Text)?field.Text:fallback };
         if(picker.ShowDialog(this)==true)field.Text=picker.FolderName;
     }
-    private void BrowseMusic_Click(object sender,RoutedEventArgs e)=>BrowseFolder(NasMusic,"Select the shared music folder",Environment.GetFolderPath(Environment.SpecialFolder.MyMusic));
-    private void BrowsePlaylists_Click(object sender,RoutedEventArgs e)=>BrowseFolder(PlaylistFolder,"Select the shared playlist folder",Directory.Exists(NasMusic.Text)?NasMusic.Text:Environment.GetFolderPath(Environment.SpecialFolder.MyMusic));
+    private void ApplyMusicLocation(string path) {
+        var location=StorageSetupService.ParseMusic(path);
+        NasMusic.Text=location.Path;NasHost.Text=location.Host;NasShare.Text=location.Share;MusicFolderName.Text=location.Music;
+        ConfigMessage.Text="Music location selected. Now choose the folder containing your M3U playlist files.";
+    }
+    private void ApplyPlaylistLocation(string path) {
+        var name=StorageSetupService.PlaylistName(NasMusic.Text,path);
+        PlaylistFolder.Text=path.TrimEnd('\\');PlaylistFolderName.Text=name;
+        ConfigMessage.Text="Playlist folder selected. Review these settings and save configuration.";
+    }
+    private void BrowseMusic_Click(object sender,RoutedEventArgs e) {
+        var picker=new Microsoft.Win32.OpenFolderDialog{Title="Choose Music inside your shared network folder",InitialDirectory=Directory.Exists(NasMusic.Text)?NasMusic.Text:Environment.GetFolderPath(Environment.SpecialFolder.MyMusic)};
+        if(picker.ShowDialog(this)==true)try{ApplyMusicLocation(picker.FolderName);}catch(InvalidDataException ex){ConfigMessage.Text=ex.Message;}
+    }
+    private void BrowsePlaylists_Click(object sender,RoutedEventArgs e) {
+        var picker=new Microsoft.Win32.OpenFolderDialog{Title="Choose the folder containing your M3U playlists (for example A Zidoo)",InitialDirectory=Directory.Exists(NasMusic.Text)?NasMusic.Text:Environment.GetFolderPath(Environment.SpecialFolder.MyMusic)};
+        if(picker.ShowDialog(this)==true)try{ApplyPlaylistLocation(picker.FolderName);}catch(InvalidDataException ex){ConfigMessage.Text=ex.Message;}
+    }
+    private void ApplyImportedConfiguration(AppConfig config) {
+        _config=config;ShowConfig();_configurationReady=false;RefreshWorkflowControls();MainTabs.SelectedItem=ConfigurationTab;
+        ConfigMessage.Text="Loaded settings for review. Save Configuration to use them. The original JSON stays unchanged.";
+    }
+    private async void ImportConfig_Click(object sender,RoutedEventArgs e) {
+        if(IsolatedStartupMode.Enabled)return;
+        var picker=new Microsoft.Win32.OpenFileDialog{Title="Choose a saved MM Zidoo Sync configuration",Filter="Configuration JSON (*.json)|*.json",InitialDirectory=_configService.CurrentDirectory,CheckFileExists=true};
+        if(picker.ShowDialog(this)!=true)return;
+        try { ApplyImportedConfiguration(await ConfigurationService.ReadImportAsync(picker.FileName)); }
+        catch(Exception ex){ConfigMessage.Text="Could not load configuration: "+ex.Message;}
+    }
+    private async void ChoosePlaylistParent_Click(object sender,RoutedEventArgs e) {
+        try {
+            var database=MmDb.Text;var choices=await Task.Run(()=>PlaylistParentService.ListAsync(database));
+            var dialog=new Window{Title="Choose your MediaMonkey playlist group",Owner=this,Width=700,Height=480,WindowStartupLocation=WindowStartupLocation.CenterOwner};
+            var layout=new DockPanel{Margin=new Thickness(16)};
+            var hint=new TextBlock{Text="Pick the group containing the playlists you want on Zidoo. The number shows how many child playlists it contains. This only reads MediaMonkey.",TextWrapping=TextWrapping.Wrap,Margin=new Thickness(0,0,0,12)};
+            DockPanel.SetDock(hint,Dock.Top);layout.Children.Add(hint);
+            var choose=new Button{Content="Use selected group",Padding=new Thickness(16,7,16,7),HorizontalAlignment=HorizontalAlignment.Right};DockPanel.SetDock(choose,Dock.Bottom);layout.Children.Add(choose);
+            var list=new ListBox{ItemsSource=choices,DisplayMemberPath="Description"};layout.Children.Add(list);
+            choose.Click+=(_,_)=>{if(list.SelectedItem is not PlaylistParentService.ParentChoice selected)return;if(choices.Count(x=>x.Name==selected.Name)!=1){hint.Text="MediaMonkey contains more than one group with that name. Give it a unique name in MediaMonkey first.";return;}PlaylistParent.Text=selected.Name;dialog.DialogResult=true;};
+            dialog.Content=layout;dialog.ShowDialog();
+        }catch(Exception ex){ConfigMessage.Text="Could not read MediaMonkey playlist groups: "+ex.Message;}
+    }
+    private string RootForHistory(RunHistoryService.RunRecord run)=>Directory.GetParent(Path.GetDirectoryName(run.LogPath)!)!.FullName;
+    private void DeleteRun_Click(object sender,RoutedEventArgs e) {
+        if(_workflow.Busy)return;
+        var run=_selectedRunLog;if(run is null){RunHistoryStatus.Text="Select a run first.";return;}
+        if(MessageBox.Show(this,"Delete this run's history entry and log? This does not delete music, playlists, configuration, or recovery files.","Delete Run History",MessageBoxButton.YesNo,MessageBoxImage.Question)!=MessageBoxResult.Yes)return;
+        try{_runHistoryService.Delete(RootForHistory(run),run);RefreshRunHistory();}catch(Exception ex){RunHistoryStatus.Text="Could not delete history: "+ex.Message;}
+    }
+    private void DeleteAllRuns_Click(object sender,RoutedEventArgs e) {
+        if(_workflow.Busy)return;
+        if(MessageBox.Show(this,"Delete all recorded run entries and their logs? Keep any logs you need first. Music, playlists, settings and recovery files stay in place.","Delete All History",MessageBoxButton.YesNo,MessageBoxImage.Question)!=MessageBoxResult.Yes)return;
+        try{foreach(var root in new[]{HistoryRoot,Path.Combine(_configService.Root,"Reports")}.Distinct(StringComparer.OrdinalIgnoreCase))foreach(var run in _runHistoryService.List(root,int.MaxValue))_runHistoryService.Delete(root,run);RefreshRunHistory();}catch(Exception ex){RunHistoryStatus.Text="Could not delete all history: "+ex.Message;}
+    }
     private void BrowseReports_Click(object sender,RoutedEventArgs e)=>BrowseFolder(ReportRoot,"Select the report and log folder",_configService.Root);
 
     private readonly Func<Task<IReadOnlyList<ZidooDiscoveryResult>>>? _discoveryOverride;
@@ -319,6 +374,7 @@ public partial class MainWindow : Window {
         MusicFolderName.Text=_config.NAS.MusicFolderName; PlaylistFolderName.Text=_config.NAS.PlaylistFolderName;
         NasMusic.Text=_config.NAS.MusicRootUNC; PlaylistFolder.Text=_config.NAS.PlaylistFolderUNC;
         ReportRoot.Text=_config.Application.ReportRoot;
+        HistoryKeepCount.Text=_config.Application.HistoryKeepCount.ToString();
         ReadinessTimeout.Text=_config.Timing.ZidooReadinessTimeoutSeconds.ToString();
         ColdBootSeconds.Text=_config.Timing.ColdBootUiStabilizationSeconds.ToString();
         RefreshHistory();
@@ -351,6 +407,7 @@ public partial class MainWindow : Window {
         _config.NAS.MusicFolderName=MusicFolderName.Text.Trim(); _config.NAS.PlaylistFolderName=PlaylistFolderName.Text.Trim();
         _config.NAS.MusicRootUNC=NasMusic.Text.Trim(); _config.NAS.PlaylistFolderUNC=PlaylistFolder.Text.Trim();
         _config.Application.ReportRoot=ReportRoot.Text.Trim();
+        _config.Application.HistoryKeepCount=ReadSetupNumber(HistoryKeepCount.Text,"History entries to keep");
         _config.Timing.ZidooReadinessTimeoutSeconds=ReadSetupNumber(ReadinessTimeout.Text,"Readiness Timeout");
         _config.Timing.ColdBootUiStabilizationSeconds=ReadSetupNumber(ColdBootSeconds.Text,"Cold-Boot Stabilization");
     }
@@ -379,7 +436,7 @@ public partial class MainWindow : Window {
                 "Save Configuration",failure is null ? (_configurationReady ? "Saved" : "Draft saved") : "Failed",
                 DateTime.Now-started,new[]{new LogEvent(DateTime.Now,failure is null ? LogLevel.Green : LogLevel.Red,ConfigMessage.Text)
                     {DiagnosticDetails=failure?.ToString()}});
-            _configurationLogPath=record.LogPath; OpenConfigurationLogButton.IsEnabled=true;
+            _configurationLogPath=record.LogPath;
             ConfigMessage.Text+="\nLog: " + record.LogPath;
             RefreshRunHistory();
         } catch(Exception logError) {
@@ -968,6 +1025,8 @@ public partial class MainWindow : Window {
         try
         {
             string root = HistoryRoot;
+            int keep=_config?.Application.HistoryKeepCount ?? 100;
+            if(keep>=0) { _runHistoryService.Prune(root,keep); if(!string.Equals(root,Path.Combine(_configService.Root,"Reports"),StringComparison.OrdinalIgnoreCase))_runHistoryService.Prune(Path.Combine(_configService.Root,"Reports"),keep); }
             var records = _runHistoryService.List(root)
                 .Concat(_runHistoryService.List(Path.Combine(_configService.Root,"Reports")))
                 .DistinctBy(record=>record.LogPath,StringComparer.OrdinalIgnoreCase)
@@ -1227,6 +1286,9 @@ public partial class MainWindow : Window {
     private void RefreshOutput()
     {
         if (OutputRichText is null) return;
+        if (_outputScrollDrag) return;
+        var offset=OutputRichText.VerticalOffset;
+        bool follow=OutputRichText.ExtentHeight-OutputRichText.ViewportHeight-offset < 24;
         var document = OutputRichText.Document;
         document.Blocks.Clear();
         foreach (var entry in _events.Where(e => Visible(e.Level)))
@@ -1247,7 +1309,7 @@ public partial class MainWindow : Window {
             paragraph.Inlines.Add(run);
             document.Blocks.Add(paragraph);
         }
-        OutputRichText.ScrollToEnd();
+        if (follow) OutputRichText.ScrollToEnd(); else OutputRichText.ScrollToVerticalOffset(offset);
     }
 
     // The RichTextBox intentionally keeps its selection for Ctrl+C and context-menu copying.
@@ -1258,6 +1320,7 @@ public partial class MainWindow : Window {
     private void MainWindow_ClearGridSelectionOutsideRows(object sender, System.Windows.Input.MouseButtonEventArgs e)
     {
         if (e.OriginalSource is not DependencyObject source) return;
+        if (FindAncestor<System.Windows.Controls.Primitives.ScrollBar>(source) is not null || FindAncestor<System.Windows.Controls.Primitives.Thumb>(source) is not null) return;
         if (FindAncestor<System.Windows.Controls.Primitives.ButtonBase>(source) is not null ||
             FindAncestor<MenuItem>(source) is not null) return;
 
@@ -1300,6 +1363,7 @@ public partial class MainWindow : Window {
 
     private void OutputWindow_PreviewMouseDown(object sender, System.Windows.Input.MouseButtonEventArgs e)
     {
+        if(e.OriginalSource is DependencyObject scrollSource && (FindAncestor<System.Windows.Controls.Primitives.ScrollBar>(scrollSource) is not null || FindAncestor<System.Windows.Controls.Primitives.Thumb>(scrollSource) is not null))return;
         // RichTextBox can report a Run (TextElement), which is not a Visual.
         // Text elements in this window originate in the output document.
         if (e.OriginalSource is System.Windows.Documents.TextElement)
@@ -1379,6 +1443,7 @@ public partial class MainWindow : Window {
         PlaylistStorageSection.IsExpanded = _uiState.PlaylistStorageExpanded;
         AdvancedSection.IsExpanded = _uiState.AdvancedExpanded;
         ArchiveSection.IsExpanded = _uiState.ArchiveExpanded;
+        RunHistorySection.IsExpanded=_uiState.RunHistoryExpanded; RecoverySection.IsExpanded=_uiState.RecoveryExpanded;
         ShowBlue.IsChecked = _uiState.ShowBlue;
         ShowYellow.IsChecked = _uiState.ShowYellow;
         ShowGreen.IsChecked = _uiState.ShowGreen;
@@ -1438,6 +1503,7 @@ public partial class MainWindow : Window {
         _uiState.PlaylistStorageExpanded = PlaylistStorageSection.IsExpanded;
         _uiState.AdvancedExpanded = AdvancedSection.IsExpanded;
         _uiState.ArchiveExpanded = ArchiveSection.IsExpanded;
+        _uiState.RunHistoryExpanded=RunHistorySection.IsExpanded; _uiState.RecoveryExpanded=RecoverySection.IsExpanded;
         _uiState.ShowBlue = ShowBlue.IsChecked == true;
         _uiState.ShowYellow = ShowYellow.IsChecked == true;
         _uiState.ShowGreen = ShowGreen.IsChecked == true;
@@ -1453,6 +1519,7 @@ public partial class MainWindow : Window {
                 Width = c.Width.Value, WidthUnit = c.Width.UnitType.ToString()
             }).ToList();
         _uiStateService.SaveOnClosing(_uiState);
+        _helpWindow?.Close(); _completionWindow?.Close();
     }
 }
 
