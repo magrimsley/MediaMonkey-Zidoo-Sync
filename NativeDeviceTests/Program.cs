@@ -5,6 +5,7 @@ try
 if(args.Length==3 && args[0]=="--recover-worker"){await CrashChecks.RecoverWorker(args[1],args[2]);return;}
 if(args.Length==4 && args[0]=="--crash-worker"){await CrashChecks.Worker(args[1],args[2],args[3]);return;}
 if(args.Length>0 && args[0]=="--probe") { await LiveProbe.Run(args); return; }
+if(args.Length==2 && args[0]=="--rc9-lab"){await RC9Checks.Run(args[1]);return;}
 int checks = 0;
 void Assert(bool result) { checks++; if (!result) throw new Exception("Check failed: " + checks); }
 void Reject(string json)
@@ -27,6 +28,7 @@ Reject("[" + string.Join(",", Enumerable.Range(0,500).Select(i => "{\"obj\":{\"i
 Console.WriteLine($"PASS: {checks} native device inventory assertions; no device contacted.");
 await DeviceChecks.Run();
 await RC8Checks.Run();
+await RC9Checks.Run();
 await SortOrderChecks.Run();
 await ReadinessChecks.Run();
 await TransactionChecks.Run();

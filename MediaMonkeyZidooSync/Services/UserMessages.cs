@@ -15,7 +15,7 @@ public static class UserMessages
 
     public static LogEvent Completed(int changes) => new(DateTime.Now, LogLevel.Green,
         changes == 0 ? "Synchronization completed successfully. No playlist changes were needed." :
-        $"Synchronization completed successfully. {changes} playlist {(changes == 1 ? "change was" : "changes were")} applied and verified.");
+        $"Synchronization completed successfully. {changes} playlist {(changes == 1 ? "change was" : "changes were")} applied. File contents and device track counts passed verification; confirm song order on Zidoo.");
 
     public static string Explain(Exception error) => error switch
     {

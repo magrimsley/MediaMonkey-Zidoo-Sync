@@ -20,7 +20,7 @@ public sealed class NativeProductionTransaction
     private readonly Action<string>? _checkpoint;
     public NativeProductionTransaction(IProductionPlaylistDevice device, Action<string>? checkpoint = null)
     { _device = device; _checkpoint = checkpoint; }
-    public sealed record Change(string FileName, byte[]? NewContent, int ExpectedCount, string? ExpectedOldSHA256, bool IsCreate = false);
+    public sealed record Change(string FileName, byte[]? NewContent, int ExpectedCount, string? ExpectedOldSHA256, bool IsCreate = false, bool ReimportExisting = false);
 
     private static string Hash(byte[] data) => Convert.ToHexString(SHA256.HashData(data));
     private static int TrackCount(byte[] data) => Encoding.UTF8.GetString(data).TrimStart('\uFEFF')
@@ -36,6 +36,18 @@ public sealed class NativeProductionTransaction
         using var stream = new FileStream(path, FileMode.CreateNew, FileAccess.Write, FileShare.Read, 4096, FileOptions.WriteThrough);
         stream.Write(data); stream.Flush(true);
     }
+    internal static int Visibility(string path) => (int)(File.GetAttributes(path) & (FileAttributes.Hidden | FileAttributes.System));
+    internal static void VerifyVisibility(string path, int expected)
+    {
+        if (Visibility(path) != expected) throw new IOException("Playlist visibility changed during synchronization: " + Path.GetFileName(path) + ". Recovery evidence was retained.");
+    }
+    internal static void CheckExistingCreation(Change change, ZidooPlaylistRecord? original, bool hasFile)
+    {
+        if (change.ReimportExisting && (!hasFile || original is null || change.NewContent is null || change.ExpectedCount <= 0))
+            throw new InvalidDataException("Reviewed playlist repair requires an existing M3U and an existing populated Zidoo playlist: " + change.FileName);
+        if (change.IsCreate && !change.ReimportExisting && hasFile && original is not null && change.NewContent is not null && change.ExpectedCount > 0)
+            throw new InvalidDataException("Cannot verify the existing Zidoo playlist's song order for " + change.FileName + ". Review Changes, choose Repair Existing Playlists, and explicitly select this playlist for reimport. No playlist change started for this target.");
+    }
     public async Task ApplyAsync(string playlistFolder, string evidenceFolder, Change change, CancellationToken ct)
     {
         if (change.FileName != Path.GetFileName(change.FileName) ||
@@ -48,6 +60,7 @@ public sealed class NativeProductionTransaction
         NoLink(root);
         string target = Path.Combine(root, change.FileName);
         NoLink(target);
+        int? originalVisibility = File.Exists(target) ? Visibility(target) : null;
         byte[]? old = File.Exists(target) ? await File.ReadAllBytesAsync(target, ct) : null;
         if ((old is null ? null : Hash(old)) != change.ExpectedOldSHA256)
             throw new IOException("Playlist changed since planning; transaction refused.");
@@ -56,7 +69,8 @@ public sealed class NativeProductionTransaction
         var original = before.SingleOrDefault(x => x.Name == name);
         if(change.NewContent is not null && TrackCount(change.NewContent)!=change.ExpectedCount)
             throw new InvalidDataException("Candidate M3U track count differs from the approved transaction.");
-        bool preserveExisting = (old is null || change.IsCreate) && change.NewContent is not null && original is not null && change.ExpectedCount > 0;
+        CheckExistingCreation(change, original, old is not null);
+        bool preserveExisting = !change.ReimportExisting && (old is null || change.IsCreate) && change.NewContent is not null && original is not null && change.ExpectedCount > 0;
         if (preserveExisting && original!.Count != change.ExpectedCount)
             throw new InvalidDataException("Existing device playlist differs from the proposed creation; no changes made.");
         // An existing matching creation is verified without deleting or reimporting it.
@@ -72,7 +86,7 @@ public sealed class NativeProductionTransaction
         Durable(Path.Combine(journal, "intent.json"), JsonSerializer.SerializeToUtf8Bytes(new
         {
             Target = target, change.ExpectedOldSHA256, NewSHA256 = change.NewContent is null ? null : Hash(change.NewContent),
-            change.ExpectedCount, OriginalDevice = original, OriginalInventory = before
+            change.ExpectedCount, OriginalVisibility = originalVisibility, change.ReimportExisting, OriginalDevice = original, OriginalInventory = before
         }));
         // Capture current authoritative content, including any earlier committed changes.
         var otherFiles = new Dictionary<string, byte[]>();
@@ -101,7 +115,7 @@ public sealed class NativeProductionTransaction
         NativeInterruptedRecovery.Save(pending,JsonSerializer.SerializeToUtf8Bytes(new NativeInterruptedRecovery.Pending(
             2,journal,target,Hash(File.ReadAllBytes(Path.Combine(journal,"intent.json"))),Hash(File.ReadAllBytes(Path.Combine(journal,"collateral-backups.json"))))));
         _checkpoint?.Invoke("Prepared");
-        string stage = Path.Combine(root, ".mmzs-" + Guid.NewGuid().ToString("N") + ".stage");
+        string stage = Path.Combine(root, "mmzs-" + Guid.NewGuid().ToString("N") + ".stage");
         try
         {
             // Verify the immutable backup immediately before the first mutation.
@@ -112,6 +126,7 @@ public sealed class NativeProductionTransaction
                 Durable(stage, change.NewContent);
                 VerifyOriginal();
                 if (old is null) File.Move(stage, target); else File.Replace(stage, target, null);
+                VerifyVisibility(target, originalVisibility ?? 0);
             }
             _checkpoint?.Invoke("FilePublished");
             if (original is not null && !preserveExisting) await _device.DeleteExactAsync(original, ct);
@@ -134,6 +149,7 @@ public sealed class NativeProductionTransaction
             var expectedHash = change.NewContent is null ? null : Hash(change.NewContent);
             if ((File.Exists(target) ? Hash(File.ReadAllBytes(target)) : null) != expectedHash)
                 throw new IOException("Final authoritative file verification failed.");
+            if (change.NewContent is not null) VerifyVisibility(target, originalVisibility ?? 0);
             Durable(Path.Combine(journal, "committed.json"), JsonSerializer.SerializeToUtf8Bytes(new { Time = DateTimeOffset.Now }));
             _checkpoint?.Invoke("Committed");
             File.Delete(pending);
@@ -185,7 +201,7 @@ public sealed class NativeProductionTransaction
                 if (old is null) File.Delete(target);
                 else
                 {
-                    string restore = Path.Combine(root, ".mmzs-" + Guid.NewGuid().ToString("N") + ".restore");
+                    string restore = Path.Combine(root, "mmzs-" + Guid.NewGuid().ToString("N") + ".restore");
                     Durable(restore, old);
                     try { if (File.Exists(target)) File.Replace(restore,target,null); else File.Move(restore,target); }
                     finally { if(File.Exists(restore))File.Delete(restore); }
@@ -201,6 +217,7 @@ public sealed class NativeProductionTransaction
                     throw new InvalidDataException("Original device state could not be verified after rollback.");
                 if ((File.Exists(target) ? Hash(File.ReadAllBytes(target)) : null) != change.ExpectedOldSHA256)
                     throw new IOException("Original file could not be verified after rollback.");
+                if (old is not null) VerifyVisibility(target, originalVisibility!.Value);
                 Durable(Path.Combine(journal,"rolled-back.json"),JsonSerializer.SerializeToUtf8Bytes(new {Time=DateTimeOffset.Now}));
                 File.Delete(pending);
                 throw new NativeTransactionRolledBackException("Synchronization failed; original target state was restored. Evidence: " + journal,failure);
@@ -219,8 +236,9 @@ public sealed class NativeProductionTransaction
         void VerifyOriginal()
         {
             NoLink(target);
-            if ((File.Exists(target) ? Hash(File.ReadAllBytes(target)) : null) != change.ExpectedOldSHA256)
-                throw new IOException("Authoritative file changed concurrently; mutation refused.");
+            if ((File.Exists(target) ? Hash(File.ReadAllBytes(target)) : null) != change.ExpectedOldSHA256 ||
+                (File.Exists(target) ? Visibility(target) : (int?)null) != originalVisibility)
+                throw new IOException("Authoritative file or visibility changed concurrently; mutation refused.");
         }
     }
 }

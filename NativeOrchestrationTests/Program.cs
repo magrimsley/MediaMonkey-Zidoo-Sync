@@ -176,7 +176,7 @@ Test("No-change verification keeps Review and Run disabled", () =>
 {
     var flow=new SynchronizationWorkflow();flow.BeginValidation();flow.EndValidation(true);
     flow.BeginVerification();flow.EndVerification(true, false);
-    if(!flow.Verified || flow.CanReview || flow.CanRun || !flow.NextStep.Contains("No pending changes"))throw new Exception("No-change verification authorized work");
+    if(!flow.Verified || flow.CanReview || flow.CanRun || !flow.NextStep.Contains("Playlist files match MediaMonkey"))throw new Exception("No-change verification authorized work");
     bool refused=false;try{flow.AcceptReview();}catch(InvalidOperationException){refused=true;}
     if(!refused)throw new Exception("No-change review accepted");
     flow.BeginVerification();flow.EndVerification(true, true);

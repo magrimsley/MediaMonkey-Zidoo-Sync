@@ -170,6 +170,7 @@ public partial class MainWindow : Window {
     private readonly List<LogEvent> _events = new();
     private readonly SynchronizationWorkflow _workflow = new();
     private IReadOnlyList<NativeProductionSyncService.ReviewedChange>? _preparedReview, _approvedReview;
+    private IReadOnlyList<NativeProductionSyncService.ReviewedChange> _repairCandidates = Array.Empty<NativeProductionSyncService.ReviewedChange>();
     private AppConfig? _config;
     private readonly DispatcherTimer _timer = new() { Interval = TimeSpan.FromSeconds(1) };
     private Stopwatch? _stopwatch;
@@ -314,7 +315,7 @@ public partial class MainWindow : Window {
         RunHistoryTab.IsEnabled=true;
         ValidateMediaMonkeyButton.IsEnabled=allowed && _workflow.CanValidate;
         VerifyNativeExporterButton.IsEnabled=allowed && _workflow.CanVerify;
-        ReviewSynchronizationButton.IsEnabled=allowed && _workflow.CanReview && _preparedReview is not null;
+        ReviewSynchronizationButton.IsEnabled=allowed && !_workflow.Busy && _workflow.Verified && _preparedReview is not null;
         RunButton.IsEnabled=allowed && (_syncCancellation is not null ? !_syncCancellation.IsCancellationRequested : _workflow.CanRun);
 // Disabled optional diagnostics:         RunNativeAssessmentButton.IsEnabled=allowed && (_nativeAssessmentCancellation is not null || (_workflow.CanReview && _workflow.Verified));
 // Disabled optional diagnostics:         InspectNativePlanButton.IsEnabled=allowed && !_workflow.Busy && _lastNativePlanInspection is not null;
@@ -322,28 +323,80 @@ public partial class MainWindow : Window {
         WorkflowHint.Text=_configurationReady ? _workflow.NextStep : "Complete and save Configuration before validating playlists.";
     }
 
+    private static void SetDialogColors(Control control)
+    {
+        control.SetResourceReference(Control.BackgroundProperty,control is Button?SystemColors.ControlBrushKey:SystemColors.WindowBrushKey);
+        control.SetResourceReference(Control.ForegroundProperty,control is Button?SystemColors.ControlTextBrushKey:SystemColors.WindowTextBrushKey);
+    }
+#pragma warning disable WPF0001
     private void ReviewSynchronization_Click(object sender,RoutedEventArgs e)
     {
-        if(IsolatedStartupMode.Enabled || !_workflow.CanReview || _preparedReview is null)return;
-        var review=_preparedReview;
-        var window=new Window{Title="Review Synchronization Changes",Owner=this,Width=760,Height=520,WindowStartupLocation=WindowStartupLocation.CenterOwner};
+        if(IsolatedStartupMode.Enabled || _workflow.Busy || !_workflow.Verified || _preparedReview is null)return;
+        var sourceReview=_preparedReview;
+        var review=sourceReview.ToList();
+        var window=new Window{Title="Review Synchronization Changes",ThemeMode=ThemeMode.System,Owner=this,Width=760,Height=520,WindowStartupLocation=WindowStartupLocation.CenterOwner};
+        SetDialogColors(window);
         var layout=new DockPanel{Margin=new Thickness(16)};
         var footer=new StackPanel{Orientation=Orientation.Horizontal,HorizontalAlignment=HorizontalAlignment.Right,Margin=new Thickness(0,12,0,0)};
         var back=new Button{Content="Back",Padding=new Thickness(16,6,16,6)};
-        var accept=new Button{Content="Use Reviewed Plan",Padding=new Thickness(16,6,16,6),Margin=new Thickness(10,0,0,0)};
+        var accept=new Button{Name="AcceptReviewedPlanButton",Content="Use Reviewed Plan",Padding=new Thickness(16,6,16,6),Margin=new Thickness(10,0,0,0)};
         back.Click+=(_,_)=>window.DialogResult=false;accept.Click+=(_,_)=>window.DialogResult=true;
-        footer.Children.Add(back);footer.Children.Add(accept);DockPanel.SetDock(footer,Dock.Bottom);layout.Children.Add(footer);
-        var heading=new TextBlock{Text=review.Count==0?(HasPendingRecovery()?"No new playlist differences were found, but a retained transaction needs reconciliation. After review, Run Synchronization uses the existing recovery checks before proceeding.":"No playlist changes are needed. This run will not contact or wake Zidoo."):
-            "Review the proposed playlist changes below. Missing playlists may also be restored from your playlist files. After accepting, use Run Synchronization.",TextWrapping=TextWrapping.Wrap,Margin=new Thickness(0,0,0,12)};
+        var repair=new Button{Name="RepairExistingPlaylistsButton",Content="Repair Existing Playlists...",Padding=new Thickness(12,6,12,6),Margin=new Thickness(0,0,14,0),IsEnabled=_repairCandidates.Count>0};
+        foreach(var button in new[]{back,accept,repair})SetDialogColors(button);
+        footer.Children.Add(repair);footer.Children.Add(back);footer.Children.Add(accept);DockPanel.SetDock(footer,Dock.Bottom);layout.Children.Add(footer);
+        var heading=new TextBlock{Text=review.Count==0?(HasPendingRecovery()?"No new playlist differences were found, but a retained transaction needs reconciliation. After review, Run Synchronization uses the existing recovery checks before proceeding.":"Playlist files match MediaMonkey. If Zidoo still has old contents or song order, choose Repair Existing Playlists. Without selected repairs, no synchronization is needed."):
+            "Review the proposed playlist changes below. Missing playlists may also be restored from your playlist files. Repair Existing Playlists lets you explicitly reimport selected existing playlists when their files already match. After accepting, use Run Synchronization.",TextWrapping=TextWrapping.Wrap,Margin=new Thickness(0,0,0,12)};
         DockPanel.SetDock(heading,Dock.Top);layout.Children.Add(heading);
         var details=review.Select(item=>(item.ChangeType ?? (item.CandidateSHA256 is null?"Delete":item.OriginalSHA256 is null?"Create":"Update"))+": "+
             Path.GetFileNameWithoutExtension(item.FileName)+(item.CandidateSHA256 is null?"":" ("+item.ExpectedCount+" tracks)"));
-        layout.Children.Add(new TextBox{Text=string.Join(Environment.NewLine,details),IsReadOnly=true,AcceptsReturn=true,VerticalScrollBarVisibility=ScrollBarVisibility.Auto,TextWrapping=TextWrapping.Wrap,Padding=new Thickness(10)});
+        var detailBox=new TextBox{Text=string.Join(Environment.NewLine,details),IsReadOnly=true,AcceptsReturn=true,VerticalScrollBarVisibility=ScrollBarVisibility.Auto,TextWrapping=TextWrapping.Wrap,Padding=new Thickness(10)};
+        SetDialogColors(detailBox);layout.Children.Add(detailBox);
+        accept.IsEnabled=review.Count>0 || HasPendingRecovery();
+        repair.Click+=(_,_)=>
+        {
+            var picker=new Window{Title="Repair Existing Zidoo Playlists",ThemeMode=ThemeMode.System,Owner=window,Width=680,Height=500,WindowStartupLocation=WindowStartupLocation.CenterOwner};
+            SetDialogColors(picker);
+            var panel=new DockPanel{Margin=new Thickness(16)};
+            var instruction=new TextBlock{Text="Select only the playlists whose Zidoo contents need repair. Synchronization will delete each selected existing Zidoo playlist and reimport its reviewed M3U, even when the file already matches MediaMonkey. It keeps unselected existing Zidoo playlists and file visibility unchanged. This selection contacts no device; after adding repairs, review the plan and run synchronization.",TextWrapping=TextWrapping.Wrap,Margin=new Thickness(0,0,0,12)};
+            DockPanel.SetDock(instruction,Dock.Top);panel.Children.Add(instruction);
+            var buttons=new StackPanel{Orientation=Orientation.Horizontal,HorizontalAlignment=HorizontalAlignment.Right,Margin=new Thickness(0,12,0,0)};
+            var cancel=new Button{Content="Cancel",Padding=new Thickness(14,6,14,6)};
+            var add=new Button{Name="AddSelectedRepairsButton",Content="Add Selected Repairs",Padding=new Thickness(14,6,14,6),Margin=new Thickness(10,0,0,0),IsEnabled=false};
+            SetDialogColors(cancel);SetDialogColors(add);
+            buttons.Children.Add(cancel);buttons.Children.Add(add);DockPanel.SetDock(buttons,Dock.Bottom);panel.Children.Add(buttons);
+            var list=new ListBox{Name="RepairPlaylistList",SelectionMode=SelectionMode.Multiple};
+            SetDialogColors(list);
+            var itemStyle=new Style(typeof(ListBoxItem));
+            var itemBorder=new FrameworkElementFactory(typeof(Border));
+            itemBorder.SetValue(Border.BackgroundProperty,new TemplateBindingExtension(Control.BackgroundProperty));
+            var itemContent=new FrameworkElementFactory(typeof(ContentPresenter));
+            itemContent.SetValue(FrameworkElement.MarginProperty,new Thickness(6));itemBorder.AppendChild(itemContent);
+            itemStyle.Setters.Add(new Setter(Control.TemplateProperty,new ControlTemplate(typeof(ListBoxItem)){VisualTree=itemBorder}));
+            itemStyle.Setters.Add(new Setter(Control.ForegroundProperty,new DynamicResourceExtension(SystemColors.WindowTextBrushKey)));
+            var selectedStyle=new Trigger{Property=ListBoxItem.IsSelectedProperty,Value=true};
+            selectedStyle.Setters.Add(new Setter(Control.ForegroundProperty,new DynamicResourceExtension(SystemColors.HighlightTextBrushKey)));
+            selectedStyle.Setters.Add(new Setter(Control.BackgroundProperty,new DynamicResourceExtension(SystemColors.HighlightBrushKey)));
+            itemStyle.Triggers.Add(selectedStyle);list.ItemContainerStyle=itemStyle;
+            foreach(var candidate in _repairCandidates)list.Items.Add(new ListBoxItem{Content=Path.GetFileNameWithoutExtension(candidate.FileName)+" ("+candidate.ExpectedCount+" tracks)",Tag=candidate});
+            list.SelectionChanged+=(_,_)=>add.IsEnabled=list.SelectedItems.Count>0;
+            cancel.Click+=(_,_)=>picker.DialogResult=false;
+            add.Click+=(_,_)=>picker.DialogResult=true;
+            panel.Children.Add(list);picker.Content=panel;
+            if(picker.ShowDialog()!=true)return;
+            foreach(ListBoxItem selected in list.SelectedItems)
+            {
+                var candidate=(NativeProductionSyncService.ReviewedChange)selected.Tag;
+                review.RemoveAll(x=>x.FileName.Equals(candidate.FileName,StringComparison.OrdinalIgnoreCase));review.Add(candidate);
+            }
+            detailBox.Text=string.Join(Environment.NewLine,review.Select(x=>(x.ReimportExisting?"Repair (delete and reimport)":x.ChangeType)+": "+Path.GetFileNameWithoutExtension(x.FileName)+(x.CandidateSHA256 is null?"":" ("+x.ExpectedCount+" tracks)")));
+            accept.IsEnabled=review.Count>0 || HasPendingRecovery();
+        };
         window.Content=layout;
-        if(window.ShowDialog()==true && ReferenceEquals(_preparedReview,review))
-        {_approvedReview=review;_workflow.AcceptReview();RefreshWorkflowControls();}
+        if(window.ShowDialog()==true && ReferenceEquals(_preparedReview,sourceReview))
+        {_approvedReview=review.AsReadOnly();_workflow.AuthorizeReviewedChanges(review.Count>0 || HasPendingRecovery());RefreshWorkflowControls();}
     }
 
+#pragma warning restore WPF0001
     /// <summary>Loads the current configuration and populates the Configuration tab.</summary>
     private async Task LoadConfigurationAsync() {
         try {
@@ -913,6 +966,7 @@ public partial class MainWindow : Window {
                 plan.PendingZidooDeleteCount != System.Linq.Enumerable.Count(result.Differences, x => x.Problem == "Existing authoritative mirror contains an M3U that the native exporter does not expect."))
                 throw new InvalidDataException("The native transaction plan does not match the exporter comparison. No changes were made.");
             _preparedReview = await _runner.PrepareReviewAsync(config);
+            _repairCandidates = await _runner.PrepareRepairCandidatesAsync(config);
             _events.Add(new LogEvent(DateTime.Now, LogLevel.Blue,
                 $"Transaction plan (read-only): Unchanged {plan.UnchangedCount:N0}  |  Create {plan.CreateCount:N0}  |  Update {plan.UpdateCount:N0}  |  Pending Zidoo deletion {plan.PendingZidooDeleteCount:N0}"));
 

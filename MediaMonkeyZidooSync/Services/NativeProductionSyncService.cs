@@ -16,7 +16,7 @@ public sealed class NativeProductionSyncService
     public bool LastRunVerifiedDevice {get;private set;}
     public int LastRunCompletedChanges {get;private set;}
     public bool LastRunRecovered {get;private set;}
-    private sealed record Work(string FileName, byte[]? Content, int Count, string? OldHash, bool IsCreate=false);
+    internal sealed record Work(string FileName, byte[]? Content, int Count, string? OldHash, bool IsCreate=false, bool ReimportExisting=false);
     internal static Dictionary<string,string> RecoverySources(string root, IReadOnlyDictionary<string,string> baseline,
         IEnumerable<(string FileName,string SHA256)> targets)
     {
@@ -65,7 +65,7 @@ public sealed class NativeProductionSyncService
         Output?.Invoke("Original "+original.Name+" restored and verified. Other playlists unchanged. Recovery completed.");return true;
     }
 
-    public sealed record ReviewedChange(string FileName,int ExpectedCount,string? OriginalSHA256,string? CandidateSHA256=null,string? ChangeType=null);
+    public sealed record ReviewedChange(string FileName,int ExpectedCount,string? OriginalSHA256,string? CandidateSHA256=null,string? ChangeType=null, int? OriginalVisibility=null, bool ReimportExisting=false);
     private static byte[] ContentBytes(IEnumerable<string> lines)=>FrozenM3uContent.Bytes(lines);
 
     public async Task<IReadOnlyList<ReviewedChange>> PrepareReviewAsync(AppConfig config,CancellationToken ct=default)
@@ -82,9 +82,44 @@ public sealed class NativeProductionSyncService
             string? oldHash=File.Exists(path)?Hash(await File.ReadAllBytesAsync(path,ct)):null;
             bool deletion=item.Action==PlaylistTransactionAction.PendingZidooDelete;
             if(!deletion&&!prepared.ContainsKey(item.FileName))throw new InvalidDataException("MediaMonkey changed during planning; prepare again.");
-            review.Add(new(item.FileName,deletion?0:counts[item.FileName],oldHash,deletion?null:Hash(ContentBytes(prepared[item.FileName].Lines)),deletion?"Delete":item.Action.ToString()));
+            review.Add(new(item.FileName,deletion?0:counts[item.FileName],oldHash,deletion?null:Hash(ContentBytes(prepared[item.FileName].Lines)),deletion?"Delete":item.Action.ToString(),File.Exists(path)?NativeProductionTransaction.Visibility(path):null));
         }
         return review.AsReadOnly();
+    }
+    public async Task<IReadOnlyList<ReviewedChange>> PrepareRepairCandidatesAsync(AppConfig config,CancellationToken ct=default)
+    {
+        ConfigurationService.Validate(config);
+        var validation=await new MediaMonkeyPlaylistExporter().ValidateAsync(config,ct);
+        var candidates=new List<ReviewedChange>();
+        foreach(var playlist in validation.PreparedPlaylists)
+        {
+            string path=Path.Combine(config.NAS.PlaylistFolderUNC,playlist.M3UFile);
+            int count=validation.PlaylistMap.Single(x=>x.M3UFile==playlist.M3UFile).TrackCount;
+            NativeInterruptedRecovery.NoLink(path);
+            if(count<=0 || !File.Exists(path))continue;
+            candidates.Add(new(playlist.M3UFile,count,Hash(await File.ReadAllBytesAsync(path,ct)),Hash(ContentBytes(playlist.Lines)),
+                "Repair",NativeProductionTransaction.Visibility(path),true));
+        }
+        return candidates.OrderBy(x=>x.FileName,StringComparer.OrdinalIgnoreCase).ToArray();
+    }
+    internal static void AddReviewedRepairs(string root, IReadOnlyList<ReviewedChange>? reviewed,
+        IReadOnlyDictionary<string,(byte[] Content,int Count)> authoritative, List<Work> changes)
+    {
+        if(reviewed is null)return;
+        if(reviewed.Select(x=>x.FileName).Distinct(StringComparer.OrdinalIgnoreCase).Count()!=reviewed.Count)
+            throw new InvalidDataException("Duplicate reviewed playlist changes.");
+        foreach(var item in reviewed.Where(x=>x.ReimportExisting))
+        {
+            if(!authoritative.TryGetValue(item.FileName,out var expected) || expected.Count<=0 || item.ExpectedCount!=expected.Count ||
+                item.OriginalSHA256 is null || item.CandidateSHA256!=Hash(expected.Content))
+                throw new InvalidDataException("Playlist repair differs from the reviewed MediaMonkey export: "+item.FileName);
+            string path=Path.Combine(root,item.FileName);NativeInterruptedRecovery.NoLink(path);
+            if(!File.Exists(path) || Hash(File.ReadAllBytes(path))!=item.OriginalSHA256 ||
+                item.OriginalVisibility is null || NativeProductionTransaction.Visibility(path)!=item.OriginalVisibility)
+                throw new InvalidDataException("Playlist file or visibility changed since repair review: "+item.FileName);
+            changes.RemoveAll(x=>x.FileName.Equals(item.FileName,StringComparison.OrdinalIgnoreCase));
+            changes.Add(new(item.FileName,expected.Content,expected.Count,item.OriginalSHA256,false,true));
+        }
     }
     public static async Task<IReadOnlyList<Exception>> ApplyTransactionsAsync(
         IEnumerable<NativeProductionTransaction.Change> changes,
@@ -157,14 +192,17 @@ public sealed class NativeProductionSyncService
             if((File.GetAttributes(entry.Value)&FileAttributes.ReparsePoint)!=0)throw new IOException("Linked stale playlist refused.");
             changes.Add(new(entry.Key!,null,0,Hash(await File.ReadAllBytesAsync(entry.Value,ct))));
         }
+        AddReviewedRepairs(root,reviewed,prepared.PreparedPlaylists.ToDictionary(x=>x.M3UFile,
+            x=>(ContentBytes(x.Lines),prepared.PlaylistMap.Single(row=>row.M3UFile==x.M3UFile).TrackCount),StringComparer.OrdinalIgnoreCase),changes);
         if(reviewed is not null && (changes.Count!=reviewed.Count || changes.Any(change=>
-            !reviewed.Any(item=>item.FileName==change.FileName && item.ExpectedCount==change.Count && item.OriginalSHA256==change.OldHash &&
+            !reviewed.Any(item=>item.FileName==change.FileName && item.ExpectedCount==change.Count && item.OriginalSHA256==change.OldHash && item.ReimportExisting==change.ReimportExisting &&
+                (item.OriginalVisibility is null || item.OriginalVisibility==(File.Exists(Path.Combine(root,change.FileName))?NativeProductionTransaction.Visibility(Path.Combine(root,change.FileName)):(int?)null)) &&
                 (item.CandidateSHA256 is null || (change.Content is not null && item.CandidateSHA256==Hash(change.Content)))))))
             throw new InvalidDataException("Live source/NAS state differs from the reviewed plan. Nothing synchronized.");
         if(changes.Count==0){Output?.Invoke("No playlist file changes; Zidoo was not contacted or awakened.");return 0;}
         string evidence=Path.Combine(Environment.ExpandEnvironmentVariables(config.Application.ReportRoot),"NativeSync-"+DateTime.Now.ToString("yyyyMMdd-HHmmss-fff")+"-"+Guid.NewGuid().ToString("N")[..6]);
         Directory.CreateDirectory(evidence);
-        await File.WriteAllTextAsync(Path.Combine(evidence,"plan.json"),JsonSerializer.Serialize(changes.Select(x=>new{x.FileName,Action=x.Content is null?"Delete":x.IsCreate?"Create":"Update",x.Count,x.OldHash}),new JsonSerializerOptions{WriteIndented=true}),ct);
+        await File.WriteAllTextAsync(Path.Combine(evidence,"plan.json"),JsonSerializer.Serialize(changes.Select(x=>new{x.FileName,Action=x.ReimportExisting?"Repair":x.Content is null?"Delete":x.IsCreate?"Create":"Update",x.Count,x.OldHash}),new JsonSerializerOptions{WriteIndented=true}),ct);
         using var handler=new HttpClientHandler{AllowAutoRedirect=false,UseProxy=false};
         using var http=new HttpClient(handler){BaseAddress=new UriBuilder("http",config.Zidoo.IPAddress,config.Zidoo.ApiPort).Uri,Timeout=TimeSpan.FromSeconds(15)};
         var device=new NativeZidooPlaylistDevice(http,config);device.Output+=message=>Output?.Invoke(message);
@@ -193,6 +231,10 @@ public sealed class NativeProductionSyncService
                 changes.Add(new(filename,ContentBytes(playlist.Lines),prepared.PlaylistMap.Single(item=>item.M3UFile==filename).TrackCount,Hash(old)));
                 Output?.Invoke("Restore missing playlist: "+filename);
             }
+            // Refuse count-only hidden-file creations before any playlist transaction starts.
+            foreach(var change in changes)
+                NativeProductionTransaction.CheckExistingCreation(new(change.FileName,change.Content,change.Count,change.OldHash,change.IsCreate,change.ReimportExisting),
+                    initialInventory.SingleOrDefault(x=>x.Name==Path.GetFileNameWithoutExtension(change.FileName)),change.OldHash is not null);
             string baselineFolder=Path.Combine(evidence,"Baseline");Directory.CreateDirectory(baselineFolder);
             var baselineFiles=new List<object>();
             // Keep the frozen visible-file baseline for planning; additionally protect
@@ -220,9 +262,9 @@ public sealed class NativeProductionSyncService
             }
             var transaction=new NativeProductionTransaction(device);
             var compensatedFailures=await ApplyTransactionsAsync(
-                changes.Select(item=>new NativeProductionTransaction.Change(item.FileName,item.Content,item.Count,item.OldHash,item.IsCreate)),
+                changes.Select(item=>new NativeProductionTransaction.Change(item.FileName,item.Content,item.Count,item.OldHash,item.IsCreate,item.ReimportExisting)),
                 (item,token)=>transaction.ApplyAsync(root,evidence,item,token),
-                item=>Output?.Invoke("Starting "+(item.NewContent is null?"delete":item.IsCreate?"create":"update")+" (not yet completed): "+item.FileName),
+                item=>Output?.Invoke("Starting "+(item.ReimportExisting?"repair":item.NewContent is null?"delete":item.IsCreate?"create":"update")+" (not yet completed): "+item.FileName),
                 item=>Output?.Invoke("Could not synchronize "+item.FileName+". Its previous state was restored and verified. Continuing with the remaining playlists."),ct,
                 item=>Output?.Invoke("Completed and verified: "+item.FileName));
             var finalInventory=await device.InventoryAsync(ct);

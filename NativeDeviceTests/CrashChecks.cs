@@ -20,8 +20,8 @@ internal static class CrashChecks
         await earlier.ApplyAsync(root,Path.Combine(root,"NativeSync-fixture"),new("Earlier.m3u",Original,1,null),default);
         if(operation!="Create")
         {
-            File.WriteAllBytes(Path.Combine(root,"Target.m3u"),Original);
-            await device.ImportAsync("Target.m3u",1,default);
+            File.WriteAllBytes(Path.Combine(root,"Target.m3u"),operation=="Repair"?Candidate:Original);
+            await device.ImportAsync("Target.m3u",operation=="Repair"?2:1,default);
         }
         var transaction=new NativeProductionTransaction(device,point=>
         {
@@ -31,7 +31,7 @@ internal static class CrashChecks
         });
         await transaction.ApplyAsync(root,Path.Combine(root,"NativeSync-fixture"),new("Target.m3u",
             operation=="Delete"?null:operation=="Empty"?Encoding.UTF8.GetBytes("#EXTM3U\n"):Candidate,
-            operation is "Delete" or "Empty"?0:2,operation=="Create"?null:Hash(Original)),default);
+            operation is "Delete" or "Empty"?0:2,operation=="Create"?null:Hash(operation=="Repair"?Candidate:Original),false,operation=="Repair"),default);
         throw new Exception("Requested crash checkpoint was not reached.");
     }
     private static async Task<string> KilledFixture(string operation,string phase)
@@ -98,7 +98,7 @@ internal static class CrashChecks
             if(!refused)throw new Exception("Fixture lock deadline did not refuse a persistent owner");
         }
         checks++;
-        foreach(string operation in new[]{"Create","Update","Delete","Empty"})
+        foreach(string operation in new[]{"Create","Update","Delete","Empty","Repair"})
         foreach(string phase in new[]{"Prepared","FilePublished","DeviceDeleted","DeviceImported","Committed"})
         {
             string root=await KilledFixture(operation,phase);
@@ -117,7 +117,7 @@ internal static class CrashChecks
                     !File.ReadAllBytes(Path.Combine(root,"Target.m3u")).SequenceEqual(operation=="Empty"?Encoding.UTF8.GetBytes("#EXTM3U\n"):Candidate))throw new Exception("Final file state incorrect");
             }
             else if(operation=="Create" ? target is not null || File.Exists(Path.Combine(root,"Target.m3u")) :
-                target?.Count!=1 || !File.ReadAllBytes(Path.Combine(root,"Target.m3u")).SequenceEqual(Original))throw new Exception("Original state not restored");
+                target?.Count!=(operation=="Repair"?2:1) || !File.ReadAllBytes(Path.Combine(root,"Target.m3u")).SequenceEqual(operation=="Repair"?Candidate:Original))throw new Exception("Original state not restored");
             checks++;
         }
         foreach(string tamper in new[]{"external-file","intent","candidate","other-device","legacy-marker"})
