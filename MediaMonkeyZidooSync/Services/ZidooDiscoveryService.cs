@@ -135,6 +135,30 @@ public sealed class ZidooDiscoveryService
         catch (InvalidOperationException) { return null; }
     }
 
+    /// <summary>Derives a device's WOL broadcast only from a matching active local IPv4 subnet.</summary>
+    public static string? FindBroadcastAddress(string deviceAddress)
+    {
+        var candidates=new HashSet<string>(StringComparer.Ordinal);
+        foreach(var nic in NetworkInterface.GetAllNetworkInterfaces().Where(n=>n.OperationalStatus==OperationalStatus.Up && n.NetworkInterfaceType!=NetworkInterfaceType.Loopback && n.NetworkInterfaceType!=NetworkInterfaceType.Tunnel))
+            foreach(var local in nic.GetIPProperties().UnicastAddresses)
+                if(local.Address.AddressFamily==AddressFamily.InterNetwork && local.IPv4Mask is not null &&
+                   BroadcastForSubnet(deviceAddress,local.Address.ToString(),local.IPv4Mask.ToString()) is { } broadcast)
+                    candidates.Add(broadcast);
+        return candidates.Count==1 ? candidates.Single() : null;
+    }
+
+    /// <summary>Pure subnet calculation; returns no value for invalid, unrelated, or point-to-point networks.</summary>
+    public static string? BroadcastForSubnet(string deviceAddress,string localAddress,string subnetMask)
+    {
+        if(!IPAddress.TryParse(deviceAddress,out var device) || !IPAddress.TryParse(localAddress,out var local) || !IPAddress.TryParse(subnetMask,out var mask) ||
+           new[]{device,local,mask}.Any(ip=>ip.AddressFamily!=AddressFamily.InterNetwork))return null;
+        uint m=ToUInt32(mask), inverse=~m;
+        if(inverse<3 || m==0 || (inverse & (inverse+1))!=0)return null;
+        uint network=ToUInt32(local)&m;
+        if((ToUInt32(device)&m)!=network)return null;
+        return FromUInt32(network|inverse).ToString();
+    }
+
     private static uint ToUInt32(IPAddress address)
     {
         var b = address.GetAddressBytes();

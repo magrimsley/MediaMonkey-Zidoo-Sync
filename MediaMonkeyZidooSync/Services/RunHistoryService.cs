@@ -98,6 +98,21 @@ public sealed class RunHistoryService
         }
     }
 
+    /// <summary>Deletes only indexed application log/index pairs directly under this history folder.</summary>
+    public void Delete(string root,RunRecord item) {
+        var folder=Path.GetFullPath(Path.Combine(root,"RunHistory"));
+        var expected=Path.Combine(folder,item.Id+".log");
+        if(item.Id!=Path.GetFileName(item.Id) || item.Id.IndexOfAny(Path.GetInvalidFileNameChars())>=0 || !string.Equals(Path.GetFullPath(item.LogPath),expected,StringComparison.OrdinalIgnoreCase))
+            throw new InvalidDataException("The selected entry does not belong to this history folder.");
+        // Removing the index first prevents a partially removed pair from appearing as openable.
+        File.Delete(Path.Combine(folder,item.Id+".json"));File.Delete(expected);
+    }
+    public void Prune(string root,int keep) {
+        if(keep<0)throw new ArgumentOutOfRangeException(nameof(keep));
+        if(keep==0)return;
+        foreach(var item in List(root,int.MaxValue).Skip(keep))Delete(root,item);
+    }
+
     public IReadOnlyList<RunRecord> List(string root, int maximum = 500)
     {
         if (string.IsNullOrWhiteSpace(root)) return Array.Empty<RunRecord>();

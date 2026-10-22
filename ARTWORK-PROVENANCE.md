@@ -16,3 +16,8 @@ MM Zidoo Sync is an independently developed project. It is not affiliated with, 
 
 On 2026-10-20 the owner approved retaining the existing artwork with this disclosure for public-distribution preparation. Published-rule review found no explicit permission or specific prohibition for this illustration; that inconclusive result establishes neither clearance nor infringement. The project does not claim brand-owner permission. No artwork change is made by this decision.
 
+
+## Setup Help screenshot
+
+Resources/Help/PlaylistParent.png reproduces the generic MediaMonkey playlist-tree crop that Michael supplied on 2026-10-21 and requested for setup Help. It contains no personal library names beyond the standard Imported Playlists group. The application reproduces the original crop without alteration. MediaMonkey's interface remains its owner's work; this figure illustrates the interoperability setup. SHA256: 1939DC3D42830729DD46CCF4AC369571717C84FB5A1EC6C5AE7FF9704745032D.
+

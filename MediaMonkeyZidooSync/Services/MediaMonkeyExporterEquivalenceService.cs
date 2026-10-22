@@ -45,7 +45,7 @@ public sealed class MediaMonkeyExporterEquivalenceService
         var expected = validation.PreparedPlaylists.ToDictionary(
             x => x.M3UFile, StringComparer.OrdinalIgnoreCase);
 
-        var existingFiles = Directory.EnumerateFiles(folder, "*.m3u", SearchOption.TopDirectoryOnly)
+        var existingFiles = FrozenPlaylistFiles.Enumerate(folder)
             .Select(path => new { Path = path, Name = Path.GetFileName(path) })
             .Where(item => !string.IsNullOrWhiteSpace(item.Name))
             .ToDictionary(item => item.Name!, item => item.Path, StringComparer.OrdinalIgnoreCase);
@@ -67,6 +67,9 @@ public sealed class MediaMonkeyExporterEquivalenceService
 
             compared++;
             string[] actualLines = await File.ReadAllLinesAsync(existingPath, ct);
+            if(actualLines.SequenceEqual(item.Lines,StringComparer.Ordinal) &&
+                !(await File.ReadAllBytesAsync(existingPath,ct)).SequenceEqual(FrozenM3uContent.Bytes(item.Lines)))
+                differences.Add(new MediaMonkeyExporterDifference(item.M3UFile,"M3U bytes differ from the frozen UTF-8 BOM and Windows line-ending output.",null,null,null));
             int max = Math.Max(item.Lines.Count, actualLines.Length);
 
             for (int i = 0; i < max; i++)

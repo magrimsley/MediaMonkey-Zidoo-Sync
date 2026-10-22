@@ -14,7 +14,7 @@ public sealed class NativeInterruptedRecovery(IProductionPlaylistDevice device, 
 {
     public sealed record Pending(int Schema, string Journal, string Target, string IntentSHA256, string CollateralSHA256);
     private sealed record Intent(string Target, string? ExpectedOldSHA256, string? NewSHA256,
-        int ExpectedCount, ZidooPlaylistRecord? OriginalDevice, ZidooPlaylistRecord[] OriginalInventory);
+        int ExpectedCount, ZidooPlaylistRecord? OriginalDevice, ZidooPlaylistRecord[] OriginalInventory, int? OriginalVisibility = null); // Deferred repair: bool ReimportExisting = false;
     private static string Hash(byte[] bytes) => Convert.ToHexString(SHA256.HashData(bytes));
     private static int Tracks(byte[] bytes) => Encoding.UTF8.GetString(bytes).TrimStart('\uFEFF')
         .Split(new[]{"\r\n","\n","\r"},StringSplitOptions.None).Count(line=>!string.IsNullOrWhiteSpace(line)&&!line.StartsWith('#'));
@@ -59,6 +59,10 @@ public sealed class NativeInterruptedRecovery(IProductionPlaylistDevice device, 
     {
         var pending=ReadPending(root,reports);
         string marker=Path.Combine(root,".mmzs-production-pending.json");byte[] markerBytes=File.ReadAllBytes(marker);
+        // Compatibility safeguard only: never release an old forced-reimport gate through count-only reconciliation.
+        using(var legacyIntent=JsonDocument.Parse(Verify(Path.Combine(pending.Journal,"intent.json"),pending.IntentSHA256)))
+            if(legacyIntent.RootElement.TryGetProperty("ReimportExisting",out var deferred) && deferred.ValueKind==JsonValueKind.True)
+                throw new InvalidDataException("The retained transaction used the deferred playlist reimport feature. Keep its recovery evidence for review; automatic recovery did not change playlists.");
         var intent=JsonSerializer.Deserialize<Intent>(Verify(Path.Combine(pending.Journal,"intent.json"),pending.IntentSHA256))
             ??throw new InvalidDataException("Invalid transaction intent.");
         string name=Path.GetFileNameWithoutExtension(pending.Target);
@@ -74,6 +78,8 @@ public sealed class NativeInterruptedRecovery(IProductionPlaylistDevice device, 
             intent.OriginalDevice is not null && old is not null && Tracks(old)!=intent.OriginalDevice.Count)
             throw new InvalidDataException("Recovery content cannot reproduce the recorded track counts.");
         string? CurrentHash(){NoLink(pending.Target);return File.Exists(pending.Target)?Hash(File.ReadAllBytes(pending.Target)):null;}
+        if (intent.OriginalVisibility is int visibility && (visibility & ~((int)FileAttributes.Hidden | (int)FileAttributes.System)) != 0)
+            throw new InvalidDataException("Invalid original playlist visibility in recovery receipt.");
         var currentHash=CurrentHash();
         if(currentHash!=intent.ExpectedOldSHA256 && currentHash!=intent.NewSHA256)
             throw new IOException("Playlist changed outside synchronization; recovery retained.");
@@ -103,6 +109,8 @@ public sealed class NativeInterruptedRecovery(IProductionPlaylistDevice device, 
         var inventory=await device.InventoryAsync(ct);CheckOthers(inventory);
         var target=inventory.SingleOrDefault(row=>row.Name==name);
         bool finalDevice=intent.ExpectedCount==0?target is null:target?.Count==intent.ExpectedCount;
+        // An unchanged count/hash cannot prove that an explicitly requested reimport occurred.
+// Deferred repair: if(intent.ReimportExisting && target?.Id==intent.OriginalDevice?.Id)finalDevice=false;
         string outcome;
         if(currentHash==intent.NewSHA256 && finalDevice)
             outcome="Completed";
@@ -128,6 +136,8 @@ public sealed class NativeInterruptedRecovery(IProductionPlaylistDevice device, 
                 throw new IOException("Restored transaction could not be verified.");
             outcome="Restored";
         }
+        if (File.Exists(pending.Target) && intent.OriginalVisibility is int originalVisibility)
+            NativeProductionTransaction.VerifyVisibility(pending.Target,originalVisibility);
         Save(Path.Combine(pending.Journal,"recovered-interruption.json"),JsonSerializer.SerializeToUtf8Bytes(new{Status="PASS",Outcome=outcome,Time=DateTimeOffset.Now,Inventory=inventory}));
         checkpoint?.Invoke("ReceiptSaved");
         if(Hash(File.ReadAllBytes(marker))!=Hash(markerBytes))throw new IOException("Recovery marker changed; retained.");

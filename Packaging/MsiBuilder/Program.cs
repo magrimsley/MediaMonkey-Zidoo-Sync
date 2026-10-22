@@ -32,11 +32,54 @@ Table("FeatureComponents","`Feature_` CHAR(38) NOT NULL, `Component_` CHAR(72) N
 Table("File","`File` CHAR(72) NOT NULL, `Component_` CHAR(72) NOT NULL, `FileName` CHAR(255) NOT NULL LOCALIZABLE, `FileSize` LONG NOT NULL, `Version` CHAR(72), `Language` CHAR(20), `Attributes` SHORT, `Sequence` LONG NOT NULL","`File`");
 Table("Media","`DiskId` SHORT NOT NULL, `LastSequence` LONG NOT NULL, `DiskPrompt` CHAR(64) LOCALIZABLE, `Cabinet` CHAR(255), `VolumeLabel` CHAR(32), `Source` CHAR(72)","`DiskId`");
 Table("Registry","`Registry` CHAR(72) NOT NULL, `Root` SHORT NOT NULL, `Key` CHAR(255) NOT NULL LOCALIZABLE, `Name` CHAR(255) LOCALIZABLE, `Value` CHAR(0) LOCALIZABLE, `Component_` CHAR(72) NOT NULL","`Registry`");
+Table("Icon","`Name` CHAR(72) NOT NULL, `Data` OBJECT NOT NULL","`Name`");
 Table("Shortcut","`Shortcut` CHAR(72) NOT NULL, `Directory_` CHAR(72) NOT NULL, `Name` CHAR(128) NOT NULL LOCALIZABLE, `Component_` CHAR(72) NOT NULL, `Target` CHAR(255) LOCALIZABLE, `Arguments` CHAR(255) LOCALIZABLE, `Description` CHAR(255) LOCALIZABLE, `Hotkey` SHORT, `Icon_` CHAR(72), `IconIndex` SHORT, `ShowCmd` SHORT, `WkDir` CHAR(72)","`Shortcut`");
 Table("Upgrade","`UpgradeCode` CHAR(38) NOT NULL, `VersionMin` CHAR(20), `VersionMax` CHAR(20), `Language` CHAR(255), `Attributes` LONG NOT NULL, `Remove` CHAR(255), `ActionProperty` CHAR(72) NOT NULL","`UpgradeCode`, `VersionMin`, `VersionMax`, `Language`, `Attributes`");
 Table("LaunchCondition","`Condition` CHAR(255) NOT NULL, `Description` CHAR(255) NOT NULL LOCALIZABLE","`Condition`");
+// Native Windows Installer options; silent/basic installs use DESKTOPSHORTCUT=1 or 0.
+Table("TextStyle","`TextStyle` CHAR(72) NOT NULL, `FaceName` CHAR(32) NOT NULL, `Size` SHORT NOT NULL, `Color` LONG, `StyleBits` SHORT","`TextStyle`");
+Table("Dialog","`Dialog` CHAR(72) NOT NULL, `HCentering` SHORT NOT NULL, `VCentering` SHORT NOT NULL, `Width` SHORT NOT NULL, `Height` SHORT NOT NULL, `Attributes` LONG, `Title` CHAR(128) LOCALIZABLE, `Control_First` CHAR(50), `Control_Default` CHAR(50), `Control_Cancel` CHAR(50)","`Dialog`");
+Table("Control","`Dialog_` CHAR(72) NOT NULL, `Control` CHAR(50) NOT NULL, `Type` CHAR(20) NOT NULL, `X` SHORT NOT NULL, `Y` SHORT NOT NULL, `Width` SHORT NOT NULL, `Height` SHORT NOT NULL, `Attributes` LONG, `Property` CHAR(72), `Text` CHAR(0) LOCALIZABLE, `Control_Next` CHAR(50), `Help` CHAR(50) LOCALIZABLE","`Dialog_`, `Control`");
+Table("CheckBox","`Property` CHAR(72) NOT NULL, `Value` CHAR(64)","`Property`");
+Table("ControlEvent","`Dialog_` CHAR(72) NOT NULL, `Control_` CHAR(50) NOT NULL, `Event` CHAR(50) NOT NULL, `Argument` CHAR(255), `Condition` CHAR(255), `Ordering` SHORT","`Dialog_`, `Control_`, `Event`, `Argument`, `Condition`");
+Table("Binary","`Name` CHAR(72) NOT NULL, `Data` OBJECT NOT NULL","`Name`");
+Table("EventMapping","`Dialog_` CHAR(72) NOT NULL, `Control_` CHAR(50) NOT NULL, `Event` CHAR(50) NOT NULL, `Attribute` CHAR(50) NOT NULL","`Dialog_`, `Control_`, `Event`");
+Table("ActionText","`Action` CHAR(72) NOT NULL, `Description` CHAR(64) LOCALIZABLE, `Template` CHAR(128) LOCALIZABLE","`Action`");
+Row("TextStyle","TextStyle,FaceName,Size","InstallerFont","Segoe UI",9);
+Row("Dialog","Dialog,HCentering,VCentering,Width,Height,Attributes,Title,Control_First,Control_Default,Control_Cancel","InstallOptions",50,50,370,180,3,"[ProductName] Setup","DesktopChoice","Install","Cancel");
+Row("Control","Dialog_,Control,Type,X,Y,Width,Height,Attributes,Text","InstallOptions","Heading","Text",20,15,285,30,3,"Install MM Zidoo Sync for this Windows user.");
+Row("Control","Dialog_,Control,Type,X,Y,Width,Height,Attributes,Text","InstallOptions","Description","Text",20,48,330,35,3,"A Start menu entry is included. Choose whether to add a desktop shortcut.");
+Row("Control","Dialog_,Control,Type,X,Y,Width,Height,Attributes,Property,Text,Control_Next","InstallOptions","DesktopChoice","CheckBox",20,95,330,20,3,"DESKTOPSHORTCUT","Create a desktop shortcut","Install");
+Row("CheckBox","Property,Value","DESKTOPSHORTCUT","1");
+Row("Control","Dialog_,Control,Type,X,Y,Width,Height,Attributes,Text,Control_Next","InstallOptions","Install","PushButton",190,140,75,23,3,"Install","Cancel");
+Row("Control","Dialog_,Control,Type,X,Y,Width,Height,Attributes,Text,Control_Next","InstallOptions","Cancel","PushButton",275,140,75,23,3,"Cancel","DesktopChoice");
+Row("ControlEvent","Dialog_,Control_,Event,Argument,Condition,Ordering","InstallOptions","Install","EndDialog","Return","1",1);
+Row("ControlEvent","Dialog_,Control_,Event,Argument,Condition,Ordering","InstallOptions","Cancel","EndDialog","Exit","1",1);
+// Modeless progress receives native Windows Installer progress events during ExecuteAction.
+Row("Dialog","Dialog,HCentering,VCentering,Width,Height,Attributes,Title,Control_First,Control_Default,Control_Cancel","InstallProgress",50,50,370,180,1,"[ProductName] Setup","Cancel","Cancel","Cancel");
+Row("Control","Dialog_,Control,Type,X,Y,Width,Height,Attributes,Text","InstallProgress","Heading","Text",20,15,285,30,3,"Setup is applying your changes.");
+Row("Control","Dialog_,Control,Type,X,Y,Width,Height,Attributes,Text","InstallProgress","Status","Text",20,65,330,25,3,"Preparing installation...");
+Row("Control","Dialog_,Control,Type,X,Y,Width,Height,Attributes","InstallProgress","Progress","ProgressBar",20,100,330,15,65537);
+Row("Control","Dialog_,Control,Type,X,Y,Width,Height,Attributes,Text,Control_Next","InstallProgress","Cancel","PushButton",275,140,75,23,3,"Cancel","Cancel");
+Row("ControlEvent","Dialog_,Control_,Event,Argument,Condition,Ordering","InstallProgress","Cancel","EndDialog","Exit","1",1);
+Row("EventMapping","Dialog_,Control_,Event,Attribute","InstallProgress","Progress","SetProgress","Progress");
+Row("EventMapping","Dialog_,Control_,Event,Attribute","InstallProgress","Status","ActionText","Text");
+foreach(var action in new[]{("InstallFiles","Copying application files..."),("RemoveFiles","Removing application files..."),("CreateShortcuts","Creating your shortcuts..."),("RemoveShortcuts","Removing shortcuts..."),("WriteRegistryValues","Saving application registration..."),("RegisterProduct","Registering MM Zidoo Sync..."),("PublishProduct","Finishing application registration..."),("InstallFinalize","Completing setup...")})
+    Row("ActionText","Action,Description",action.Item1,action.Item2);
+foreach(var exit in new[]{("SetupComplete","Setup completed successfully.","Choose Finish to close setup. Open MM Zidoo Sync from the Start menu after installation."),
+    ("SetupCancelled","You cancelled setup.","Setup did not complete. You can run this installer again when you are ready."),
+    ("SetupFailed","Setup could not complete.","Windows Installer reported an error. Review the error message or installation log, then try again.")})
+{
+    Row("Dialog","Dialog,HCentering,VCentering,Width,Height,Attributes,Title,Control_First,Control_Default,Control_Cancel",exit.Item1,50,50,370,180,3,"[ProductName] Setup","Finish","Finish","Finish");
+    Row("Control","Dialog_,Control,Type,X,Y,Width,Height,Attributes,Text",exit.Item1,"Heading","Text",20,15,285,30,3,exit.Item2);
+    Row("Control","Dialog_,Control,Type,X,Y,Width,Height,Attributes,Text",exit.Item1,"Description","Text",20,65,330,55,3,exit.Item3);
+    Row("Control","Dialog_,Control,Type,X,Y,Width,Height,Attributes,Text,Control_Next",exit.Item1,"Finish","PushButton",275,140,75,23,3,"Finish","Finish");
+    Row("ControlEvent","Dialog_,Control_,Event,Argument,Condition,Ordering",exit.Item1,"Finish","EndDialog","Return","1",1);
+}
+foreach(var dialog in new[]{"InstallOptions","InstallProgress","SetupComplete","SetupCancelled","SetupFailed"})
+    Row("Control","Dialog_,Control,Type,X,Y,Width,Height,Attributes,Text",dialog,"BrandIcon","Icon",318,10,32,32,1,"InstallerIcon");
 foreach(var table in new[]{"InstallExecuteSequence","InstallUISequence"})Table(table,"`Action` CHAR(72) NOT NULL, `Condition` CHAR(255), `Sequence` SHORT","`Action`");
-foreach(var p in new Dictionary<string,string>{["ProductCode"]=product,["UpgradeCode"]=upgrade,["ProductName"]="MM Zidoo Sync "+app,["ProductVersion"]=version.ToString(),["ProductLanguage"]="1033",["Manufacturer"]="Michael Grimsley",["INSTALLLEVEL"]="1",["MSIINSTALLPERUSER"]="1",["LIMITUI"]="1",["ARPNOMODIFY"]="1",["ARPURLINFOABOUT"]="https://github.com/magrimsley/MediaMonkey-Zidoo-Sync",["ARPCOMMENTS"]="Application "+app+"; installer revision "+version+". Independent project; unsigned.",["SecureCustomProperties"]="OLDPRODUCTS;NEWERFOUND;INSTALLFOLDER;NOSHORTCUTS"})Row("Property","Property,Value",p.Key,p.Value);
+foreach(var p in new Dictionary<string,string>{["ProductCode"]=product,["UpgradeCode"]=upgrade,["ProductName"]="MM Zidoo Sync "+app,["ProductVersion"]=version.ToString(),["ProductLanguage"]="1033",["Manufacturer"]="Michael Grimsley",["INSTALLLEVEL"]="1",["MSIINSTALLPERUSER"]="1",["DESKTOPSHORTCUT"]="1",["DefaultUIFont"]="InstallerFont",["ARPNOMODIFY"]="1",["ARPPRODUCTICON"]="Application.ico",["ARPURLINFOABOUT"]="https://github.com/magrimsley/MediaMonkey-Zidoo-Sync",["ARPCOMMENTS"]="Application "+app+"; installer revision "+version+". Independent project; unsigned.",["SecureCustomProperties"]="OLDPRODUCTS;NEWERFOUND;INSTALLFOLDER;NOSHORTCUTS;DESKTOPSHORTCUT"})Row("Property","Property,Value",p.Key,p.Value);
 void Dir(string id,string? parent,string name)=>Row("Directory","Directory,Directory_Parent,DefaultDir",id,parent,name);
 Dir("TARGETDIR",null,"SourceDir");Dir("LocalAppDataFolder","TARGETDIR",".");Dir("ProgramsRoot","LocalAppDataFolder","Programs");Dir("INSTALLFOLDER","ProgramsRoot","MMZS|MMZidooSync");Dir("ProgramMenuFolder","TARGETDIR",".");Dir("AppMenu","ProgramMenuFolder","MMZS|MM Zidoo Sync");Dir("DesktopFolder","TARGETDIR",".");
 Row("Feature","Feature,Title,Level,Attributes","Main","MM Zidoo Sync",1,0);
@@ -47,10 +90,46 @@ for(int i=0;i<files.Length;i++){var rel=Path.GetRelativePath(source,files[i]);va
 string? fv=string.IsNullOrEmpty(vi.FileVersion)?null:$"{vi.FileMajorPart}.{vi.FileMinorPart}.{vi.FileBuildPart}.{vi.FilePrivatePart}";Row("File","File,Component_,FileName,FileSize,Version,Attributes,Sequence",f,c,"f"+(i+1)+"|"+Path.GetFileName(files[i]),checked((int)new FileInfo(files[i]).Length),fv,16384,i+1);if(rel.Equals("MMZidooSync.exe",StringComparison.OrdinalIgnoreCase))exe=f;}
 if(exe is null)throw new InvalidDataException("Missing executable.");
 Row("Component","Component,ComponentId,Directory_,Attributes,Condition,KeyPath","Shortcuts",Id("shortcuts"),"INSTALLFOLDER",260,"NOT NOSHORTCUTS","ShortcutMarker");Row("FeatureComponents","Feature_,Component_","Main","Shortcuts");Row("Registry","Registry,Root,Key,Name,Value,Component_","ShortcutMarker",1,@"Software\MMZidooSync\MSI","Shortcuts",app,"Shortcuts");
-foreach(var s in new[]{("StartShortcut","AppMenu","MMZidoo|MM Zidoo Sync"),("DesktopShortcut","DesktopFolder","MMZidoo|MM Zidoo Sync (MSI)")})Row("Shortcut","Shortcut,Directory_,Name,Component_,Target,Description,ShowCmd,WkDir",s.Item1,s.Item2,s.Item3,"Shortcuts","[#"+exe+"]","MediaMonkey to Zidoo playlist synchronization",1,"INSTALLFOLDER");
+Row("Component","Component,ComponentId,Directory_,Attributes,Condition,KeyPath","DesktopShortcutComponent",Id("desktop-shortcut"),"INSTALLFOLDER",260,"NOT NOSHORTCUTS AND DESKTOPSHORTCUT=\"1\"","DesktopMarker");
+Row("FeatureComponents","Feature_,Component_","Main","DesktopShortcutComponent");
+Row("Registry","Registry,Root,Key,Name,Value,Component_","DesktopMarker",1,@"Software\MMZidooSync\MSI","DesktopShortcut",app,"DesktopShortcutComponent");
+Row("Shortcut","Shortcut,Directory_,Name,Component_,Target,Description,ShowCmd,WkDir","StartShortcut","AppMenu","MMZidoo|MM Zidoo Sync","Shortcuts","[#"+exe+"]","MediaMonkey to Zidoo playlist synchronization",1,"INSTALLFOLDER");
+Row("Shortcut","Shortcut,Directory_,Name,Component_,Target,Description,ShowCmd,WkDir","DesktopShortcut","DesktopFolder","MMZidoo|MM Zidoo Sync (MSI)","DesktopShortcutComponent","[#"+exe+"]","MediaMonkey to Zidoo playlist synchronization",1,"INSTALLFOLDER");
 Row("Media","DiskId,LastSequence,Cabinet",1,files.Length,"#payload.cab");Row("Upgrade","UpgradeCode,VersionMin,VersionMax,Attributes,ActionProperty",upgrade,"0.0.0",version.ToString(),257,"OLDPRODUCTS");Row("Upgrade","UpgradeCode,VersionMin,Attributes,ActionProperty",upgrade,version.ToString(),258,"NEWERFOUND");Row("LaunchCondition","Condition,Description","NOT NEWERFOUND OR Installed","A newer or equal installer revision is installed. Use its installer to repair or uninstall.");Row("LaunchCondition","Condition,Description","VersionNT64","64-bit Windows is required.");
 var actions=new(string,int,string?)[]{("FindRelatedProducts",25,null),("LaunchConditions",100,null),("CostInitialize",800,null),("FileCost",900,null),("CostFinalize",1000,null),("MigrateFeatureStates",1200,null),("InstallValidate",1400,null),("InstallInitialize",1500,null),("ProcessComponents",1600,null),("UnpublishFeatures",1800,null),("RemoveShortcuts",3200,null),("RemoveFiles",3500,null),("InstallFiles",4000,null),("CreateShortcuts",4500,null),("WriteRegistryValues",5000,null),("RemoveRegistryValues",5100,null),("RegisterUser",6000,null),("RegisterProduct",6100,null),("PublishFeatures",6300,null),("PublishProduct",6400,null),("InstallExecute",6500,null),("RemoveExistingProducts",6550,"OLDPRODUCTS"),("InstallFinalize",6600,null)};
-foreach(var a in actions)Row("InstallExecuteSequence","Action,Condition,Sequence",a.Item1,a.Item3,a.Item2);foreach(var a in actions.Where(a=>a.Item2<1400))Row("InstallUISequence","Action,Condition,Sequence",a.Item1,a.Item3,a.Item2);Row("InstallUISequence","Action,Sequence","ExecuteAction",1300);
+foreach(var a in actions)Row("InstallExecuteSequence","Action,Condition,Sequence",a.Item1,a.Item3,a.Item2);foreach(var a in actions.Where(a=>a.Item2<1400))Row("InstallUISequence","Action,Condition,Sequence",a.Item1,a.Item3,a.Item2);Row("InstallUISequence","Action,Sequence","ExecuteAction",1300);Row("InstallUISequence","Action,Condition,Sequence","InstallOptions","UILevel >= 5 AND NOT Installed AND NOT REMOVE AND NOT NOSHORTCUTS",200);
+Row("InstallUISequence","Action,Condition,Sequence","InstallProgress","UILevel >= 5",1290);
+Row("InstallUISequence","Action,Condition,Sequence","SetupComplete","UILevel >= 5",-1);
+Row("InstallUISequence","Action,Condition,Sequence","SetupCancelled","UILevel >= 5",-2);
+Row("InstallUISequence","Action,Condition,Sequence","SetupFailed","UILevel >= 5",-3);
+// Windows Installer caches this icon for Programs and Features independently of the payload.
+var iconPath=Path.Combine(source,"Resources","Branding","Application.ico");
+if(!File.Exists(iconPath))throw new InvalidDataException("Missing application icon.");
+// Icon controls without size flags load the FIRST ICO image and stretch it.
+// Preserve the approved artwork bytes, but give the installer a single highest-resolution frame.
+// Keep the original multi-resolution icon unchanged for the executable and Programs and Features.
+var iconBytes=File.ReadAllBytes(iconPath);
+if(iconBytes.Length<6 || BitConverter.ToUInt16(iconBytes,2)!=1)throw new InvalidDataException("Invalid application ICO.");
+int frameCount=BitConverter.ToUInt16(iconBytes,4);
+if(frameCount==0 || 6+16*frameCount>iconBytes.Length)throw new InvalidDataException("Invalid ICO directory.");
+int best=Enumerable.Range(0,frameCount).OrderByDescending(i=>
+    (iconBytes[6+16*i]==0?256:iconBytes[6+16*i])*(iconBytes[7+16*i]==0?256:iconBytes[7+16*i])).First();
+int entry=6+16*best,imageLength=BitConverter.ToInt32(iconBytes,entry+8),imageOffset=BitConverter.ToInt32(iconBytes,entry+12);
+if(imageLength<=0 || imageOffset<0 || (long)imageOffset+imageLength>iconBytes.Length)throw new InvalidDataException("Invalid ICO frame.");
+var installerIcon=new byte[22+imageLength];
+Array.Copy(iconBytes,installerIcon,6);BitConverter.GetBytes((ushort)1).CopyTo(installerIcon,4);
+Array.Copy(iconBytes,entry,installerIcon,6,16);BitConverter.GetBytes(22).CopyTo(installerIcon,18);
+Array.Copy(iconBytes,imageOffset,installerIcon,22,imageLength);
+var installerIconPath=Path.Combine(work,"InstallerArtwork.ico");File.WriteAllBytes(installerIconPath,installerIcon);
+Console.WriteLine($"Installer artwork uses original { (iconBytes[entry]==0?256:iconBytes[entry]) }x{ (iconBytes[entry+1]==0?256:iconBytes[entry+1]) } frame; image bytes unchanged.");
+dynamic artView=db.OpenView("INSERT INTO `Binary` (`Name`, `Data`) VALUES (?, ?)");
+dynamic artRecord=engine.CreateRecord(2);
+try{artRecord.StringData[1]="InstallerIcon";artRecord.SetStream(2,installerIconPath);artView.Execute(artRecord);}
+finally{artView.Close();Marshal.FinalReleaseComObject(artRecord);Marshal.FinalReleaseComObject(artView);}
+dynamic iconView=db.OpenView("INSERT INTO `Icon` (`Name`, `Data`) VALUES (?, ?)");
+dynamic iconRecord=engine.CreateRecord(2);
+try{iconRecord.StringData[1]="Application.ico";iconRecord.SetStream(2,iconPath);iconView.Execute(iconRecord);}
+finally{iconView.Close();Marshal.FinalReleaseComObject(iconRecord);Marshal.FinalReleaseComObject(iconView);}
 dynamic stream=db.OpenView("INSERT INTO `_Streams` (`Name`, `Data`) VALUES (?, ?)");dynamic streamRecord=engine.CreateRecord(2);streamRecord.StringData[1]="payload.cab";streamRecord.SetStream(2,Path.Combine(work,"payload.cab"));stream.Execute(streamRecord);stream.Close();Marshal.FinalReleaseComObject(streamRecord);Marshal.FinalReleaseComObject(stream);
 dynamic summary=db.SummaryInformation(12);summary.Property[2]="Installation Database";summary.Property[3]="MM Zidoo Sync "+app;summary.Property[4]="Michael Grimsley";summary.Property[7]="x64;1033";summary.Property[9]=Guid.NewGuid().ToString("B").ToUpperInvariant();summary.Property[14]=500;summary.Property[15]=10;summary.Property[19]=2;summary.Persist();db.Commit();Marshal.FinalReleaseComObject(summary);Marshal.FinalReleaseComObject(db);Marshal.FinalReleaseComObject(engine);
 Console.WriteLine($"Built {output}; app={app}; MSI={version}; product={product}; files={files.Length}");

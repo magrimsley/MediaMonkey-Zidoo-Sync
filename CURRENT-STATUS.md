@@ -1,12 +1,32 @@
+# MM Zidoo Sync — production 1.1
+
+The owner authorized promoting RC10 to production 1.1 on October 22, 2026. Application metadata is 1.1.0, FileVersion 1.1.0.11 and MSI ProductVersion 1.1.11. The production release/tag is v1.1.0 and has no prerelease flag. See RELEASE-1.1.md for final scope and validation limits.
+
+RC10 behavior is retained: the out-of-scope forced-reimport feature remains commented out, the review dialog uses Windows-themed dynamic brushes, and Help explains approval versus execution. Frozen process rules and all authoritative reference hashes remain unchanged. The shared-storage Hidden-flag fix and recovery gates remain active.
+
+Visual Studio and GitHub share the same committed application source and backlog. All preserved local session evidence belongs under LocalOnly/SessionArchive and is visible through the ignored local solution. Public source intentionally excludes private logs, frozen PowerShell, installer binaries and historical archive packages. See Documentation/PROJECT-FILES.md.
+
+No new live Zidoo commands were issued during release promotion. Automated and installer validation do not substitute for live device acceptance. Unsigned distribution and the previously documented file-sharing diagnostic limitation remain disclosed.
+
+## Historical status — superseded checkpoints
+
+The following text records previous states and does not describe the production release above.
+
 # MM Zidoo Sync — current status
 
-Current installed release candidate: **1.1.0-rc.1**. Previous Beta 1 is retained. Application: **MM Zidoo Sync**. Executable: **MMZidooSync.exe**. About and Help: **MediaMonkey → Zidoo playlist synchronization**.
+Latest public release candidate: **1.1.0-rc.2**, unsigned. PR #2 merged and RC2 publication/local update completed October 21, 2026. The owner subsequently tested a first-time MSI installation and uninstalled it. The MSI appeared in Programs and Features, created shortcuts, launched with its splash screen, displayed About/Help, discovered a powered-on Zidoo, and removed its entry/shortcuts on uninstall. No playlist changes were sent to Zidoo in that acceptance run.
 
-Prepared RC2: draft PR #2 includes layout/log/no-change fixes and a native per-user MSI. Full local MSI acceptance passed on October 21: fresh install, actual RC1-payload upgrade, all 423 payload hashes, repair, downgrade refusal, shortcuts and uninstall/data retention. All 13 existing profile files and the registered RC1 DLL retained their hashes. Publication and registered application update await owner approval. No new Sandbox or live sync was performed.
+Unreleased follow-ups are prepared in draft PR #3: installer icon and optional desktop shortcut, selected-log highlight, Configuration-first synchronization gating, discovery history and subnet-derived WOL broadcast, path pickers, and corrected Help. These changes are not part of published RC2. Full interactive installer/picker visual acceptance remains pending. Source checks and isolated results belong to the follow-up PR, not the earlier RC2 binary.
 
-This page supersedes pending-state wording in historical Alpha notes. Those notes remain historical evidence.
+Current delivery: https://github.com/magrimsley/MediaMonkey-Zidoo-Sync/releases/tag/v1.1.0-rc.2
 
-KB-001 remains documented in KNOWN-BUGS.md as a carried known issue, not an item in this outstanding-work checklist.
+Outstanding: final follow-up package identity/acceptance and owner release decision; SignPath response/signing integration; stable promotion decision; backlog items including retention and unsaved-edit confirmation. Legacy Alpha registration was reported by the owner, but a current owner-context check of all uninstall views and native MSI products found none; do not claim a surviving record was removed without evidence.
+
+MediaMonkey remains the source of truth. KB-001 remains documented separately and is not an ordinary outstanding checklist item. No Sandbox or live synchronization was resumed. PowerShell tooling and immutable references remain local-only.
+
+## Historical status below
+
+The following entries describe earlier release checkpoints and do not supersede the current RC2/follow-up status above.
 
 ## Outstanding work outside the feature backlog
 

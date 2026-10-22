@@ -28,3 +28,24 @@ MM Zidoo Sync - Backlog
    Removed the optional diagnostics controls from the main UI and commented out
    their handlers at Michael's request on October 20, 2026. The required four-step
    synchronization workflow remains. A Pending Changes tab is not approved.
+
+8. Run History / Logs retention — requested October 21, 2026
+   Add manual deletion of previous history entries and their owned logs, plus a
+   configurable maximum retained count and automatic pruning beyond that count.
+   Protect active operations and retained transaction/recovery evidence; never
+   delete unrelated files. Define the retained-count setting and default explicitly.
+
+9. Unsaved configuration changes — requested October 21, 2026
+   Detect edits before leaving Configuration or closing the application. Present
+   Save / Discard / Cancel so the user confirms persistence before navigation.
+   Use existing validation, archival save and error handling; do not silently save
+   invalid or unreviewed discovered values. Saving must succeed before navigation.
+10. Explicit repair of existing Zidoo playlists — deferred October 22, 2026
+    Removed the RC9 Repair Existing Playlists button and commented out its
+    supporting implementation and tests. This forced delete/reimport feature is
+    outside the frozen PowerShell scope and requires separate owner approval.
+    See Documentation/BACKLOG.md for scope, verification and recovery requirements.
+
+11. Choose playlists for ordinary synchronization
+    Define an approved selection workflow without treating deselection as deletion.
+    See Documentation/BACKLOG.md.

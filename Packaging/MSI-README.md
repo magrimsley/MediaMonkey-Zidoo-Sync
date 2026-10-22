@@ -1,3 +1,11 @@
+# Native MSI — production 1.1
+
+Production application 1.1.0 uses MSI ProductVersion 1.1.11 and FileVersion 1.1.0.11. This upgrades RC10's MSI 1.1.10 without resetting the installer sequence. The stable installer has no PowerShell installation actions. Desktop shortcut choice and per-user configuration/preferences retention remain unchanged.
+
+Build with the current native MsiBuilder and numeric version 1.1.11. Publish installers as release assets, not Git source. Historical installer checkpoints below explain earlier versions; they are not the current production identity.
+
+## Historical MSI authoring notes
+
 # MSI installer — release candidate
 
 This native Windows Installer package uses no PowerShell, custom actions or paid installer-tool dependency. Build on 64-bit Windows after publishing the application:
@@ -17,3 +25,7 @@ The upgrade installs new components transactionally before removing the old prod
 Build output is not proof of acceptance. Record actual tests and limitations in the candidate release notes.
 
 File-table versions use numeric fixed-file metadata, matching Windows Installer, rather than free-form display strings. Each field must fit 0–65535. For example, msquic.dll displays 2.5.10.154561281 but its fixed version is 2.5.10.0. Full-payload acceptance is necessary because a tiny fixture cannot detect this metadata defect.
+
+Unreleased installer follow-up: full interactive installation offers a Create a desktop shortcut checkbox. The Start menu entry is independent. For silent/basic installation use DESKTOPSHORTCUT=0 to omit the desktop shortcut or DESKTOPSHORTCUT=1 to create it (default). NOSHORTCUTS=1 remains an isolated-test option. Full interactive visual acceptance is still pending.
+
+RC3 uses application version 1.1.0-rc.3, FileVersion 1.1.0.3, and numeric MSI revision 1.1.3. Startup ignores the last open tab: incomplete settings select Configuration and disable every other tab; saved complete settings select Synchronization.

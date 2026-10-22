@@ -1,3 +1,25 @@
+## 1.1.0-rc.3 — prepared candidate
+
+- Apply the clarified startup rule: Configuration only before complete saved configuration; otherwise always Synchronization.
+- Include the accumulated RC2 first-install fixes in a new application/file/MSI version identity, rather than repackaging RC2.
+- See RC3_RELEASE_NOTES.md for the included changes and limits.
+
+## Unreleased first-install acceptance corrections
+
+- Start on Configuration and block synchronization until complete settings have been saved; configuration edits invalidate that permission.
+- Record discovery attempts, including found/no-device/error outcomes, before a report folder is configured. Keep those entries visible after a report-folder change.
+- Derive WOL broadcast from a matching active IPv4 subnet; never assume a /24 mask or guess across unrelated/ambiguous subnets.
+- Add native Browse controls for the MediaMonkey database, shared music/playlist paths and report folder.
+- Remove obsolete Native Assessment Help text, document the standard MediaMonkey database location and identify Zidoo's Chinese developer API page accurately.
+- Offer a native MSI desktop-shortcut checkbox; silent/basic installations can use DESKTOPSHORTCUT=0 or 1. Keep the Start menu entry independent.
+- Add retention and confirmation of unsaved configuration edits to the backlog.
+
+## Unreleased RC2 acceptance follow-ups
+
+- Embed the application icon for Windows Programs and Features.
+- Highlight the Run History cell selected by mouse or keyboard while retaining selectable text and the exact log target; keep the highlight when opening its log.
+- Owner confirmed the MSI entry appeared and uninstall removed it; MediaMonkey change detection worked. No updates were sent to Zidoo in this check.
+
 # MM Zidoo Sync — current
 
 Prepared candidate: 1.1.0-rc.2; registered installation and public release remain RC1. See RC2_RELEASE_NOTES.md and CURRENT-STATUS.md. Historical entries retain their original scope.

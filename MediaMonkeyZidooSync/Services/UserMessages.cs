@@ -15,14 +15,14 @@ public static class UserMessages
 
     public static LogEvent Completed(int changes) => new(DateTime.Now, LogLevel.Green,
         changes == 0 ? "Synchronization completed successfully. No playlist changes were needed." :
-        $"Synchronization completed successfully. {changes} playlist {(changes == 1 ? "change was" : "changes were")} applied and verified.");
+        $"Synchronization completed successfully. {changes} playlist {(changes == 1 ? "change was" : "changes were")} applied. File contents and device track counts passed verification; confirm song order on Zidoo.");
 
     public static string Explain(Exception error) => error switch
     {
         NativeTransactionRolledBackException => "Synchronization stopped. The current playlist was restored; earlier completed changes may remain. See the diagnostic log for details.",
         UnauthorizedAccessException => "Access to a required file or folder was denied. Check its permissions and try again. See the diagnostic log for details.",
         HttpRequestException or TaskCanceledException => "The Zidoo did not respond. Check its power and network connection, then try again. See the diagnostic log for details.",
-        InvalidDataException => "The settings, playlist data, or device response could not be verified. Review your configuration and the diagnostic log before trying again.",
+        InvalidDataException => ForDisplay(error.Message) + " Open the diagnostic log for details.",
         IOException => "Synchronization could not finish safely. Keep the recovery files and review the diagnostic log before running again.",
         _ => "The operation could not be completed. See the diagnostic log for details."
     };

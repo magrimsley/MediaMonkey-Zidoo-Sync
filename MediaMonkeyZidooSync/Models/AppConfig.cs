@@ -32,6 +32,8 @@ public sealed class ApplicationConfig
     public string Version { get; set; } = "v1.0.0";
     /// <summary>Root directory for authoritative run output/log folders.</summary>
     public string ReportRoot { get; set; } = "";
+    /// <summary>Number of recent application history entries to retain; zero keeps all.</summary>
+    public int HistoryKeepCount { get; set; } = 100;
 }
 
 /// <summary>Zidoo network, identity, WOL, and grid settings.</summary>

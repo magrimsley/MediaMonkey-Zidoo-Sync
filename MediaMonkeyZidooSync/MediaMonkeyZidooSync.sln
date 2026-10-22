@@ -26,6 +26,15 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests and Architecture", "T
 		..\Testing\InstalledWorkflowAcceptance\README.md = ..\Testing\InstalledWorkflowAcceptance\README.md
 	EndProjectSection
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Release and Project Files", "Release and Project Files", "{86646A94-4D7F-58A4-A00C-B8EDD61EF933}"
+	ProjectSection(SolutionItems) = preProject
+		..\RELEASE-1.1.md = ..\RELEASE-1.1.md
+		..\CURRENT-STATUS.md = ..\CURRENT-STATUS.md
+		..\Documentation\BACKLOG.md = ..\Documentation\BACKLOG.md
+		..\BACKLOG-v1.0.0.txt = ..\BACKLOG-v1.0.0.txt
+		..\Documentation\PROJECT-FILES.md = ..\Documentation\PROJECT-FILES.md
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU

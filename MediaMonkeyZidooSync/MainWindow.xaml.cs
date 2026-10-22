@@ -81,6 +81,7 @@ public partial class MainWindow : Window {
     /// <summary>Shows one independently activatable, modeless completion notification.</summary>
     private void ShowCompletionNotification(string message, string title, MessageBoxImage icon)
     {
+        if (_discoveryOverride is not null) return; // Deterministic offline discovery tests never open notification windows.
         if (_completionWindow is not null)
         {
             _completionWindow.Close();
@@ -137,6 +138,8 @@ public partial class MainWindow : Window {
     private readonly UiStateService _uiStateService;
     private readonly Action<string> _openRunLog;
     private RunHistoryService.RunRecord? _selectedRunLog;
+    private string? _configurationLogPath;
+    private bool _outputScrollDrag;
     private UiState _uiState = new();
     private readonly SyncRunner _runner = new();
     private System.Threading.CancellationTokenSource? _syncCancellation;
@@ -153,10 +156,10 @@ public partial class MainWindow : Window {
 // Disabled optional diagnostics:             .OfType<Button>()
 // Disabled optional diagnostics:             .FirstOrDefault(button => button.Name == "InspectNativePlanButton");
 // Disabled optional diagnostics:     }
-// Disabled optional diagnostics: 
+// Disabled optional diagnostics:
 // Disabled optional diagnostics:     private IReadOnlyList<NativePlanInspectionItem>? _lastNativePlanInspection;
 // Disabled optional diagnostics:     private System.Threading.CancellationTokenSource? _nativeAssessmentCancellation;
-// Disabled optional diagnostics: 
+// Disabled optional diagnostics:
     private readonly ZidooDiscoveryService _zidooDiscovery = new();
     private readonly RunHistoryService _runHistoryService = new();
     private readonly MediaMonkeyPlaylistExporter _mediaMonkeyExporter = new();
@@ -167,6 +170,7 @@ public partial class MainWindow : Window {
     private readonly List<LogEvent> _events = new();
     private readonly SynchronizationWorkflow _workflow = new();
     private IReadOnlyList<NativeProductionSyncService.ReviewedChange>? _preparedReview, _approvedReview;
+// Deferred repair: private IReadOnlyList<NativeProductionSyncService.ReviewedChange> _repairCandidates = Array.Empty<NativeProductionSyncService.ReviewedChange>();
     private AppConfig? _config;
     private readonly DispatcherTimer _timer = new() { Interval = TimeSpan.FromSeconds(1) };
     private Stopwatch? _stopwatch;
@@ -179,15 +183,18 @@ public partial class MainWindow : Window {
     public MainWindow() : this(IsolatedStartupMode.ResolveRoot()) { }
 
     /// <summary>Isolated configuration root for local UI verification; null uses normal application storage.</summary>
-    public MainWindow(string? isolatedConfigRoot, Action<string>? openRunLog = null) {
+    public MainWindow(string? isolatedConfigRoot, Action<string>? openRunLog = null, Func<Task<IReadOnlyList<ZidooDiscoveryResult>>>? discoverZidoo = null) {
+        _discoveryOverride=discoverZidoo;
         _configService = new ConfigurationService(isolatedConfigRoot);
         _uiStateService = isolatedConfigRoot is null ? new UiStateService() :
             new UiStateService(Path.Combine(isolatedConfigRoot, "ui-state.json"));
         _openRunLog = openRunLog ?? (path => Process.Start(new ProcessStartInfo(path) { UseShellExecute = true }));
         InitializeComponent();
+        OutputRichText.AddHandler(System.Windows.Controls.Primitives.Thumb.DragStartedEvent,new System.Windows.Controls.Primitives.DragStartedEventHandler((_,_)=>_outputScrollDrag=true),true);
+        OutputRichText.AddHandler(System.Windows.Controls.Primitives.Thumb.DragCompletedEvent,new System.Windows.Controls.Primitives.DragCompletedEventHandler((_,_)=>{_outputScrollDrag=false;RefreshOutput();}),true);
         if (isolatedConfigRoot is null && !IsolatedStartupMode.Enabled) ApplicationBranding.AttachTray(this);
         ConfigurationTab.AddHandler(System.Windows.Controls.Primitives.TextBoxBase.TextChangedEvent,
-            new TextChangedEventHandler((_,_) => InvalidateWorkflow()));
+            new TextChangedEventHandler((_,_) => { _configurationReady=false; InvalidateWorkflow(); }));
         RefreshWorkflowControls();
         if (IsolatedStartupMode.Enabled)
         {
@@ -214,12 +221,84 @@ public partial class MainWindow : Window {
         Deactivated += (_, _) => ClearHistoryGridSelections();
         OutputRichText.LostKeyboardFocus += OutputRichText_LostKeyboardFocus;
         ProductVersionText.Text = $"Product {ApplicationVersionProvider.ProductVersion}";
-        
+
         Loaded += async (_,__) => { await RestoreUiStateAsync(); await LoadConfigurationAsync(); };
         _runner.Output += e => Dispatcher.InvokeAsync(() => { _events.Add(e); RefreshOutput(); });
 // Disabled optional diagnostics:         _nativeAssessmentRunner.Output += e => Dispatcher.InvokeAsync(() => { _events.Add(e); RefreshOutput(); });
         _timer.Tick += (_,__) => ElapsedText.Text = $"Elapsed: {FormatElapsed(_stopwatch?.Elapsed)}";
     }
+
+    private void BrowseDatabase_Click(object sender,RoutedEventArgs e)
+    {
+        var initial=Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),"MediaMonkey5");
+        var picker=new Microsoft.Win32.OpenFileDialog { Title="Select the MediaMonkey database", Filter="MediaMonkey database (*.DB)|*.DB|All files (*.*)|*.*", CheckFileExists=true };
+        var folder=Path.GetDirectoryName(MmDb.Text);
+        picker.InitialDirectory=Directory.Exists(folder)?folder:Directory.Exists(initial)?initial:Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+        if(picker.ShowDialog(this)==true)MmDb.Text=picker.FileName;
+    }
+    private void BrowseFolder(TextBox field,string title,string fallback)
+    {
+        var picker=new Microsoft.Win32.OpenFolderDialog { Title=title,InitialDirectory=Directory.Exists(field.Text)?field.Text:fallback };
+        if(picker.ShowDialog(this)==true)field.Text=picker.FolderName;
+    }
+    private void ApplyMusicLocation(string path) {
+        var location=StorageSetupService.ParseMusic(path);
+        NasMusic.Text=location.Path;NasHost.Text=location.Host;NasShare.Text=location.Share;if(location.Music.Length>0)MusicFolderName.Text=location.Music;
+        ConfigMessage.Text="Music location selected. Now choose the folder containing your M3U playlist files.";
+    }
+    private void ApplyPlaylistLocation(string path) {
+        var name=StorageSetupService.PlaylistName(NasMusic.Text,path);
+        PlaylistFolder.Text=path.TrimEnd('\\');if(name.Length>0)PlaylistFolderName.Text=name;
+        ConfigMessage.Text="Playlist folder selected. Review the saved folder names used by Zidoo and save configuration. The selected path controls which M3U files the application compares.";
+    }
+    private void BrowseMusic_Click(object sender,RoutedEventArgs e) {
+        var picker=new Microsoft.Win32.OpenFolderDialog{Title="Choose your shared music root",InitialDirectory=Directory.Exists(NasMusic.Text)?NasMusic.Text:Environment.GetFolderPath(Environment.SpecialFolder.MyMusic)};
+        if(picker.ShowDialog(this)==true)try{ApplyMusicLocation(picker.FolderName);}catch(InvalidDataException ex){ConfigMessage.Text=ex.Message;}
+    }
+    private void BrowsePlaylists_Click(object sender,RoutedEventArgs e) {
+        var picker=new Microsoft.Win32.OpenFolderDialog{Title="Choose your configured M3U playlist folder",InitialDirectory=Directory.Exists(NasMusic.Text)?NasMusic.Text:Environment.GetFolderPath(Environment.SpecialFolder.MyMusic)};
+        if(picker.ShowDialog(this)==true)try{ApplyPlaylistLocation(picker.FolderName);}catch(InvalidDataException ex){ConfigMessage.Text=ex.Message;}
+    }
+    private void ApplyImportedConfiguration(AppConfig config) {
+        _config=config;ShowConfig();_configurationReady=false;RefreshWorkflowControls();MainTabs.SelectedItem=ConfigurationTab;
+        ConfigMessage.Text="Loaded settings for review. Save Configuration to use them. The original JSON stays unchanged.";
+    }
+    private async void ImportConfig_Click(object sender,RoutedEventArgs e) {
+        if(IsolatedStartupMode.Enabled)return;
+        var picker=new Microsoft.Win32.OpenFileDialog{Title="Choose a saved MM Zidoo Sync configuration",Filter="Configuration JSON (*.json)|*.json",InitialDirectory=_configService.CurrentDirectory,CheckFileExists=true};
+        if(picker.ShowDialog(this)!=true)return;
+        try { ApplyImportedConfiguration(await ConfigurationService.ReadImportAsync(picker.FileName)); }
+        catch(Exception ex){ConfigMessage.Text="Could not load configuration: "+ex.Message;}
+    }
+    private async void ChoosePlaylistParent_Click(object sender,RoutedEventArgs e) {
+        try {
+            var database=MmDb.Text;var choices=await Task.Run(()=>PlaylistParentService.ListAsync(database));
+            var dialog=new Window{Title="Choose your MediaMonkey playlist group",Owner=this,Width=700,Height=480,WindowStartupLocation=WindowStartupLocation.CenterOwner};
+            var layout=new DockPanel{Margin=new Thickness(16)};
+            var hint=new TextBlock{Text="Pick the group containing the playlists you want on Zidoo. The number shows how many child playlists it contains. This only reads MediaMonkey.",TextWrapping=TextWrapping.Wrap,Margin=new Thickness(0,0,0,12)};
+            DockPanel.SetDock(hint,Dock.Top);layout.Children.Add(hint);
+            var choose=new Button{Content="Use selected group",Padding=new Thickness(16,7,16,7),HorizontalAlignment=HorizontalAlignment.Right};DockPanel.SetDock(choose,Dock.Bottom);layout.Children.Add(choose);
+            var list=new ListBox{ItemsSource=choices,DisplayMemberPath="Description"};layout.Children.Add(list);
+            choose.Click+=(_,_)=>{if(list.SelectedItem is not PlaylistParentService.ParentChoice selected)return;if(choices.Count(x=>x.Name==selected.Name)!=1){hint.Text="MediaMonkey contains more than one group with that name. Give it a unique name in MediaMonkey first.";return;}PlaylistParent.Text=selected.Name;dialog.DialogResult=true;};
+            dialog.Content=layout;dialog.ShowDialog();
+        }catch(Exception ex){ConfigMessage.Text="Could not read MediaMonkey playlist groups: "+ex.Message;}
+    }
+    private string RootForHistory(RunHistoryService.RunRecord run)=>Directory.GetParent(Path.GetDirectoryName(run.LogPath)!)!.FullName;
+    private void DeleteRun_Click(object sender,RoutedEventArgs e) {
+        if(_workflow.Busy)return;
+        var run=_selectedRunLog;if(run is null){RunHistoryStatus.Text="Select a run first.";return;}
+        if(MessageBox.Show(this,"Delete this run's history entry and log? This does not delete music, playlists, configuration, or recovery files.","Delete Run History",MessageBoxButton.YesNo,MessageBoxImage.Question)!=MessageBoxResult.Yes)return;
+        try{_runHistoryService.Delete(RootForHistory(run),run);RefreshRunHistory();}catch(Exception ex){RunHistoryStatus.Text="Could not delete history: "+ex.Message;}
+    }
+    private void DeleteAllRuns_Click(object sender,RoutedEventArgs e) {
+        if(_workflow.Busy)return;
+        if(MessageBox.Show(this,"Delete all recorded run entries and their logs? Keep any logs you need first. Music, playlists, settings and recovery files stay in place.","Delete All History",MessageBoxButton.YesNo,MessageBoxImage.Question)!=MessageBoxResult.Yes)return;
+        try{foreach(var root in new[]{HistoryRoot,Path.Combine(_configService.Root,"Reports")}.Distinct(StringComparer.OrdinalIgnoreCase))foreach(var run in _runHistoryService.List(root,int.MaxValue))_runHistoryService.Delete(root,run);RefreshRunHistory();}catch(Exception ex){RunHistoryStatus.Text="Could not delete all history: "+ex.Message;}
+    }
+    private void BrowseReports_Click(object sender,RoutedEventArgs e)=>BrowseFolder(ReportRoot,"Select the report and log folder",_configService.Root);
+
+    private readonly Func<Task<IReadOnlyList<ZidooDiscoveryResult>>>? _discoveryOverride;
+    private bool _configurationReady;
 
     private void InvalidateWorkflow()
     {
@@ -231,7 +310,9 @@ public partial class MainWindow : Window {
     private void RefreshWorkflowControls()
     {
         if(RunButton is null || ReviewSynchronizationButton is null)return;
-        bool allowed=!IsolatedStartupMode.Enabled;
+        bool allowed=!IsolatedStartupMode.Enabled && _configurationReady;
+        SynchronizationTab.IsEnabled=_configurationReady;
+        RunHistoryTab.IsEnabled=true;
         ValidateMediaMonkeyButton.IsEnabled=allowed && _workflow.CanValidate;
         VerifyNativeExporterButton.IsEnabled=allowed && _workflow.CanVerify;
         ReviewSynchronizationButton.IsEnabled=allowed && _workflow.CanReview && _preparedReview is not null;
@@ -239,30 +320,114 @@ public partial class MainWindow : Window {
 // Disabled optional diagnostics:         RunNativeAssessmentButton.IsEnabled=allowed && (_nativeAssessmentCancellation is not null || (_workflow.CanReview && _workflow.Verified));
 // Disabled optional diagnostics:         InspectNativePlanButton.IsEnabled=allowed && !_workflow.Busy && _lastNativePlanInspection is not null;
         ConfigurationTab.IsEnabled=!_workflow.Busy;
-        WorkflowHint.Text=_workflow.NextStep;
+        WorkflowHint.Text=_configurationReady ? _workflow.NextStep : "Complete and save Configuration before validating playlists.";
     }
+
+    // Deferred RC9 repair dialog and its fixed-color helper (not compiled).
+//     private static void SetDialogColors(Control control)
+//     {
+//         control.SetResourceReference(Control.BackgroundProperty,control is Button?SystemColors.ControlBrushKey:SystemColors.WindowBrushKey);
+//         control.SetResourceReference(Control.ForegroundProperty,control is Button?SystemColors.ControlTextBrushKey:SystemColors.WindowTextBrushKey);
+//     }
+// #pragma warning disable WPF0001
+//     private void ReviewSynchronization_Click(object sender,RoutedEventArgs e)
+//     {
+//         if(IsolatedStartupMode.Enabled || _workflow.Busy || !_workflow.Verified || _preparedReview is null)return;
+//         var sourceReview=_preparedReview;
+//         var review=sourceReview.ToList();
+//         var window=new Window{Title="Review Synchronization Changes",ThemeMode=ThemeMode.System,Owner=this,Width=760,Height=520,WindowStartupLocation=WindowStartupLocation.CenterOwner};
+//         SetDialogColors(window);
+//         var layout=new DockPanel{Margin=new Thickness(16)};
+//         var footer=new StackPanel{Orientation=Orientation.Horizontal,HorizontalAlignment=HorizontalAlignment.Right,Margin=new Thickness(0,12,0,0)};
+//         var back=new Button{Content="Back",Padding=new Thickness(16,6,16,6)};
+//         var accept=new Button{Name="AcceptReviewedPlanButton",Content="Use Reviewed Plan",Padding=new Thickness(16,6,16,6),Margin=new Thickness(10,0,0,0)};
+//         back.Click+=(_,_)=>window.DialogResult=false;accept.Click+=(_,_)=>window.DialogResult=true;
+//         var repair=new Button{Name="RepairExistingPlaylistsButton",Content="Repair Existing Playlists...",Padding=new Thickness(12,6,12,6),Margin=new Thickness(0,0,14,0),IsEnabled=_repairCandidates.Count>0};
+//         foreach(var button in new[]{back,accept,repair})SetDialogColors(button);
+//         footer.Children.Add(repair);footer.Children.Add(back);footer.Children.Add(accept);DockPanel.SetDock(footer,Dock.Bottom);layout.Children.Add(footer);
+//         var heading=new TextBlock{Text=review.Count==0?(HasPendingRecovery()?"No new playlist differences were found, but a retained transaction needs reconciliation. After review, Run Synchronization uses the existing recovery checks before proceeding.":"Playlist files match MediaMonkey. If Zidoo still has old contents or song order, choose Repair Existing Playlists. Without selected repairs, no synchronization is needed."):
+//             "Review the proposed playlist changes below. Missing playlists may also be restored from your playlist files. Repair Existing Playlists lets you explicitly reimport selected existing playlists when their files already match. After accepting, use Run Synchronization.",TextWrapping=TextWrapping.Wrap,Margin=new Thickness(0,0,0,12)};
+//         DockPanel.SetDock(heading,Dock.Top);layout.Children.Add(heading);
+//         var details=review.Select(item=>(item.ChangeType ?? (item.CandidateSHA256 is null?"Delete":item.OriginalSHA256 is null?"Create":"Update"))+": "+
+//             Path.GetFileNameWithoutExtension(item.FileName)+(item.CandidateSHA256 is null?"":" ("+item.ExpectedCount+" tracks)"));
+//         var detailBox=new TextBox{Text=string.Join(Environment.NewLine,details),IsReadOnly=true,AcceptsReturn=true,VerticalScrollBarVisibility=ScrollBarVisibility.Auto,TextWrapping=TextWrapping.Wrap,Padding=new Thickness(10)};
+//         SetDialogColors(detailBox);layout.Children.Add(detailBox);
+//         accept.IsEnabled=review.Count>0 || HasPendingRecovery();
+//         repair.Click+=(_,_)=>
+//         {
+//             var picker=new Window{Title="Repair Existing Zidoo Playlists",ThemeMode=ThemeMode.System,Owner=window,Width=680,Height=500,WindowStartupLocation=WindowStartupLocation.CenterOwner};
+//             SetDialogColors(picker);
+//             var panel=new DockPanel{Margin=new Thickness(16)};
+//             var instruction=new TextBlock{Text="Select only the playlists whose Zidoo contents need repair. Synchronization will delete each selected existing Zidoo playlist and reimport its reviewed M3U, even when the file already matches MediaMonkey. It keeps unselected existing Zidoo playlists and file visibility unchanged. This selection contacts no device; after adding repairs, review the plan and run synchronization.",TextWrapping=TextWrapping.Wrap,Margin=new Thickness(0,0,0,12)};
+//             DockPanel.SetDock(instruction,Dock.Top);panel.Children.Add(instruction);
+//             var buttons=new StackPanel{Orientation=Orientation.Horizontal,HorizontalAlignment=HorizontalAlignment.Right,Margin=new Thickness(0,12,0,0)};
+//             var cancel=new Button{Content="Cancel",Padding=new Thickness(14,6,14,6)};
+//             var add=new Button{Name="AddSelectedRepairsButton",Content="Add Selected Repairs",Padding=new Thickness(14,6,14,6),Margin=new Thickness(10,0,0,0),IsEnabled=false};
+//             SetDialogColors(cancel);SetDialogColors(add);
+//             buttons.Children.Add(cancel);buttons.Children.Add(add);DockPanel.SetDock(buttons,Dock.Bottom);panel.Children.Add(buttons);
+//             var list=new ListBox{Name="RepairPlaylistList",SelectionMode=SelectionMode.Multiple};
+//             SetDialogColors(list);
+//             var itemStyle=new Style(typeof(ListBoxItem));
+//             var itemBorder=new FrameworkElementFactory(typeof(Border));
+//             itemBorder.SetValue(Border.BackgroundProperty,new TemplateBindingExtension(Control.BackgroundProperty));
+//             var itemContent=new FrameworkElementFactory(typeof(ContentPresenter));
+//             itemContent.SetValue(FrameworkElement.MarginProperty,new Thickness(6));itemBorder.AppendChild(itemContent);
+//             itemStyle.Setters.Add(new Setter(Control.TemplateProperty,new ControlTemplate(typeof(ListBoxItem)){VisualTree=itemBorder}));
+//             itemStyle.Setters.Add(new Setter(Control.ForegroundProperty,new DynamicResourceExtension(SystemColors.WindowTextBrushKey)));
+//             var selectedStyle=new Trigger{Property=ListBoxItem.IsSelectedProperty,Value=true};
+//             selectedStyle.Setters.Add(new Setter(Control.ForegroundProperty,new DynamicResourceExtension(SystemColors.HighlightTextBrushKey)));
+//             selectedStyle.Setters.Add(new Setter(Control.BackgroundProperty,new DynamicResourceExtension(SystemColors.HighlightBrushKey)));
+//             itemStyle.Triggers.Add(selectedStyle);list.ItemContainerStyle=itemStyle;
+//             foreach(var candidate in _repairCandidates)list.Items.Add(new ListBoxItem{Content=Path.GetFileNameWithoutExtension(candidate.FileName)+" ("+candidate.ExpectedCount+" tracks)",Tag=candidate});
+//             list.SelectionChanged+=(_,_)=>add.IsEnabled=list.SelectedItems.Count>0;
+//             cancel.Click+=(_,_)=>picker.DialogResult=false;
+//             add.Click+=(_,_)=>picker.DialogResult=true;
+//             panel.Children.Add(list);picker.Content=panel;
+//             if(picker.ShowDialog()!=true)return;
+//             foreach(ListBoxItem selected in list.SelectedItems)
+//             {
+//                 var candidate=(NativeProductionSyncService.ReviewedChange)selected.Tag;
+//                 review.RemoveAll(x=>x.FileName.Equals(candidate.FileName,StringComparison.OrdinalIgnoreCase));review.Add(candidate);
+//             }
+//             detailBox.Text=string.Join(Environment.NewLine,review.Select(x=>(x.ReimportExisting?"Repair (delete and reimport)":x.ChangeType)+": "+Path.GetFileNameWithoutExtension(x.FileName)+(x.CandidateSHA256 is null?"":" ("+x.ExpectedCount+" tracks)")));
+//             accept.IsEnabled=review.Count>0 || HasPendingRecovery();
+//         };
+//         window.Content=layout;
+//         if(window.ShowDialog()==true && ReferenceEquals(_preparedReview,sourceReview))
+//         {_approvedReview=review.AsReadOnly();_workflow.AuthorizeReviewedChanges(review.Count>0 || HasPendingRecovery());RefreshWorkflowControls();}
+//     }
+//
+// #pragma warning restore WPF0001
 
     private void ReviewSynchronization_Click(object sender,RoutedEventArgs e)
     {
         if(IsolatedStartupMode.Enabled || !_workflow.CanReview || _preparedReview is null)return;
         var review=_preparedReview;
         var window=new Window{Title="Review Synchronization Changes",Owner=this,Width=760,Height=520,WindowStartupLocation=WindowStartupLocation.CenterOwner};
+        window.SetResourceReference(Control.BackgroundProperty,"ApplicationBackgroundBrush");
+        window.SetResourceReference(Control.ForegroundProperty,"TextFillColorPrimaryBrush");
         var layout=new DockPanel{Margin=new Thickness(16)};
         var footer=new StackPanel{Orientation=Orientation.Horizontal,HorizontalAlignment=HorizontalAlignment.Right,Margin=new Thickness(0,12,0,0)};
         var back=new Button{Content="Back",Padding=new Thickness(16,6,16,6)};
-        var accept=new Button{Content="Use Reviewed Plan",Padding=new Thickness(16,6,16,6),Margin=new Thickness(10,0,0,0)};
+        var accept=new Button{Name="AcceptReviewedPlanButton",Content="Use Reviewed Plan",Padding=new Thickness(16,6,16,6),Margin=new Thickness(10,0,0,0)};
+        foreach(var button in new[]{back,accept})
+        {button.SetResourceReference(Control.BackgroundProperty,"ControlFillColorDefaultBrush");button.SetResourceReference(Control.ForegroundProperty,"TextFillColorPrimaryBrush");}
         back.Click+=(_,_)=>window.DialogResult=false;accept.Click+=(_,_)=>window.DialogResult=true;
         footer.Children.Add(back);footer.Children.Add(accept);DockPanel.SetDock(footer,Dock.Bottom);layout.Children.Add(footer);
         var heading=new TextBlock{Text=review.Count==0?(HasPendingRecovery()?"No new playlist differences were found, but a retained transaction needs reconciliation. After review, Run Synchronization uses the existing recovery checks before proceeding.":"No playlist changes are needed. This run will not contact or wake Zidoo."):
             "Review the proposed playlist changes below. Missing playlists may also be restored from your playlist files. After accepting, use Run Synchronization.",TextWrapping=TextWrapping.Wrap,Margin=new Thickness(0,0,0,12)};
         DockPanel.SetDock(heading,Dock.Top);layout.Children.Add(heading);
-        var details=review.Select(item=>(item.CandidateSHA256 is null?"Delete":item.OriginalSHA256 is null?"Create":"Update")+": "+
+        var details=review.Select(item=>(item.ChangeType ?? (item.CandidateSHA256 is null?"Delete":item.OriginalSHA256 is null?"Create":"Update"))+": "+
             Path.GetFileNameWithoutExtension(item.FileName)+(item.CandidateSHA256 is null?"":" ("+item.ExpectedCount+" tracks)"));
-        layout.Children.Add(new TextBox{Text=string.Join(Environment.NewLine,details),IsReadOnly=true,AcceptsReturn=true,VerticalScrollBarVisibility=ScrollBarVisibility.Auto,TextWrapping=TextWrapping.Wrap,Padding=new Thickness(10)});
+        var detailBox=new TextBox{Text=string.Join(Environment.NewLine,details),IsReadOnly=true,AcceptsReturn=true,VerticalScrollBarVisibility=ScrollBarVisibility.Auto,TextWrapping=TextWrapping.Wrap,Padding=new Thickness(10)};
+        detailBox.SetResourceReference(Control.BackgroundProperty,"ApplicationBackgroundBrush");
+        detailBox.SetResourceReference(Control.ForegroundProperty,"TextFillColorPrimaryBrush");
+        layout.Children.Add(detailBox);
         window.Content=layout;
         if(window.ShowDialog()==true && ReferenceEquals(_preparedReview,review))
         {_approvedReview=review;_workflow.AcceptReview();RefreshWorkflowControls();}
     }
+
 
     /// <summary>Loads the current configuration and populates the Configuration tab.</summary>
     private async Task LoadConfigurationAsync() {
@@ -294,32 +459,85 @@ public partial class MainWindow : Window {
         MusicFolderName.Text=_config.NAS.MusicFolderName; PlaylistFolderName.Text=_config.NAS.PlaylistFolderName;
         NasMusic.Text=_config.NAS.MusicRootUNC; PlaylistFolder.Text=_config.NAS.PlaylistFolderUNC;
         ReportRoot.Text=_config.Application.ReportRoot;
+        HistoryKeepCount.Text=_config.Application.HistoryKeepCount.ToString();
         ReadinessTimeout.Text=_config.Timing.ZidooReadinessTimeoutSeconds.ToString();
         ColdBootSeconds.Text=_config.Timing.ColdBootUiStabilizationSeconds.ToString();
         RefreshHistory();
+        UpdateConfigurationAvailability();
+    }
+
+    private void UpdateConfigurationAvailability()
+    {
+        try { if (_config is null) throw new InvalidDataException(); ConfigurationService.Validate(_config); _configurationReady=true; }
+        catch (InvalidDataException) { _configurationReady=false; }
+        RefreshWorkflowControls();
+        MainTabs.SelectedItem=_configurationReady ? SynchronizationTab : ConfigurationTab;
+    }
+
+    private static int ReadSetupNumber(string text, string label) {
+        if (string.IsNullOrWhiteSpace(text)) return 0; // Keep incomplete setup; full validation still blocks synchronization.
+        if (!int.TryParse(text, out int value)) throw new InvalidDataException($"Enter a whole number for {label}, or clear it to finish later.");
+        return value;
     }
 
     /// <summary>Copies editable UI fields into the in-memory configuration before validation/save/run.</summary>
     private void ReadConfigFromForm() {
         if (_config is null) throw new InvalidOperationException("Configuration is not loaded.");
         _config.Zidoo.IPAddress=ZidooIp.Text.Trim(); _config.Zidoo.MacAddress=ZidooMac.Text.Trim();
-        _config.Zidoo.ExpectedModel=ExpectedModel.Text.Trim(); _config.Zidoo.ApiPort=int.Parse(ApiPort.Text);
-        _config.Zidoo.BroadcastAddress=Broadcast.Text.Trim(); _config.Zidoo.WolPort=int.Parse(WolPort.Text);
-        _config.Zidoo.PlaylistGridColumns=int.Parse(GridColumns.Text);
+        _config.Zidoo.ExpectedModel=ExpectedModel.Text.Trim(); _config.Zidoo.ApiPort=ReadSetupNumber(ApiPort.Text,"Zidoo API Port");
+        _config.Zidoo.BroadcastAddress=Broadcast.Text.Trim(); _config.Zidoo.WolPort=ReadSetupNumber(WolPort.Text,"WOL Port");
+        _config.Zidoo.PlaylistGridColumns=ReadSetupNumber(GridColumns.Text,"Playlist Grid Columns");
         _config.MediaMonkey.DatabasePath=MmDb.Text.Trim(); _config.MediaMonkey.PlaylistParent=PlaylistParent.Text.Trim();
         _config.NAS.Host=NasHost.Text.Trim(); _config.NAS.ShareName=NasShare.Text.Trim();
         _config.NAS.MusicFolderName=MusicFolderName.Text.Trim(); _config.NAS.PlaylistFolderName=PlaylistFolderName.Text.Trim();
         _config.NAS.MusicRootUNC=NasMusic.Text.Trim(); _config.NAS.PlaylistFolderUNC=PlaylistFolder.Text.Trim();
         _config.Application.ReportRoot=ReportRoot.Text.Trim();
-        _config.Timing.ZidooReadinessTimeoutSeconds=int.Parse(ReadinessTimeout.Text);
-        _config.Timing.ColdBootUiStabilizationSeconds=int.Parse(ColdBootSeconds.Text);
+        _config.Application.HistoryKeepCount=ReadSetupNumber(HistoryKeepCount.Text,"History entries to keep");
+        _config.Timing.ZidooReadinessTimeoutSeconds=ReadSetupNumber(ReadinessTimeout.Text,"Readiness Timeout");
+        _config.Timing.ColdBootUiStabilizationSeconds=ReadSetupNumber(ColdBootSeconds.Text,"Cold-Boot Stabilization");
     }
 
-    /// <summary>Validates, archives, and saves the current Configuration form values.</summary>
+    /// <summary>Archives and saves setup progress, then checks synchronization readiness.</summary>
     private async void SaveConfig_Click(object sender, RoutedEventArgs e) {
         if (IsolatedStartupMode.Enabled) return;
-        try { ReadConfigFromForm(); await _configService.SaveAsync(_config!); ConfigMessage.Text="Configuration validated, archived, and saved."; RefreshHistory(); }
-        catch(Exception ex) { ConfigMessage.Text=$"Configuration was not saved: {UserMessages.Explain(ex)}"; }
+        var started=DateTime.Now;
+        Exception? failure=null;
+        try {
+            ReadConfigFromForm();
+            await _configService.SaveDraftAsync(_config!);
+            RefreshHistory(); UpdateConfigurationAvailability(); MainTabs.SelectedItem=ConfigurationTab;
+            ConfigMessage.Text=_configurationReady ? "Configuration saved. Synchronization is available."
+                : "Setup progress saved. Complete the remaining settings before synchronizing. " + ConfigurationReadinessMessage();
+        }
+        catch(Exception ex) {
+            failure=ex;
+            _configurationReady=false; RefreshWorkflowControls();
+            ConfigMessage.Text="Could not save configuration. " + (ex is InvalidDataException ? ex.Message
+                : "Check that Windows allows this application to write to its settings folder.");
+        }
+        try {
+            // Always keep setup diagnostics in the local profile, even when the report path is incomplete or invalid.
+            var record=_runHistoryService.Save(Path.Combine(_configService.Root,"Reports"),started,
+                "Save Configuration",failure is null ? (_configurationReady ? "Saved" : "Draft saved") : "Failed",
+                DateTime.Now-started,new[]{new LogEvent(DateTime.Now,failure is null ? LogLevel.Green : LogLevel.Red,ConfigMessage.Text)
+                    {DiagnosticDetails=failure?.ToString()}});
+            _configurationLogPath=record.LogPath;
+            ConfigMessage.Text+="\nLog: " + record.LogPath;
+            RefreshRunHistory();
+        } catch(Exception logError) {
+            ConfigMessage.Text+="\nCould not write the setup log in " + Path.Combine(_configService.Root,"Reports") + ". " + logError.Message;
+        }
+    }
+
+    private string ConfigurationReadinessMessage() {
+        try { ConfigurationService.Validate(_config!); return ""; }
+        catch(InvalidDataException ex) { return ex.Message; }
+    }
+
+    private void OpenConfigurationLog_Click(object sender,RoutedEventArgs e) {
+        if (_configurationLogPath is null) return;
+        try { _openRunLog(_configurationLogPath); }
+        catch(Exception ex) { ConfigMessage.Text="Could not open the setup log: " + _configurationLogPath + "\n" + ex.Message; }
     }
 
     /// <summary>Restores Last Known Good and reloads the Configuration form.</summary>
@@ -460,7 +678,7 @@ public partial class MainWindow : Window {
 // Disabled optional diagnostics:                 if (IsWithin(source, table) || IsWithin(source, copy)) return;
 // Disabled optional diagnostics:                 table.UnselectAll();
 // Disabled optional diagnostics:             }), true);
-// Disabled optional diagnostics: 
+// Disabled optional diagnostics:
 // Disabled optional diagnostics:         // Modeless inspector permits File/Help menus and other main-window actions.
 // Disabled optional diagnostics:         // Clear selection when returning to the owner, not when switching to an
 // Disabled optional diagnostics:         // unrelated application. Never treat loss of focus alone as a click.
@@ -476,7 +694,7 @@ public partial class MainWindow : Window {
 // Disabled optional diagnostics:         window.Show();
 // Disabled optional diagnostics:         window.Activate();
 // Disabled optional diagnostics:     }
-// Disabled optional diagnostics: 
+// Disabled optional diagnostics:
 // Disabled optional diagnostics:     /// <summary>Read-only assessment. Does not save configuration or authorize any mutation.</summary>
 // Disabled optional diagnostics:     private async void RunNativeAssessment_Click(object sender, RoutedEventArgs e)
 // Disabled optional diagnostics:     {
@@ -600,7 +818,7 @@ public partial class MainWindow : Window {
 // Disabled optional diagnostics:             }
 // Disabled optional diagnostics:         }
 // Disabled optional diagnostics:     }
-// Disabled optional diagnostics: 
+// Disabled optional diagnostics:
     /// <summary>Saves the current configuration, launches synchronization, updates status, and marks successful configuration Last Known Good.</summary>
     private async void Run_Click(object sender, RoutedEventArgs e) {
         if (IsolatedStartupMode.Enabled) return;
@@ -656,7 +874,7 @@ public partial class MainWindow : Window {
     /// </summary>
     private async void ValidateMediaMonkey_Click(object sender, RoutedEventArgs e)
     {
-        if(IsolatedStartupMode.Enabled || !_workflow.CanValidate)return;
+        if(IsolatedStartupMode.Enabled || !_configurationReady || !_workflow.CanValidate)return;
         _workflow.BeginValidation();_preparedReview=_approvedReview=null;RefreshWorkflowControls();
         ValidateMediaMonkeyButton.IsEnabled = false;
         RunButton.IsEnabled = false;
@@ -780,6 +998,7 @@ public partial class MainWindow : Window {
                 plan.PendingZidooDeleteCount != System.Linq.Enumerable.Count(result.Differences, x => x.Problem == "Existing authoritative mirror contains an M3U that the native exporter does not expect."))
                 throw new InvalidDataException("The native transaction plan does not match the exporter comparison. No changes were made.");
             _preparedReview = await _runner.PrepareReviewAsync(config);
+// Deferred repair: _repairCandidates = await _runner.PrepareRepairCandidatesAsync(config);
             _events.Add(new LogEvent(DateTime.Now, LogLevel.Blue,
                 $"Transaction plan (read-only): Unchanged {plan.UnchangedCount:N0}  |  Create {plan.CreateCount:N0}  |  Update {plan.UpdateCount:N0}  |  Pending Zidoo deletion {plan.PendingZidooDeleteCount:N0}"));
 
@@ -866,11 +1085,14 @@ public partial class MainWindow : Window {
         }
     }
 
+    private string HistoryRoot => string.IsNullOrWhiteSpace(_config?.Application.ReportRoot)
+        ? Path.Combine(_configService.Root,"Reports") : _config.Application.ReportRoot;
+
     private void RecordHistory(DateTime started, string operation, string result)
     {
         try
         {
-            string root = _config?.Application.ReportRoot ?? ReportRoot.Text.Trim();
+            string root = HistoryRoot;
             _runHistoryService.Save(root, started, operation, result,
                 _stopwatch?.Elapsed ?? TimeSpan.Zero, _events);
             RefreshRunHistory();
@@ -888,12 +1110,17 @@ public partial class MainWindow : Window {
         if (RunHistoryGrid is null || RunHistoryStatus is null) return;
         try
         {
-            string root = _config?.Application.ReportRoot ?? ReportRoot.Text.Trim();
-            var records = _runHistoryService.List(root);
+            string root = HistoryRoot;
+            int keep=_config?.Application.HistoryKeepCount ?? 100;
+            if(keep>=0) { _runHistoryService.Prune(root,keep); if(!string.Equals(root,Path.Combine(_configService.Root,"Reports"),StringComparison.OrdinalIgnoreCase))_runHistoryService.Prune(Path.Combine(_configService.Root,"Reports"),keep); }
+            var records = _runHistoryService.List(root)
+                .Concat(_runHistoryService.List(Path.Combine(_configService.Root,"Reports")))
+                .DistinctBy(record=>record.LogPath,StringComparer.OrdinalIgnoreCase)
+                .OrderByDescending(record=>record.Started).ToList();
             SetRunLogTarget(null);
             RunHistoryGrid.ItemsSource = records;
             RunHistoryStatus.Text = records.Count == 0
-                ? "No structured runs recorded yet. Validate or Verify to create the first entry."
+                ? "No recorded operations yet. Discovery, validation and verification create entries."
                 : $"{records.Count} recorded runs (newest first).";
         }
         catch (Exception ex) { RunHistoryStatus.Text = $"Could not read run history: {UserMessages.Explain(ex)}"; }
@@ -903,7 +1130,7 @@ public partial class MainWindow : Window {
     {
         try
         {
-            string root = _config?.Application.ReportRoot ?? ReportRoot.Text.Trim();
+            string root = HistoryRoot;
             // Explicitly separate from the normal run history and do not create directories.
             string directory = Path.Combine(root, "RecoveryPlanReports");
             var rows = new IsolatedRecoveryReportBrowserService().List(directory);
@@ -946,7 +1173,20 @@ public partial class MainWindow : Window {
     {
         for (var node = source as DependencyObject; node is not null && !ReferenceEquals(node, RunHistoryGrid); node = ParentOf(node))
             if (node is FrameworkElement { DataContext: RunHistoryService.RunRecord run })
-            { SetRunLogTarget(run); return; }
+            {
+                // Text selection consumes the normal DataGrid click; retain a visible cell target.
+                if (source is DependencyObject origin && FindAncestor<DataGridCell>(origin) is { } cell)
+                {
+                    var target = new DataGridCellInfo(run, cell.Column);
+                    RunHistoryGrid.CurrentCell = target;
+                    if (!RunHistoryGrid.SelectedCells.Contains(target))
+                    {
+                        RunHistoryGrid.SelectedCells.Clear();
+                        RunHistoryGrid.SelectedCells.Add(target);
+                    }
+                }
+                SetRunLogTarget(run); return;
+            }
     }
 
     private void OpenRunLog_Click(object sender, RoutedEventArgs e)
@@ -1042,15 +1282,20 @@ public partial class MainWindow : Window {
     /// </summary>
     private async void DiscoverZidoo_Click(object sender, RoutedEventArgs e)
     {
-        if (IsolatedStartupMode.Enabled) return;
+        if (IsolatedStartupMode.Enabled || _workflow.Busy) return;
+        var discoveryStarted=DateTime.Now;
+        var discoveryEvents=new List<LogEvent>{new(DateTime.Now,LogLevel.Blue,"Started read-only Zidoo discovery; no wake or playlist changes requested.")};
+        string discoveryResult="Failed";
         DiscoverZidooButton.IsEnabled=false;
+        _workflow.SetDiagnosticBusy(true);RefreshWorkflowControls();
         DiscoveryStatus.Text="Searching. Make sure the Zidoo is powered on and connected to this local network...";
         try
         {
-            var progress = new Progress<string>(message => DiscoveryStatus.Text=message);
-            var devices = await _zidooDiscovery.DiscoverAsync(progress);
+            var progress = new Progress<string>(message => { DiscoveryStatus.Text=message; discoveryEvents.Add(new(DateTime.Now,LogLevel.Blue,message)); });
+            var devices = _discoveryOverride is not null ? await _discoveryOverride() : await _zidooDiscovery.DiscoverAsync(progress);
             if (devices.Count == 0)
             {
+                discoveryResult="No device found";
                 DiscoveryStatus.Text="No Zidoo was found. Make sure the Zidoo is powered on and connected to the same local network, then try again. Manual configuration remains available.";
                 ShowCompletionNotification(
                     $"No Zidoo device was identified.\n\nIt may be powered off, unreachable, or not identifiable through discovery.",
@@ -1065,26 +1310,35 @@ public partial class MainWindow : Window {
                 var chooser=new ZidooDiscoveryWindow(devices) { Owner=this };
                 selected=chooser.ShowDialog()==true ? chooser.SelectedDevice : null;
             }
-            if (selected is null) { DiscoveryStatus.Text="Discovery completed; no device was selected."; return; }
+            if (selected is null) { discoveryResult="No device selected"; DiscoveryStatus.Text="Discovery completed; no device was selected."; return; }
 
+            discoveryResult="Device found";
             ZidooIp.Text=selected.IPAddress;
             ZidooMac.Text=selected.MacAddress;
             ExpectedModel.Text=selected.Model;
             ApiPort.Text=ZidooDiscoveryService.DocumentedApiPort.ToString();
+            Broadcast.Text=ZidooDiscoveryService.FindBroadcastAddress(selected.IPAddress) ?? "";
             DiscoveryStatus.Text=selected.IsValidatedModel
                 ? $"Found {selected.Model} at {selected.IPAddress}. Configuration fields were populated; choose Save Configuration to commit them."
                 : $"Found Zidoo model {selected.Model} at {selected.IPAddress}. This model has not been validated by this project. Review before saving.";
-            ShowCompletionNotification($"Discovery completed.\n\nModel: {selected.Model}\nIP address: {selected.IPAddress}\nWired MAC address: {selected.MacAddress}\nFirmware: {selected.Firmware}\nValidated model: {(selected.IsValidatedModel ? "Yes" : "No")}\n\nReview the populated fields and select Save Configuration to save them.", "Zidoo Discovery Completed", selected.IsValidatedModel ? MessageBoxImage.Information : MessageBoxImage.Warning);
+            ShowCompletionNotification($"Discovery completed.\n\nModel: {selected.Model}\nIP address: {selected.IPAddress}\nWired MAC address: {selected.MacAddress}\nWOL broadcast: {(string.IsNullOrWhiteSpace(Broadcast.Text)?"Not determined; enter it manually":Broadcast.Text)}\nFirmware: {selected.Firmware}\nValidated model: {(selected.IsValidatedModel ? "Yes" : "No")}\n\nReview the populated fields and select Save Configuration to save them.", "Zidoo Discovery Completed", selected.IsValidatedModel ? MessageBoxImage.Information : MessageBoxImage.Warning);
         }
         catch(Exception ex)
         {
-            DiagnosticReportingService.Shared.Report("Discover Zidoo", ex);
+            if (_discoveryOverride is null) DiagnosticReportingService.Shared.Report("Discover Zidoo", ex);
             _events.Add(new LogEvent(DateTime.Now, LogLevel.Red, $"Discover Zidoo failed: {UserMessages.Explain(ex)}"));
             RefreshOutput();
             DiscoveryStatus.Text=$"Discovery could not complete: {UserMessages.Explain(ex)}";
             ShowCompletionNotification($"Discovery could not complete.\n\n{UserMessages.Explain(ex)}", "Zidoo Discovery Error", MessageBoxImage.Error);
         }
-        finally { DiscoverZidooButton.IsEnabled=true; }
+        finally
+        {
+            discoveryEvents.Add(new(DateTime.Now,discoveryResult=="Failed"?LogLevel.Red:LogLevel.Blue,DiscoveryStatus.Text));
+            try { _runHistoryService.Save(HistoryRoot,discoveryStarted,"Zidoo Discovery",discoveryResult,DateTime.Now-discoveryStarted,discoveryEvents); }
+            catch(Exception ex) { ConfigMessage.Text=$"Discovery history could not be saved: {UserMessages.Explain(ex)}"; }
+            DiscoverZidooButton.IsEnabled=true;
+            _workflow.SetDiagnosticBusy(false);RefreshWorkflowControls();RefreshRunHistory();
+        }
     }
 
     /// <summary>Displays product and runtime information.</summary>
@@ -1118,6 +1372,9 @@ public partial class MainWindow : Window {
     private void RefreshOutput()
     {
         if (OutputRichText is null) return;
+        if (_outputScrollDrag) return;
+        var offset=OutputRichText.VerticalOffset;
+        bool follow=OutputRichText.ExtentHeight-OutputRichText.ViewportHeight-offset < 24;
         var document = OutputRichText.Document;
         document.Blocks.Clear();
         foreach (var entry in _events.Where(e => Visible(e.Level)))
@@ -1138,7 +1395,7 @@ public partial class MainWindow : Window {
             paragraph.Inlines.Add(run);
             document.Blocks.Add(paragraph);
         }
-        OutputRichText.ScrollToEnd();
+        if (follow) OutputRichText.ScrollToEnd(); else OutputRichText.ScrollToVerticalOffset(offset);
     }
 
     // The RichTextBox intentionally keeps its selection for Ctrl+C and context-menu copying.
@@ -1149,6 +1406,7 @@ public partial class MainWindow : Window {
     private void MainWindow_ClearGridSelectionOutsideRows(object sender, System.Windows.Input.MouseButtonEventArgs e)
     {
         if (e.OriginalSource is not DependencyObject source) return;
+        if (FindAncestor<System.Windows.Controls.Primitives.ScrollBar>(source) is not null || FindAncestor<System.Windows.Controls.Primitives.Thumb>(source) is not null) return;
         if (FindAncestor<System.Windows.Controls.Primitives.ButtonBase>(source) is not null ||
             FindAncestor<MenuItem>(source) is not null) return;
 
@@ -1191,6 +1449,7 @@ public partial class MainWindow : Window {
 
     private void OutputWindow_PreviewMouseDown(object sender, System.Windows.Input.MouseButtonEventArgs e)
     {
+        if(e.OriginalSource is DependencyObject scrollSource && (FindAncestor<System.Windows.Controls.Primitives.ScrollBar>(scrollSource) is not null || FindAncestor<System.Windows.Controls.Primitives.Thumb>(scrollSource) is not null))return;
         // RichTextBox can report a Run (TextElement), which is not a Visual.
         // Text elements in this window originate in the output document.
         if (e.OriginalSource is System.Windows.Documents.TextElement)
@@ -1245,7 +1504,7 @@ public partial class MainWindow : Window {
     {
         try
         {
-            string root = _config?.Application.ReportRoot ?? ReportRoot.Text.Trim();
+            string root = HistoryRoot;
             var latest = _runHistoryService.List(root, 1).FirstOrDefault();
             if (latest is null || !File.Exists(latest.LogPath))
             {
@@ -1263,12 +1522,14 @@ public partial class MainWindow : Window {
     private async Task RestoreUiStateAsync()
     {
         _uiState = await _uiStateService.LoadAsync();
-        MainTabs.SelectedIndex = Math.Clamp(_uiState.SelectedTabIndex, 0, MainTabs.Items.Count - 1);
+        // Startup navigation follows saved-configuration readiness, not the previously open tab.
+        MainTabs.SelectedItem=ConfigurationTab;
         ZidooSection.IsExpanded = _uiState.ZidooExpanded;
         MediaMonkeySection.IsExpanded = _uiState.MediaMonkeyExpanded;
         PlaylistStorageSection.IsExpanded = _uiState.PlaylistStorageExpanded;
         AdvancedSection.IsExpanded = _uiState.AdvancedExpanded;
         ArchiveSection.IsExpanded = _uiState.ArchiveExpanded;
+        RunHistorySection.IsExpanded=_uiState.RunHistoryExpanded; RecoverySection.IsExpanded=_uiState.RecoveryExpanded;
         ShowBlue.IsChecked = _uiState.ShowBlue;
         ShowYellow.IsChecked = _uiState.ShowYellow;
         ShowGreen.IsChecked = _uiState.ShowGreen;
@@ -1320,7 +1581,7 @@ public partial class MainWindow : Window {
 // Disabled optional diagnostics:             StatusText.Text = "Waiting for the assessment to stop before closing.";
 // Disabled optional diagnostics:             return;
 // Disabled optional diagnostics:         }
-// Disabled optional diagnostics: 
+// Disabled optional diagnostics:
         var bounds = RestoreBounds;
         _uiState.SelectedTabIndex = MainTabs.SelectedIndex;
         _uiState.ZidooExpanded = ZidooSection.IsExpanded;
@@ -1328,6 +1589,7 @@ public partial class MainWindow : Window {
         _uiState.PlaylistStorageExpanded = PlaylistStorageSection.IsExpanded;
         _uiState.AdvancedExpanded = AdvancedSection.IsExpanded;
         _uiState.ArchiveExpanded = ArchiveSection.IsExpanded;
+        _uiState.RunHistoryExpanded=RunHistorySection.IsExpanded; _uiState.RecoveryExpanded=RecoverySection.IsExpanded;
         _uiState.ShowBlue = ShowBlue.IsChecked == true;
         _uiState.ShowYellow = ShowYellow.IsChecked == true;
         _uiState.ShowGreen = ShowGreen.IsChecked == true;
@@ -1343,6 +1605,7 @@ public partial class MainWindow : Window {
                 Width = c.Width.Value, WidthUnit = c.Width.UnitType.ToString()
             }).ToList();
         _uiStateService.SaveOnClosing(_uiState);
+        _helpWindow?.Close(); _completionWindow?.Close();
     }
 }
 
