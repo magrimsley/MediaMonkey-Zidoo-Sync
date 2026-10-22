@@ -1,3 +1,17 @@
+# MM Zidoo Sync — production 1.1
+
+The owner authorized promoting RC10 to production 1.1 on October 22, 2026. Application metadata is 1.1.0, FileVersion 1.1.0.11 and MSI ProductVersion 1.1.11. The production release/tag is v1.1.0 and has no prerelease flag. See RELEASE-1.1.md for final scope and validation limits.
+
+RC10 behavior is retained: the out-of-scope forced-reimport feature remains commented out, the review dialog uses Windows-themed dynamic brushes, and Help explains approval versus execution. Frozen process rules and all authoritative reference hashes remain unchanged. The shared-storage Hidden-flag fix and recovery gates remain active.
+
+Visual Studio and GitHub share the same committed application source and backlog. All preserved local session evidence belongs under LocalOnly/SessionArchive and is visible through the ignored local solution. Public source intentionally excludes private logs, frozen PowerShell, installer binaries and historical archive packages. See Documentation/PROJECT-FILES.md.
+
+No new live Zidoo commands were issued during release promotion. Automated and installer validation do not substitute for live device acceptance. Unsigned distribution and the previously documented file-sharing diagnostic limitation remain disclosed.
+
+## Historical status — superseded checkpoints
+
+The following text records previous states and does not describe the production release above.
+
 # MM Zidoo Sync — current status
 
 Latest public release candidate: **1.1.0-rc.2**, unsigned. PR #2 merged and RC2 publication/local update completed October 21, 2026. The owner subsequently tested a first-time MSI installation and uninstalled it. The MSI appeared in Programs and Features, created shortcuts, launched with its splash screen, displayed About/Help, discovered a powered-on Zidoo, and removed its entry/shortcuts on uninstall. No playlist changes were sent to Zidoo in that acceptance run.

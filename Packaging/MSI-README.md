@@ -1,3 +1,11 @@
+# Native MSI — production 1.1
+
+Production application 1.1.0 uses MSI ProductVersion 1.1.11 and FileVersion 1.1.0.11. This upgrades RC10's MSI 1.1.10 without resetting the installer sequence. The stable installer has no PowerShell installation actions. Desktop shortcut choice and per-user configuration/preferences retention remain unchanged.
+
+Build with the current native MsiBuilder and numeric version 1.1.11. Publish installers as release assets, not Git source. Historical installer checkpoints below explain earlier versions; they are not the current production identity.
+
+## Historical MSI authoring notes
+
 # MSI installer — release candidate
 
 This native Windows Installer package uses no PowerShell, custom actions or paid installer-tool dependency. Build on 64-bit Windows after publishing the application:

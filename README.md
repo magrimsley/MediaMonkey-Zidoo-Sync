@@ -1,12 +1,12 @@
 # MM Zidoo Sync
 
-Windows WPF application, version **1.1.0-rc.2**, for synchronizing managed MediaMonkey playlists with NAS M3U files and persistent Zidoo Music playlists. The application and synchronization engine are entirely native C#. PowerShell supports build, testing and installation only.
+Windows WPF application, production version **1.1** (application metadata **1.1.0**, promoted from RC10), for synchronizing managed MediaMonkey playlists with NAS M3U files and persistent Zidoo Music playlists. The application and synchronization engine are entirely native C#. The production MSI uses native Windows Installer tools without PowerShell installation actions. Local PowerShell tools and frozen references remain outside public source.
 
 Follow **Validate MediaMonkey → Verify Native Exporter → Review Changes → Run Synchronization**. Configuration changes and completed, cancelled or failed runs require the checks again. Errors are presented in plain language; detailed exceptions are retained in diagnostic logs. Successful verified synchronization is green, intentional cancellation is yellow. Appearance follows the Windows color scheme.
 
 Interrupted runs are reconciled through this same sequence. Before applying new changes, Run Synchronization verifies the retained transaction and its recorded device/power ownership. A verified completed change is kept; an incomplete change is restored. Recovery ends that attempt so the current plan must be validated and reviewed again. Unexpected external edits, changed device settings, invalid evidence or an unverifiable device response preserve the recovery gate and stop synchronization. See [architecture and recovery](ARCHITECTURE.md).
 
-The repository is public and the release-candidate package remains unsigned. Project-owned source is licensed under GPL-3.0-only; see [LICENSE](LICENSE). [Voluntary donations](DONATIONS.md) are welcome. No signing sponsorship is implied. Acceptance is specific to the source commit, package hashes, tested device and recorded scenarios. Release notes record actual results; a build alone is not production acceptance.
+The repository is public and the production package remains unsigned. Project-owned source is licensed under GPL-3.0-only; see [LICENSE](LICENSE). [Voluntary donations](DONATIONS.md) are welcome. No signing sponsorship is implied. Acceptance is specific to the source commit, package hashes, tested device and recorded scenarios. Release notes record actual results; a build alone is not production acceptance.
 
 ## Build and offline tests
 
@@ -26,7 +26,9 @@ See [current status](CURRENT-STATUS.md), [testing](AUTOMATED_TESTING_README.md) 
 
 Device addresses, MAC address, NAS paths, database and report defaults are blank in distributed packages. Existing per-user settings take precedence; valid legacy settings may migrate. Complete and save configuration before validation. Never commit personal settings, database copies, exported playlists or diagnostic logs.
 
-In the local Visual Studio checkout only, `Packaging/Build-NeutralPackage.ps1` wraps a version-matching, self-contained Windows x64 payload with the per-user installer. These local PowerShell-bearing packages must not be uploaded to GitHub. Each artifact has a manifest and SHA256 sidecar. Hashes detect changes and do not authenticate a publisher. Keep the complete extracted package for interrupted-uninstall recovery. Configuration, archives, unknown files and recovery evidence are retained during removal. See [packaging](Packaging/README.md).
+Use the native MSI from the [stable GitHub release](https://github.com/magrimsley/MediaMonkey-Zidoo-Sync/releases/latest). Application 1.1.0 uses MSI revision 1.1.11 to upgrade RC10 correctly. Normal upgrades/uninstall retain per-user data. Historical PowerShell-assisted packages are local evidence, not the production installer. See [native MSI installation](Packaging/MSI-README.md).
+
+For the local Visual Studio archive and public-source boundaries, see [project files](Documentation/PROJECT-FILES.md).
 
 ## Known bugs
 
