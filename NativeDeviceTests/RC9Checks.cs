@@ -24,16 +24,17 @@ internal static class RC9Checks
         await new NativeProductionTransaction(fake).ApplyAsync(folder,Path.Combine(folder,"NativeSync-fixture"),new("Target.m3u",candidate,2,Hash(original)),default);
         Check(fake.Deletes==1&&fake.Imports==1&&fake.Content.SequenceEqual(candidate),"same-count UPDATE reimports reordered tracks");
         Check(NativeProductionTransaction.Visibility(target)==0,"visible UPDATE remains visible");
-        folder=Setup("RefusedCreate",out fake);target=Path.Combine(folder,"Target.m3u");File.SetAttributes(target,FileAttributes.Hidden);
-        try{await new NativeProductionTransaction(fake).ApplyAsync(folder,Path.Combine(folder,"NativeSync-fixture"),new("Target.m3u",candidate,2,Hash(original),true),default);throw new Exception("RC9 unsafe CREATE accepted");}catch(InvalidDataException){}
-        Check(fake.Deletes==0&&fake.Imports==0&&File.ReadAllBytes(target).SequenceEqual(original),"physical CREATE stops before file/device changes");
-        Check(!File.Exists(Path.Combine(folder,".mmzs-production-pending.json")),"refused CREATE opens no recovery transaction");
-        await new NativeProductionTransaction(fake).ApplyAsync(folder,Path.Combine(folder,"NativeSync-fixture"),new("Target.m3u",candidate,2,Hash(original),true,true),default);
-        Check(fake.Deletes==1&&fake.Imports==1&&fake.Content.SequenceEqual(candidate),"explicit repair reimports same-count hidden playlist");
-        Check(NativeProductionTransaction.Visibility(target)==(int)FileAttributes.Hidden,"repair preserves pre-existing Hidden flag");
-        folder=Setup("MatchingFileRepair",out fake);target=Path.Combine(folder,"Target.m3u");File.WriteAllBytes(target,candidate);
-        await new NativeProductionTransaction(fake).ApplyAsync(folder,Path.Combine(folder,"NativeSync-fixture"),new("Target.m3u",candidate,2,Hash(candidate),false,true),default);
-        Check(fake.Deletes==1&&fake.Imports==1&&fake.Content.SequenceEqual(candidate),"explicit repair fixes stale device even with matching visible M3U");
+// Deferred forced-reimport scenarios:
+//         folder=Setup("RefusedCreate",out fake);target=Path.Combine(folder,"Target.m3u");File.SetAttributes(target,FileAttributes.Hidden);
+//         try{await new NativeProductionTransaction(fake).ApplyAsync(folder,Path.Combine(folder,"NativeSync-fixture"),new("Target.m3u",candidate,2,Hash(original),true),default);throw new Exception("RC9 unsafe CREATE accepted");}catch(InvalidDataException){}
+//         Check(fake.Deletes==0&&fake.Imports==0&&File.ReadAllBytes(target).SequenceEqual(original),"physical CREATE stops before file/device changes");
+//         Check(!File.Exists(Path.Combine(folder,".mmzs-production-pending.json")),"refused CREATE opens no recovery transaction");
+//         await new NativeProductionTransaction(fake).ApplyAsync(folder,Path.Combine(folder,"NativeSync-fixture"),new("Target.m3u",candidate,2,Hash(original),true,true),default);
+//         Check(fake.Deletes==1&&fake.Imports==1&&fake.Content.SequenceEqual(candidate),"explicit repair reimports same-count hidden playlist");
+//         Check(NativeProductionTransaction.Visibility(target)==(int)FileAttributes.Hidden,"repair preserves pre-existing Hidden flag");
+//         folder=Setup("MatchingFileRepair",out fake);target=Path.Combine(folder,"Target.m3u");File.WriteAllBytes(target,candidate);
+//         await new NativeProductionTransaction(fake).ApplyAsync(folder,Path.Combine(folder,"NativeSync-fixture"),new("Target.m3u",candidate,2,Hash(candidate),false,true),default);
+//         Check(fake.Deletes==1&&fake.Imports==1&&fake.Content.SequenceEqual(candidate),"explicit repair fixes stale device even with matching visible M3U");
         foreach(bool cancel in new[]{false,true})
         {
             folder=Setup(cancel?"Cancel":"Failure",out fake);target=Path.Combine(folder,"Target.m3u");
@@ -49,12 +50,21 @@ internal static class RC9Checks
         Check(File.Exists(Path.Combine(folder,".mmzs-production-pending.json")),"visibility mismatch retains recovery gate");
         try{await new NativeInterruptedRecovery(fake).RecoverUnderLockAsync(folder,folder);throw new Exception("RC9 recovery accepted visibility drift");}catch(IOException){}
         Check(File.Exists(Path.Combine(folder,".mmzs-production-pending.json")),"restart recovery does not silently release visibility mismatch");
+        // A retained RC9 repair receipt must not be reinterpreted as a normal count-only transaction.
+        var pending=NativeInterruptedRecovery.ReadPending(folder,folder);
+        var legacy=System.Text.Json.Nodes.JsonNode.Parse(File.ReadAllBytes(Path.Combine(pending.Journal,"intent.json")))!;
+        legacy["ReimportExisting"]=true;byte[] legacyBytes=System.Text.Json.JsonSerializer.SerializeToUtf8Bytes(legacy);
+        File.WriteAllBytes(Path.Combine(pending.Journal,"intent.json"),legacyBytes);
+        NativeInterruptedRecovery.Save(Path.Combine(folder,".mmzs-production-pending.json"),System.Text.Json.JsonSerializer.SerializeToUtf8Bytes(pending with {IntentSHA256=Hash(legacyBytes)}));
+        bool stopped=false;int operations=fake.Deletes+fake.Imports;
+        try{await new NativeInterruptedRecovery(fake).RecoverUnderLockAsync(folder,folder);}catch(InvalidDataException error){stopped=error.Message.Contains("deferred");}
+        Check(stopped&&fake.Deletes+fake.Imports==operations&&File.Exists(Path.Combine(folder,".mmzs-production-pending.json")),"legacy deferred-repair receipt retains its gate without device mutation");
         // CREATE without an old physical file retains the frozen identity-preservation rule.
         folder=Setup("MissingFileCreate",out fake);File.Delete(Path.Combine(folder,"Target.m3u"));var oldId=fake.Rows[0].Id;
         await new NativeProductionTransaction(fake).ApplyAsync(folder,Path.Combine(folder,"NativeSync-fixture"),new("Target.m3u",candidate,2,null,true),default);
         Check(fake.Deletes==0&&fake.Imports==0&&fake.Rows[0].Id==oldId,"missing-file frozen CREATE preserves existing identity");
         Check(NativeProductionTransaction.Visibility(Path.Combine(folder,"Target.m3u"))==0,"new CREATE remains visible");
-        Console.WriteLine($"PASS: {checks} RC9 ordered-content, publication, explicit repair, cancellation and visibility recovery checks; fixture={root}; fake device only.");
+        Console.WriteLine($"PASS: {checks} RC9 ordered-content, publication, cancellation and visibility recovery checks; fixture={root}; fake device only.");
     }
     sealed class Device(string root,byte[] content):IProductionPlaylistDevice
     {

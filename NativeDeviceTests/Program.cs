@@ -135,7 +135,7 @@ static class TransactionChecks
         catch(NativeTransactionRolledBackException){if(File.Exists(Path.Combine(root,".mmzs-production-pending.json")) || File.Exists(Path.Combine(root,"Jazz.m3u")))throw new Exception("Rollback did not restore original absence.");}
         fake.ResetFailure();fake.FailInventoryAfterImport=true;
         try{await transaction.ApplyAsync(root,Path.Combine(root,"Evidence"),new("Jazz.m3u",data,1,null),default);throw new Exception("Uncertain device state accepted.");}
-        catch(IOException){if(!File.Exists(Path.Combine(root,".mmzs-production-pending.json")))throw new Exception("Recovery gate absent.");}
+        catch(IOException error){if(!File.Exists(Path.Combine(root,".mmzs-production-pending.json")))throw new Exception("Recovery gate absent; inspect the triggering exception.",error);}
         fake.FailInventoryAfterImport=false;
         int operations=fake.Operations;
         string currentHash=Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(data));

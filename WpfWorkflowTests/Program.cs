@@ -47,7 +47,7 @@ internal static class Program
             string? openedLog = null;
             var window = new MainWindow(root, path => openedLog = path);
             window.Show(); Pump(400);
-            Check(window.Title=="MM Zidoo Sync" && typeof(MainWindow).Assembly.GetName().Name=="MMZidooSync" && ApplicationVersionProvider.ProductVersion=="1.1.0-rc.9", "RC product name, assembly and version match approved identity");
+            Check(window.Title=="MM Zidoo Sync" && typeof(MainWindow).Assembly.GetName().Name=="MMZidooSync" && ApplicationVersionProvider.ProductVersion=="1.1.0-rc.10", "RC product name, assembly and version match approved identity");
             Check(typeof(MainWindow).GetMethod("RunNativeAssessment_Click", BindingFlags.Instance | BindingFlags.NonPublic) is null && typeof(MainWindow).GetMethod("InspectNativePlan_Click", BindingFlags.Instance | BindingFlags.NonPublic) is null, "Optional assessment handlers are excluded from compilation");
             Check(window.FindName("RunNativeAssessmentButton") is null && window.FindName("InspectNativePlanButton") is null, "Optional diagnostics controls are absent");
             Check(window.Icon is not null, "Main window loads application artwork");
@@ -110,8 +110,9 @@ internal static class Program
             flow.AcceptReview();Refresh();Check(run.IsEnabled,"Accepted review enables synchronization");
             typeof(MainWindow).GetMethod("InvalidateWorkflow",BindingFlags.Instance|BindingFlags.NonPublic)!.Invoke(window,null);
             Check(!verify.IsEnabled && !review.IsEnabled && !run.IsEnabled,"Configuration invalidation resets enabled buttons");
-            RC9ServiceChecks.Run(root,Check);
-            RC9RepairUiChecks.Run(window,Check);
+// Deferred repair: RC9ServiceChecks.Run(root,Check);
+// Deferred repair: RC9RepairUiChecks.Run(window,Check);
+            ReviewThemeChecks.Run(window,Check);
             var splashType=typeof(MainWindow).Assembly.GetType("MediaMonkeyZidooSync.StartupSplash")!;
             var splashProbe=new Window { Width=200,Height=100,ShowInTaskbar=false,Content=new TextBlock{Text="Splash timing fixture"} };
             var splashObject=Activator.CreateInstance(splashType,BindingFlags.Instance|BindingFlags.NonPublic,null,new object[]{splashProbe},null)!;

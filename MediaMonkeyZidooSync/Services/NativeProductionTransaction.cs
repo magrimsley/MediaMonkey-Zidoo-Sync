@@ -20,7 +20,7 @@ public sealed class NativeProductionTransaction
     private readonly Action<string>? _checkpoint;
     public NativeProductionTransaction(IProductionPlaylistDevice device, Action<string>? checkpoint = null)
     { _device = device; _checkpoint = checkpoint; }
-    public sealed record Change(string FileName, byte[]? NewContent, int ExpectedCount, string? ExpectedOldSHA256, bool IsCreate = false, bool ReimportExisting = false);
+    public sealed record Change(string FileName, byte[]? NewContent, int ExpectedCount, string? ExpectedOldSHA256, bool IsCreate = false); // Deferred repair: bool ReimportExisting = false;
 
     private static string Hash(byte[] data) => Convert.ToHexString(SHA256.HashData(data));
     private static int TrackCount(byte[] data) => Encoding.UTF8.GetString(data).TrimStart('\uFEFF')
@@ -41,13 +41,14 @@ public sealed class NativeProductionTransaction
     {
         if (Visibility(path) != expected) throw new IOException("Playlist visibility changed during synchronization: " + Path.GetFileName(path) + ". Recovery evidence was retained.");
     }
-    internal static void CheckExistingCreation(Change change, ZidooPlaylistRecord? original, bool hasFile)
-    {
-        if (change.ReimportExisting && (!hasFile || original is null || change.NewContent is null || change.ExpectedCount <= 0))
-            throw new InvalidDataException("Reviewed playlist repair requires an existing M3U and an existing populated Zidoo playlist: " + change.FileName);
-        if (change.IsCreate && !change.ReimportExisting && hasFile && original is not null && change.NewContent is not null && change.ExpectedCount > 0)
-            throw new InvalidDataException("Cannot verify the existing Zidoo playlist's song order for " + change.FileName + ". Review Changes, choose Repair Existing Playlists, and explicitly select this playlist for reimport. No playlist change started for this target.");
-    }
+    // DEFERRED: explicit playlist reimport is outside the frozen process; see Documentation/BACKLOG.md.
+//     internal static void CheckExistingCreation(Change change, ZidooPlaylistRecord? original, bool hasFile)
+//     {
+//         if (change.ReimportExisting && (!hasFile || original is null || change.NewContent is null || change.ExpectedCount <= 0))
+//             throw new InvalidDataException("Reviewed playlist repair requires an existing M3U and an existing populated Zidoo playlist: " + change.FileName);
+//         if (change.IsCreate && !change.ReimportExisting && hasFile && original is not null && change.NewContent is not null && change.ExpectedCount > 0)
+//             throw new InvalidDataException("Cannot verify the existing Zidoo playlist's song order for " + change.FileName + ". Review Changes, choose Repair Existing Playlists, and explicitly select this playlist for reimport. No playlist change started for this target.");
+//     }
     public async Task ApplyAsync(string playlistFolder, string evidenceFolder, Change change, CancellationToken ct)
     {
         if (change.FileName != Path.GetFileName(change.FileName) ||
@@ -69,8 +70,8 @@ public sealed class NativeProductionTransaction
         var original = before.SingleOrDefault(x => x.Name == name);
         if(change.NewContent is not null && TrackCount(change.NewContent)!=change.ExpectedCount)
             throw new InvalidDataException("Candidate M3U track count differs from the approved transaction.");
-        CheckExistingCreation(change, original, old is not null);
-        bool preserveExisting = !change.ReimportExisting && (old is null || change.IsCreate) && change.NewContent is not null && original is not null && change.ExpectedCount > 0;
+// Deferred repair: CheckExistingCreation(change, original, old is not null);
+        bool preserveExisting = /* Deferred: !change.ReimportExisting && */ (old is null || change.IsCreate) && change.NewContent is not null && original is not null && change.ExpectedCount > 0;
         if (preserveExisting && original!.Count != change.ExpectedCount)
             throw new InvalidDataException("Existing device playlist differs from the proposed creation; no changes made.");
         // An existing matching creation is verified without deleting or reimporting it.
@@ -86,7 +87,7 @@ public sealed class NativeProductionTransaction
         Durable(Path.Combine(journal, "intent.json"), JsonSerializer.SerializeToUtf8Bytes(new
         {
             Target = target, change.ExpectedOldSHA256, NewSHA256 = change.NewContent is null ? null : Hash(change.NewContent),
-            change.ExpectedCount, OriginalVisibility = originalVisibility, change.ReimportExisting, OriginalDevice = original, OriginalInventory = before
+            change.ExpectedCount, OriginalVisibility = originalVisibility, /* Deferred: change.ReimportExisting, */ OriginalDevice = original, OriginalInventory = before
         }));
         // Capture current authoritative content, including any earlier committed changes.
         var otherFiles = new Dictionary<string, byte[]>();

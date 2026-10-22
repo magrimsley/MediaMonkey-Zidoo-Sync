@@ -40,3 +40,12 @@ MM Zidoo Sync - Backlog
    Save / Discard / Cancel so the user confirms persistence before navigation.
    Use existing validation, archival save and error handling; do not silently save
    invalid or unreviewed discovered values. Saving must succeed before navigation.
+10. Explicit repair of existing Zidoo playlists — deferred October 22, 2026
+    Removed the RC9 Repair Existing Playlists button and commented out its
+    supporting implementation and tests. This forced delete/reimport feature is
+    outside the frozen PowerShell scope and requires separate owner approval.
+    See Documentation/BACKLOG.md for scope, verification and recovery requirements.
+
+11. Choose playlists for ordinary synchronization
+    Define an approved selection workflow without treating deselection as deletion.
+    See Documentation/BACKLOG.md.

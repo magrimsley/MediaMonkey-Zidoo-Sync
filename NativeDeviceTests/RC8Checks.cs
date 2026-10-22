@@ -35,8 +35,7 @@ static class RC8Checks
             if(!File.ReadAllBytes(target).SequenceEqual(candidate)||fake.Rows.Single().Count!=2)throw new Exception("Hidden file commit failed");
             // Frozen CREATE verifies an existing matching playlist without deleting/reimporting it.
             var retained=fake.Rows.Single();
-            try { await transaction.ApplyAsync(root,Path.Combine(root,"Evidence"),new("Hidden.m3u",candidate,2,Hash(candidate),true),default);throw new Exception("Count-only physical CREATE accepted"); }
-            catch(InvalidDataException) { }
+            await transaction.ApplyAsync(root,Path.Combine(root,"Evidence"),new("Hidden.m3u",candidate,2,Hash(candidate),true),default);
             if(fake.Rows.Single()!=retained)throw new Exception("Refused CREATE replaced an existing playlist identity");
             File.SetAttributes(target,FileAttributes.Normal);
         }

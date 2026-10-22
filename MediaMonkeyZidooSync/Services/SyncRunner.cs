@@ -45,8 +45,9 @@ public sealed class SyncRunner
 
     public Task<IReadOnlyList<NativeProductionSyncService.ReviewedChange>> PrepareReviewAsync(AppConfig config,CancellationToken ct=default)
         => (_production??throw new InvalidOperationException("This runner is read-only.")).PrepareReviewAsync(config,ct);
-    public Task<IReadOnlyList<NativeProductionSyncService.ReviewedChange>> PrepareRepairCandidatesAsync(AppConfig config,CancellationToken ct=default)
-        => (_production??throw new InvalidOperationException("This runner is read-only.")).PrepareRepairCandidatesAsync(config,ct);
+    // DEFERRED: explicit playlist reimport is outside the frozen process; see Documentation/BACKLOG.md.
+//     public Task<IReadOnlyList<NativeProductionSyncService.ReviewedChange>> PrepareRepairCandidatesAsync(AppConfig config,CancellationToken ct=default)
+//         => (_production??throw new InvalidOperationException("This runner is read-only.")).PrepareRepairCandidatesAsync(config,ct);
     public Task<bool> RecoverPendingAsync(AppConfig config,Func<string,bool> confirm,CancellationToken ct=default)
         => (_production??throw new InvalidOperationException("This runner is read-only.")).RecoverPendingAsync(config,confirm,ct);
 

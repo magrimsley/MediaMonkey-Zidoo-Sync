@@ -19,16 +19,17 @@ public sealed class SynchronizationWorkflow
     public void BeginVerification() { if(!CanVerify)throw new InvalidOperationException("Validate MediaMonkey first.");Verified=Reviewed=HasChanges=false;_operationGeneration=_generation;Busy=true; }
     public void EndVerification(bool passed, bool hasChanges = true) { Verified=passed && Validated && _operationGeneration==_generation;HasChanges=Verified && hasChanges;Busy=false; }
     public void AcceptReview() { if(!CanReview)throw new InvalidOperationException("Verify the exporter first.");Reviewed=true; }
-    public void AuthorizeReviewedChanges(bool hasChanges)
-    {
-        if(Busy || !Verified || !hasChanges)throw new InvalidOperationException("Review playlist changes or explicitly selected repairs first.");
-        HasChanges=true;Reviewed=true;
-    }
+    // DEFERRED: explicit playlist reimport is outside the frozen process; see Documentation/BACKLOG.md.
+//     public void AuthorizeReviewedChanges(bool hasChanges)
+//     {
+//         if(Busy || !Verified || !hasChanges)throw new InvalidOperationException("Review playlist changes or explicitly selected repairs first.");
+//         HasChanges=true;Reviewed=true;
+//     }
     public void BeginRun() { if(!CanRun)throw new InvalidOperationException("Review the changes first.");Busy=true; }
     public void EndRun() { Busy=false;Invalidate(); }
     public void SetDiagnosticBusy(bool busy) => Busy=busy;
     public string NextStep => Busy ? "Please wait for the current step to finish." :
         !Validated ? "Step 1: Validate MediaMonkey playlists." : !Verified ? "Step 2: Verify Native Exporter." :
-        !HasChanges ? "Playlist files match MediaMonkey. Review Changes can repair selected existing Zidoo playlists." :
+        !HasChanges ? "No pending changes. Playlist files match MediaMonkey; Zidoo was not checked." :
         !Reviewed ? "Step 3: Review the proposed changes." : "Step 4: Run Synchronization when ready.";
 }
