@@ -28,7 +28,7 @@ Device addresses, MAC address, NAS paths, database and report defaults are blank
 
 Use the native MSI from the [stable GitHub release](https://github.com/magrimsley/MediaMonkey-Zidoo-Sync/releases/latest). Application 1.1.0 uses MSI revision 1.1.11 to upgrade RC10 correctly. Normal upgrades/uninstall retain per-user data. Historical PowerShell-assisted packages are local evidence, not the production installer. See [native MSI installation](Packaging/MSI-README.md).
 
-For the local Visual Studio archive and public-source boundaries, see [project files](Documentation/PROJECT-FILES.md).
+For the local Visual Studio archive and public-source boundaries, see [project files](Documentation/PROJECT-FILES.md). For every tracked C# file, project role and legacy-tool limitation, see [the source index](Documentation/SOURCE-INDEX.md).
 
 ## Known bugs
 
