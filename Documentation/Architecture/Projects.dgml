@@ -1,0 +1,108 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<DirectedGraph GraphDirection="LeftToRight" Layout="Sugiyama" xmlns="http://schemas.microsoft.com/vs/2009/dgml">
+  <Nodes>
+    <Node Id="Documentation/Architecture/Tools/ArchitectureMaps.csproj" Label="ArchitectureMaps" Category="Project" />
+    <Node Id="IsolatedSyncTests/IsolatedSyncTests.csproj" Label="IsolatedSyncTests" Category="Project" />
+    <Node Id="MediaMonkeyZidooSync/Services/IsolatedPlaylistSyncService.cs" Label="IsolatedPlaylistSyncService.cs" Category="Source" />
+    <Node Id="MediaMonkeyZidooSync/MediaMonkeyZidooSync.csproj" Label="MediaMonkeyZidooSync" Category="Project" />
+    <Node Id="NativeDeviceTests/NativeDeviceTests.csproj" Label="NativeDeviceTests" Category="Project" />
+    <Node Id="MediaMonkeyZidooSync/Services/ZidooPlaylistProtocol.cs" Label="ZidooPlaylistProtocol.cs" Category="Source" />
+    <Node Id="MediaMonkeyZidooSync/Services/NativeZidooPlaylistDevice.cs" Label="NativeZidooPlaylistDevice.cs" Category="Source" />
+    <Node Id="MediaMonkeyZidooSync/Services/NativeProductionTransaction.cs" Label="NativeProductionTransaction.cs" Category="Source" />
+    <Node Id="MediaMonkeyZidooSync/Models/AppConfig.cs" Label="AppConfig.cs" Category="Source" />
+    <Node Id="MediaMonkeyZidooSync/Services/NativeProductionRecovery.cs" Label="NativeProductionRecovery.cs" Category="Source" />
+    <Node Id="MediaMonkeyZidooSync/Services/NativeInterruptedRecovery.cs" Label="NativeInterruptedRecovery.cs" Category="Source" />
+    <Node Id="MediaMonkeyZidooSync/Services/NativeZidooReadiness.cs" Label="NativeZidooReadiness.cs" Category="Source" />
+    <Node Id="NativeOrchestrationTests/NativeOrchestrationTests.csproj" Label="NativeOrchestrationTests" Category="Project" />
+    <Node Id="NativeProductionRunner/NativeProductionRunner.csproj" Label="NativeProductionRunner" Category="Project" />
+    <Node Id="Packaging/MsiBuilder/MsiBuilder.csproj" Label="MsiBuilder" Category="Project" />
+    <Node Id="RecoveryTests/RecoveryTests.csproj" Label="RecoveryTests" Category="Project" />
+    <Node Id="MediaMonkeyZidooSync/Services/PlaylistTransactionJournalService.cs" Label="PlaylistTransactionJournalService.cs" Category="Source" />
+    <Node Id="MediaMonkeyZidooSync/Services/PlaylistRecoveryCoordinator.cs" Label="PlaylistRecoveryCoordinator.cs" Category="Source" />
+    <Node Id="MediaMonkeyZidooSync/Services/IsolatedPlaylistRollbackService.cs" Label="IsolatedPlaylistRollbackService.cs" Category="Source" />
+    <Node Id="MediaMonkeyZidooSync/Services/IsolatedJournalRecoveryCoordinator.cs" Label="IsolatedJournalRecoveryCoordinator.cs" Category="Source" />
+    <Node Id="MediaMonkeyZidooSync/Services/IsolatedRecoveryEvidenceStore.cs" Label="IsolatedRecoveryEvidenceStore.cs" Category="Source" />
+    <Node Id="MediaMonkeyZidooSync/Services/IsolatedRestartReconciliationService.cs" Label="IsolatedRestartReconciliationService.cs" Category="Source" />
+    <Node Id="MediaMonkeyZidooSync/Services/IsolatedRestartSafetyAuditService.cs" Label="IsolatedRestartSafetyAuditService.cs" Category="Source" />
+    <Node Id="MediaMonkeyZidooSync/Services/IsolatedTransactionSequenceStore.cs" Label="IsolatedTransactionSequenceStore.cs" Category="Source" />
+    <Node Id="MediaMonkeyZidooSync/Services/IsolatedJournalSequenceAuditService.cs" Label="IsolatedJournalSequenceAuditService.cs" Category="Source" />
+    <Node Id="MediaMonkeyZidooSync/Services/IsolatedRecoveryAuthorizationService.cs" Label="IsolatedRecoveryAuthorizationService.cs" Category="Source" />
+    <Node Id="MediaMonkeyZidooSync/Services/IsolatedRecoveryExecutionPlanner.cs" Label="IsolatedRecoveryExecutionPlanner.cs" Category="Source" />
+    <Node Id="MediaMonkeyZidooSync/Services/IsolatedRecoveryPlanReportStore.cs" Label="IsolatedRecoveryPlanReportStore.cs" Category="Source" />
+    <Node Id="MediaMonkeyZidooSync/Services/IsolatedRecoveryDiagnosticsService.cs" Label="IsolatedRecoveryDiagnosticsService.cs" Category="Source" />
+    <Node Id="MediaMonkeyZidooSync/Services/IsolatedRecoveryReportBrowserService.cs" Label="IsolatedRecoveryReportBrowserService.cs" Category="Source" />
+    <Node Id="MediaMonkeyZidooSync/Services/ApplicationVersionProvider.cs" Label="ApplicationVersionProvider.cs" Category="Source" />
+    <Node Id="MediaMonkeyZidooSync/Services/RecoveryReportDisplaySummary.cs" Label="RecoveryReportDisplaySummary.cs" Category="Source" />
+    <Node Id="MediaMonkeyZidooSync/Services/RecoveryFileReader.cs" Label="RecoveryFileReader.cs" Category="Source" />
+    <Node Id="RunHistoryDurabilityTests/RunHistoryDurabilityTests.csproj" Label="RunHistoryDurabilityTests" Category="Project" />
+    <Node Id="MediaMonkeyZidooSync/Services/RunHistoryService.cs" Label="RunHistoryService.cs" Category="Source" />
+    <Node Id="MediaMonkeyZidooSync/Models/LogEvent.cs" Label="LogEvent.cs" Category="Source" />
+    <Node Id="Testing/InstalledWorkflowAcceptance/InstalledWorkflowAcceptance.csproj" Label="InstalledWorkflowAcceptance" Category="Project" />
+    <Node Id="Testing/MigrationTests/MigrationTests.csproj" Label="MigrationTests" Category="Project" />
+    <Node Id="Testing/NeutralSafeWorkflowTests/NeutralSafeWorkflowTests.csproj" Label="NeutralSafeWorkflowTests" Category="Project" />
+    <Node Id="Testing/RepositoryPolicyChecks/RepositoryPolicyChecks.csproj" Label="RepositoryPolicyChecks" Category="Project" />
+    <Node Id="WpfWorkflowTests/WpfWorkflowTests.csproj" Label="WpfWorkflowTests" Category="Project" />
+  </Nodes>
+  <Links>
+    <Link Source="IsolatedSyncTests/IsolatedSyncTests.csproj" Target="MediaMonkeyZidooSync/Services/IsolatedPlaylistSyncService.cs" Category="LinkedSource" />
+    <Link Source="NativeDeviceTests/NativeDeviceTests.csproj" Target="MediaMonkeyZidooSync/Services/ZidooPlaylistProtocol.cs" Category="LinkedSource" />
+    <Link Source="NativeDeviceTests/NativeDeviceTests.csproj" Target="MediaMonkeyZidooSync/Services/NativeZidooPlaylistDevice.cs" Category="LinkedSource" />
+    <Link Source="NativeDeviceTests/NativeDeviceTests.csproj" Target="MediaMonkeyZidooSync/Services/NativeProductionTransaction.cs" Category="LinkedSource" />
+    <Link Source="NativeDeviceTests/NativeDeviceTests.csproj" Target="MediaMonkeyZidooSync/Models/AppConfig.cs" Category="LinkedSource" />
+    <Link Source="NativeDeviceTests/NativeDeviceTests.csproj" Target="MediaMonkeyZidooSync/Services/NativeProductionRecovery.cs" Category="LinkedSource" />
+    <Link Source="NativeDeviceTests/NativeDeviceTests.csproj" Target="MediaMonkeyZidooSync/Services/NativeInterruptedRecovery.cs" Category="LinkedSource" />
+    <Link Source="NativeDeviceTests/NativeDeviceTests.csproj" Target="MediaMonkeyZidooSync/Services/NativeZidooReadiness.cs" Category="LinkedSource" />
+    <Link Source="NativeOrchestrationTests/NativeOrchestrationTests.csproj" Target="MediaMonkeyZidooSync/MediaMonkeyZidooSync.csproj" Category="ProjectReference" />
+    <Link Source="NativeProductionRunner/NativeProductionRunner.csproj" Target="MediaMonkeyZidooSync/MediaMonkeyZidooSync.csproj" Category="ProjectReference" />
+    <Link Source="RecoveryTests/RecoveryTests.csproj" Target="MediaMonkeyZidooSync/Services/PlaylistTransactionJournalService.cs" Category="LinkedSource" />
+    <Link Source="RecoveryTests/RecoveryTests.csproj" Target="MediaMonkeyZidooSync/Services/PlaylistRecoveryCoordinator.cs" Category="LinkedSource" />
+    <Link Source="RecoveryTests/RecoveryTests.csproj" Target="MediaMonkeyZidooSync/Services/IsolatedPlaylistRollbackService.cs" Category="LinkedSource" />
+    <Link Source="RecoveryTests/RecoveryTests.csproj" Target="MediaMonkeyZidooSync/Services/IsolatedJournalRecoveryCoordinator.cs" Category="LinkedSource" />
+    <Link Source="RecoveryTests/RecoveryTests.csproj" Target="MediaMonkeyZidooSync/Services/IsolatedRecoveryEvidenceStore.cs" Category="LinkedSource" />
+    <Link Source="RecoveryTests/RecoveryTests.csproj" Target="MediaMonkeyZidooSync/Services/IsolatedRestartReconciliationService.cs" Category="LinkedSource" />
+    <Link Source="RecoveryTests/RecoveryTests.csproj" Target="MediaMonkeyZidooSync/Services/IsolatedRestartSafetyAuditService.cs" Category="LinkedSource" />
+    <Link Source="RecoveryTests/RecoveryTests.csproj" Target="MediaMonkeyZidooSync/Services/IsolatedTransactionSequenceStore.cs" Category="LinkedSource" />
+    <Link Source="RecoveryTests/RecoveryTests.csproj" Target="MediaMonkeyZidooSync/Services/IsolatedJournalSequenceAuditService.cs" Category="LinkedSource" />
+    <Link Source="RecoveryTests/RecoveryTests.csproj" Target="MediaMonkeyZidooSync/Services/IsolatedRecoveryAuthorizationService.cs" Category="LinkedSource" />
+    <Link Source="RecoveryTests/RecoveryTests.csproj" Target="MediaMonkeyZidooSync/Services/IsolatedRecoveryExecutionPlanner.cs" Category="LinkedSource" />
+    <Link Source="RecoveryTests/RecoveryTests.csproj" Target="MediaMonkeyZidooSync/Services/IsolatedRecoveryPlanReportStore.cs" Category="LinkedSource" />
+    <Link Source="RecoveryTests/RecoveryTests.csproj" Target="MediaMonkeyZidooSync/Services/IsolatedRecoveryDiagnosticsService.cs" Category="LinkedSource" />
+    <Link Source="RecoveryTests/RecoveryTests.csproj" Target="MediaMonkeyZidooSync/Services/IsolatedRecoveryReportBrowserService.cs" Category="LinkedSource" />
+    <Link Source="RecoveryTests/RecoveryTests.csproj" Target="MediaMonkeyZidooSync/Services/ApplicationVersionProvider.cs" Category="LinkedSource" />
+    <Link Source="RecoveryTests/RecoveryTests.csproj" Target="MediaMonkeyZidooSync/Services/RecoveryReportDisplaySummary.cs" Category="LinkedSource" />
+    <Link Source="RecoveryTests/RecoveryTests.csproj" Target="MediaMonkeyZidooSync/Services/RecoveryFileReader.cs" Category="LinkedSource" />
+    <Link Source="RunHistoryDurabilityTests/RunHistoryDurabilityTests.csproj" Target="MediaMonkeyZidooSync/Services/RunHistoryService.cs" Category="LinkedSource" />
+    <Link Source="RunHistoryDurabilityTests/RunHistoryDurabilityTests.csproj" Target="MediaMonkeyZidooSync/Models/LogEvent.cs" Category="LinkedSource" />
+    <Link Source="Testing/NeutralSafeWorkflowTests/NeutralSafeWorkflowTests.csproj" Target="MediaMonkeyZidooSync/MediaMonkeyZidooSync.csproj" Category="ProjectReference" />
+    <Link Source="WpfWorkflowTests/WpfWorkflowTests.csproj" Target="MediaMonkeyZidooSync/MediaMonkeyZidooSync.csproj" Category="ProjectReference" />
+  </Links>
+  <Categories>
+    <Category Id="Presentation" Label="Presentation" />
+    <Category Id="Services" Label="Services" />
+    <Category Id="Models" Label="Models" />
+    <Category Id="Branding" Label="Branding" />
+    <Category Id="Calls" Label="Calls" />
+    <Category Id="Uses" Label="Uses" />
+    <Category Id="Contains" Label="Contains" />
+    <Category Id="ProjectReference" Label="ProjectReference" />
+    <Category Id="LinkedSource" Label="LinkedSource" />
+  </Categories>
+  <Styles>
+    <Style TargetType="Node">
+      <Condition Expression="HasCategory('Presentation')" />
+      <Setter Property="Background" Value="#FFDCEBFA" />
+    </Style>
+    <Style TargetType="Node">
+      <Condition Expression="HasCategory('Services')" />
+      <Setter Property="Background" Value="#FFDFF2DE" />
+    </Style>
+    <Style TargetType="Node">
+      <Condition Expression="HasCategory('Models')" />
+      <Setter Property="Background" Value="#FFFFEABF" />
+    </Style>
+    <Style TargetType="Node">
+      <Condition Expression="HasCategory('Branding')" />
+      <Setter Property="Background" Value="#FFEBDFF5" />
+    </Style>
+  </Styles>
+</DirectedGraph>

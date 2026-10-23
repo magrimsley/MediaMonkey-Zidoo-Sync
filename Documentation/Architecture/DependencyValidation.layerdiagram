@@ -1,0 +1,747 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<layerModel Id="f6238dee-9e01-3810-6cd1-7a8a21fd4cc8" name="MM Zidoo Sync architecture" xmlns="http://schemas.microsoft.com/VisualStudio/TeamArchitect/LayerDesigner">
+  <layers>
+    <layer Id="5de3ff99-664f-5016-022f-f61c3fc39679" name="Branding">
+      <references>
+        <reference Id="30b904b0-ebec-31d6-0f32-7def3f4c5c69" name="ApplicationBranding">
+          <ArtifactNode Id="(Namespace=MediaMonkeyZidooSync Type=ApplicationBranding)" Category="CodeSchema_Class" Label="ApplicationBranding" />
+          <ExpandedNode Id="(Namespace=MediaMonkeyZidooSync Type=ApplicationBranding)" Category="CodeSchema_Class" Label="ApplicationBranding">
+            <LinkCategory Ref="Represents" />
+          </ExpandedNode>
+        </reference>
+      </references>
+      <dependencyToLayers />
+    </layer>
+    <layer Id="9f42ac25-7290-3d29-27a8-36ee2a148f47" name="Models">
+      <references>
+        <reference Id="76eed1ee-be56-00ca-c8e5-2dad89b80369" name="AppConfig">
+          <ArtifactNode Id="(Namespace=MediaMonkeyZidooSync.Models Type=AppConfig)" Category="CodeSchema_Class" Label="AppConfig" />
+          <ExpandedNode Id="(Namespace=MediaMonkeyZidooSync.Models Type=AppConfig)" Category="CodeSchema_Class" Label="AppConfig">
+            <LinkCategory Ref="Represents" />
+          </ExpandedNode>
+        </reference>
+        <reference Id="7880efce-cf42-db1d-aa6c-94f36200c107" name="ApplicationConfig">
+          <ArtifactNode Id="(Namespace=MediaMonkeyZidooSync.Models Type=ApplicationConfig)" Category="CodeSchema_Class" Label="ApplicationConfig" />
+          <ExpandedNode Id="(Namespace=MediaMonkeyZidooSync.Models Type=ApplicationConfig)" Category="CodeSchema_Class" Label="ApplicationConfig">
+            <LinkCategory Ref="Represents" />
+          </ExpandedNode>
+        </reference>
+        <reference Id="bb0f3766-e956-b8b0-980c-a70e1f357622" name="GridColumnState">
+          <ArtifactNode Id="(Namespace=MediaMonkeyZidooSync.Models Type=GridColumnState)" Category="CodeSchema_Class" Label="GridColumnState" />
+          <ExpandedNode Id="(Namespace=MediaMonkeyZidooSync.Models Type=GridColumnState)" Category="CodeSchema_Class" Label="GridColumnState">
+            <LinkCategory Ref="Represents" />
+          </ExpandedNode>
+        </reference>
+        <reference Id="35525d8e-e9f3-5717-33cc-71d6c8f84142" name="LogEvent">
+          <ArtifactNode Id="(Namespace=MediaMonkeyZidooSync.Models Type=LogEvent)" Category="CodeSchema_Class" Label="LogEvent" />
+          <ExpandedNode Id="(Namespace=MediaMonkeyZidooSync.Models Type=LogEvent)" Category="CodeSchema_Class" Label="LogEvent">
+            <LinkCategory Ref="Represents" />
+          </ExpandedNode>
+        </reference>
+        <reference Id="573ae7cb-ce71-ea56-6b11-f31e6d46dab2" name="LogLevel">
+          <ArtifactNode Id="(Namespace=MediaMonkeyZidooSync.Models Type=LogLevel)" Category="CodeSchema_Class" Label="LogLevel" />
+          <ExpandedNode Id="(Namespace=MediaMonkeyZidooSync.Models Type=LogLevel)" Category="CodeSchema_Class" Label="LogLevel">
+            <LinkCategory Ref="Represents" />
+          </ExpandedNode>
+        </reference>
+        <reference Id="52289d70-96ff-8a5c-0d21-e4e8fae2ecb4" name="MediaMonkeyConfig">
+          <ArtifactNode Id="(Namespace=MediaMonkeyZidooSync.Models Type=MediaMonkeyConfig)" Category="CodeSchema_Class" Label="MediaMonkeyConfig" />
+          <ExpandedNode Id="(Namespace=MediaMonkeyZidooSync.Models Type=MediaMonkeyConfig)" Category="CodeSchema_Class" Label="MediaMonkeyConfig">
+            <LinkCategory Ref="Represents" />
+          </ExpandedNode>
+        </reference>
+        <reference Id="32f6d8e0-a0d5-b9d3-a8e6-04fa5d79e495" name="MediaMonkeyExporterDifference">
+          <ArtifactNode Id="(Namespace=MediaMonkeyZidooSync.Models Type=MediaMonkeyExporterDifference)" Category="CodeSchema_Class" Label="MediaMonkeyExporterDifference" />
+          <ExpandedNode Id="(Namespace=MediaMonkeyZidooSync.Models Type=MediaMonkeyExporterDifference)" Category="CodeSchema_Class" Label="MediaMonkeyExporterDifference">
+            <LinkCategory Ref="Represents" />
+          </ExpandedNode>
+        </reference>
+        <reference Id="250fd923-f9de-3913-12db-33a78c61ca10" name="MediaMonkeyExporterEquivalenceResult">
+          <ArtifactNode Id="(Namespace=MediaMonkeyZidooSync.Models Type=MediaMonkeyExporterEquivalenceResult)" Category="CodeSchema_Class" Label="MediaMonkeyExporterEquivalenceResult" />
+          <ExpandedNode Id="(Namespace=MediaMonkeyZidooSync.Models Type=MediaMonkeyExporterEquivalenceResult)" Category="CodeSchema_Class" Label="MediaMonkeyExporterEquivalenceResult">
+            <LinkCategory Ref="Represents" />
+          </ExpandedNode>
+        </reference>
+        <reference Id="519e3025-861b-bd93-b918-d0ebb3e28708" name="MediaMonkeyMissingEntry">
+          <ArtifactNode Id="(Namespace=MediaMonkeyZidooSync.Models Type=MediaMonkeyMissingEntry)" Category="CodeSchema_Class" Label="MediaMonkeyMissingEntry" />
+          <ExpandedNode Id="(Namespace=MediaMonkeyZidooSync.Models Type=MediaMonkeyMissingEntry)" Category="CodeSchema_Class" Label="MediaMonkeyMissingEntry">
+            <LinkCategory Ref="Represents" />
+          </ExpandedNode>
+        </reference>
+        <reference Id="7a076eb3-d20f-a748-e787-ff43f9723606" name="MediaMonkeyPlaylistExportResult">
+          <ArtifactNode Id="(Namespace=MediaMonkeyZidooSync.Models Type=MediaMonkeyPlaylistExportResult)" Category="CodeSchema_Class" Label="MediaMonkeyPlaylistExportResult" />
+          <ExpandedNode Id="(Namespace=MediaMonkeyZidooSync.Models Type=MediaMonkeyPlaylistExportResult)" Category="CodeSchema_Class" Label="MediaMonkeyPlaylistExportResult">
+            <LinkCategory Ref="Represents" />
+          </ExpandedNode>
+        </reference>
+        <reference Id="34b7deda-7135-92b7-cd35-b134fcfb68a4" name="MediaMonkeyPlaylistMapEntry">
+          <ArtifactNode Id="(Namespace=MediaMonkeyZidooSync.Models Type=MediaMonkeyPlaylistMapEntry)" Category="CodeSchema_Class" Label="MediaMonkeyPlaylistMapEntry" />
+          <ExpandedNode Id="(Namespace=MediaMonkeyZidooSync.Models Type=MediaMonkeyPlaylistMapEntry)" Category="CodeSchema_Class" Label="MediaMonkeyPlaylistMapEntry">
+            <LinkCategory Ref="Represents" />
+          </ExpandedNode>
+        </reference>
+        <reference Id="323412ec-0d98-49d9-5727-d650f00189a1" name="MediaMonkeyPreparedPlaylist">
+          <ArtifactNode Id="(Namespace=MediaMonkeyZidooSync.Models Type=MediaMonkeyPreparedPlaylist)" Category="CodeSchema_Class" Label="MediaMonkeyPreparedPlaylist" />
+          <ExpandedNode Id="(Namespace=MediaMonkeyZidooSync.Models Type=MediaMonkeyPreparedPlaylist)" Category="CodeSchema_Class" Label="MediaMonkeyPreparedPlaylist">
+            <LinkCategory Ref="Represents" />
+          </ExpandedNode>
+        </reference>
+        <reference Id="5dd7a225-b24d-6d36-f738-e17a9bc517af" name="NasConfig">
+          <ArtifactNode Id="(Namespace=MediaMonkeyZidooSync.Models Type=NasConfig)" Category="CodeSchema_Class" Label="NasConfig" />
+          <ExpandedNode Id="(Namespace=MediaMonkeyZidooSync.Models Type=NasConfig)" Category="CodeSchema_Class" Label="NasConfig">
+            <LinkCategory Ref="Represents" />
+          </ExpandedNode>
+        </reference>
+        <reference Id="71590f02-ac01-aa64-1274-bfc32bdb423c" name="TimingConfig">
+          <ArtifactNode Id="(Namespace=MediaMonkeyZidooSync.Models Type=TimingConfig)" Category="CodeSchema_Class" Label="TimingConfig" />
+          <ExpandedNode Id="(Namespace=MediaMonkeyZidooSync.Models Type=TimingConfig)" Category="CodeSchema_Class" Label="TimingConfig">
+            <LinkCategory Ref="Represents" />
+          </ExpandedNode>
+        </reference>
+        <reference Id="fb5937b5-7e4b-dd00-6551-59fb91a771ae" name="UiState">
+          <ArtifactNode Id="(Namespace=MediaMonkeyZidooSync.Models Type=UiState)" Category="CodeSchema_Class" Label="UiState" />
+          <ExpandedNode Id="(Namespace=MediaMonkeyZidooSync.Models Type=UiState)" Category="CodeSchema_Class" Label="UiState">
+            <LinkCategory Ref="Represents" />
+          </ExpandedNode>
+        </reference>
+        <reference Id="cf8f9afe-5ba2-0ec5-a56e-8f6803828dc3" name="ZidooConfig">
+          <ArtifactNode Id="(Namespace=MediaMonkeyZidooSync.Models Type=ZidooConfig)" Category="CodeSchema_Class" Label="ZidooConfig" />
+          <ExpandedNode Id="(Namespace=MediaMonkeyZidooSync.Models Type=ZidooConfig)" Category="CodeSchema_Class" Label="ZidooConfig">
+            <LinkCategory Ref="Represents" />
+          </ExpandedNode>
+        </reference>
+      </references>
+      <dependencyToLayers />
+    </layer>
+    <layer Id="dd3fbcc7-b6dd-5b2d-656a-dc30cea77a55" name="Presentation">
+      <references>
+        <reference Id="316215a3-31d7-01c1-f581-0df56a19185c" name="AboutWindow">
+          <ArtifactNode Id="(Namespace=MediaMonkeyZidooSync Type=AboutWindow)" Category="CodeSchema_Class" Label="AboutWindow" />
+          <ExpandedNode Id="(Namespace=MediaMonkeyZidooSync Type=AboutWindow)" Category="CodeSchema_Class" Label="AboutWindow">
+            <LinkCategory Ref="Represents" />
+          </ExpandedNode>
+        </reference>
+        <reference Id="622db990-373f-d0b0-4d4c-a6d85c381988" name="App">
+          <ArtifactNode Id="(Namespace=MediaMonkeyZidooSync Type=App)" Category="CodeSchema_Class" Label="App" />
+          <ExpandedNode Id="(Namespace=MediaMonkeyZidooSync Type=App)" Category="CodeSchema_Class" Label="App">
+            <LinkCategory Ref="Represents" />
+          </ExpandedNode>
+        </reference>
+        <reference Id="a984d1ae-61fa-9e79-42fa-19ffe11b40cf" name="HelpWindow">
+          <ArtifactNode Id="(Namespace=MediaMonkeyZidooSync Type=HelpWindow)" Category="CodeSchema_Class" Label="HelpWindow" />
+          <ExpandedNode Id="(Namespace=MediaMonkeyZidooSync Type=HelpWindow)" Category="CodeSchema_Class" Label="HelpWindow">
+            <LinkCategory Ref="Represents" />
+          </ExpandedNode>
+        </reference>
+        <reference Id="0cb1c49c-03f4-7d76-0558-ef22e70a1834" name="MainWindow">
+          <ArtifactNode Id="(Namespace=MediaMonkeyZidooSync Type=MainWindow)" Category="CodeSchema_Class" Label="MainWindow" />
+          <ExpandedNode Id="(Namespace=MediaMonkeyZidooSync Type=MainWindow)" Category="CodeSchema_Class" Label="MainWindow">
+            <LinkCategory Ref="Represents" />
+          </ExpandedNode>
+        </reference>
+        <reference Id="e4f1980c-580a-5626-fdb1-55f4285e8785" name="GridSelectionBehavior">
+          <ArtifactNode Id="(Namespace=MediaMonkeyZidooSync.Services Type=GridSelectionBehavior)" Category="CodeSchema_Class" Label="GridSelectionBehavior" />
+          <ExpandedNode Id="(Namespace=MediaMonkeyZidooSync.Services Type=GridSelectionBehavior)" Category="CodeSchema_Class" Label="GridSelectionBehavior">
+            <LinkCategory Ref="Represents" />
+          </ExpandedNode>
+        </reference>
+        <reference Id="7b8f35bd-9710-7b13-e11e-4f9785684c87" name="WindowsThemeService">
+          <ArtifactNode Id="(Namespace=MediaMonkeyZidooSync.Services Type=WindowsThemeService)" Category="CodeSchema_Class" Label="WindowsThemeService" />
+          <ExpandedNode Id="(Namespace=MediaMonkeyZidooSync.Services Type=WindowsThemeService)" Category="CodeSchema_Class" Label="WindowsThemeService">
+            <LinkCategory Ref="Represents" />
+          </ExpandedNode>
+        </reference>
+        <reference Id="f0e36b40-2694-802b-6480-cd6c67beae62" name="StartupSplash">
+          <ArtifactNode Id="(Namespace=MediaMonkeyZidooSync Type=StartupSplash)" Category="CodeSchema_Class" Label="StartupSplash" />
+          <ExpandedNode Id="(Namespace=MediaMonkeyZidooSync Type=StartupSplash)" Category="CodeSchema_Class" Label="StartupSplash">
+            <LinkCategory Ref="Represents" />
+          </ExpandedNode>
+        </reference>
+        <reference Id="139357ce-7f1e-52a8-e9f3-0ffe49683f3c" name="ZidooDiscoveryWindow">
+          <ArtifactNode Id="(Namespace=MediaMonkeyZidooSync Type=ZidooDiscoveryWindow)" Category="CodeSchema_Class" Label="ZidooDiscoveryWindow" />
+          <ExpandedNode Id="(Namespace=MediaMonkeyZidooSync Type=ZidooDiscoveryWindow)" Category="CodeSchema_Class" Label="ZidooDiscoveryWindow">
+            <LinkCategory Ref="Represents" />
+          </ExpandedNode>
+        </reference>
+      </references>
+      <dependencyToLayers>
+        <dependencyFromLayerToLayer Id="138f2bf1-2742-9abb-cdb2-78d82b3354e5" direction="Forward">
+          <layerMoniker Id="5de3ff99-664f-5016-022f-f61c3fc39679" />
+        </dependencyFromLayerToLayer>
+        <dependencyFromLayerToLayer Id="59bc1a73-15f3-0d4c-e423-23eb10fe3a31" direction="Forward">
+          <layerMoniker Id="9f42ac25-7290-3d29-27a8-36ee2a148f47" />
+        </dependencyFromLayerToLayer>
+        <dependencyFromLayerToLayer Id="8113168e-e4f3-59aa-c953-f8f66f96567e" direction="Forward">
+          <layerMoniker Id="050f2a99-3842-1e4f-e5ef-51b7cf4ae6c4" />
+        </dependencyFromLayerToLayer>
+      </dependencyToLayers>
+    </layer>
+    <layer Id="050f2a99-3842-1e4f-e5ef-51b7cf4ae6c4" name="Services">
+      <references>
+        <reference Id="e9126f10-0960-33aa-4eba-df47d820046d" name="ApplicationVersionProvider">
+          <ArtifactNode Id="(Namespace=MediaMonkeyZidooSync.Services Type=ApplicationVersionProvider)" Category="CodeSchema_Class" Label="ApplicationVersionProvider" />
+          <ExpandedNode Id="(Namespace=MediaMonkeyZidooSync.Services Type=ApplicationVersionProvider)" Category="CodeSchema_Class" Label="ApplicationVersionProvider">
+            <LinkCategory Ref="Represents" />
+          </ExpandedNode>
+        </reference>
+        <reference Id="1af1c11c-0c4c-6529-51d0-a601c3230947" name="ConfigurationArchiveEntry">
+          <ArtifactNode Id="(Namespace=MediaMonkeyZidooSync.Services Type=ConfigurationArchiveEntry)" Category="CodeSchema_Class" Label="ConfigurationArchiveEntry" />
+          <ExpandedNode Id="(Namespace=MediaMonkeyZidooSync.Services Type=ConfigurationArchiveEntry)" Category="CodeSchema_Class" Label="ConfigurationArchiveEntry">
+            <LinkCategory Ref="Represents" />
+          </ExpandedNode>
+        </reference>
+        <reference Id="cbfde710-6550-0037-c271-36c0daa5c47c" name="ConfigurationService">
+          <ArtifactNode Id="(Namespace=MediaMonkeyZidooSync.Services Type=ConfigurationService)" Category="CodeSchema_Class" Label="ConfigurationService" />
+          <ExpandedNode Id="(Namespace=MediaMonkeyZidooSync.Services Type=ConfigurationService)" Category="CodeSchema_Class" Label="ConfigurationService">
+            <LinkCategory Ref="Represents" />
+          </ExpandedNode>
+        </reference>
+        <reference Id="4c308855-2498-5611-c43f-49405f0ba87e" name="DiagnosticReportingService">
+          <ArtifactNode Id="(Namespace=MediaMonkeyZidooSync.Services Type=DiagnosticReportingService)" Category="CodeSchema_Class" Label="DiagnosticReportingService" />
+          <ExpandedNode Id="(Namespace=MediaMonkeyZidooSync.Services Type=DiagnosticReportingService)" Category="CodeSchema_Class" Label="DiagnosticReportingService">
+            <LinkCategory Ref="Represents" />
+          </ExpandedNode>
+        </reference>
+        <reference Id="630b7bd5-4c10-ca88-ad8f-bc557f117f3b" name="FrozenM3uContent">
+          <ArtifactNode Id="(Namespace=MediaMonkeyZidooSync.Services Type=FrozenM3uContent)" Category="CodeSchema_Class" Label="FrozenM3uContent" />
+          <ExpandedNode Id="(Namespace=MediaMonkeyZidooSync.Services Type=FrozenM3uContent)" Category="CodeSchema_Class" Label="FrozenM3uContent">
+            <LinkCategory Ref="Represents" />
+          </ExpandedNode>
+        </reference>
+        <reference Id="48e7de15-2edb-e5d3-40a5-18fc41770cfe" name="FrozenPlaylistFiles">
+          <ArtifactNode Id="(Namespace=MediaMonkeyZidooSync.Services Type=FrozenPlaylistFiles)" Category="CodeSchema_Class" Label="FrozenPlaylistFiles" />
+          <ExpandedNode Id="(Namespace=MediaMonkeyZidooSync.Services Type=FrozenPlaylistFiles)" Category="CodeSchema_Class" Label="FrozenPlaylistFiles">
+            <LinkCategory Ref="Represents" />
+          </ExpandedNode>
+        </reference>
+        <reference Id="3e10c858-de00-8ae9-4dd5-4f3b76048754" name="INativeSyncPlanProvider">
+          <ArtifactNode Id="(Namespace=MediaMonkeyZidooSync.Services Type=INativeSyncPlanProvider)" Category="CodeSchema_Class" Label="INativeSyncPlanProvider" />
+          <ExpandedNode Id="(Namespace=MediaMonkeyZidooSync.Services Type=INativeSyncPlanProvider)" Category="CodeSchema_Class" Label="INativeSyncPlanProvider">
+            <LinkCategory Ref="Represents" />
+          </ExpandedNode>
+        </reference>
+        <reference Id="729d3926-3f15-2da4-2f22-b8003c417758" name="IProductionPlaylistDevice">
+          <ArtifactNode Id="(Namespace=MediaMonkeyZidooSync.Services Type=IProductionPlaylistDevice)" Category="CodeSchema_Class" Label="IProductionPlaylistDevice" />
+          <ExpandedNode Id="(Namespace=MediaMonkeyZidooSync.Services Type=IProductionPlaylistDevice)" Category="CodeSchema_Class" Label="IProductionPlaylistDevice">
+            <LinkCategory Ref="Represents" />
+          </ExpandedNode>
+        </reference>
+        <reference Id="98a11e10-ef77-3dbb-a8eb-fb300eabb752" name="IZidooMusicPlaylistInventory">
+          <ArtifactNode Id="(Namespace=MediaMonkeyZidooSync.Services Type=IZidooMusicPlaylistInventory)" Category="CodeSchema_Class" Label="IZidooMusicPlaylistInventory" />
+          <ExpandedNode Id="(Namespace=MediaMonkeyZidooSync.Services Type=IZidooMusicPlaylistInventory)" Category="CodeSchema_Class" Label="IZidooMusicPlaylistInventory">
+            <LinkCategory Ref="Represents" />
+          </ExpandedNode>
+        </reference>
+        <reference Id="ccb160cf-1d3d-4e05-e7ec-74fe66b78876" name="IZidooMusicPlaylistMutations">
+          <ArtifactNode Id="(Namespace=MediaMonkeyZidooSync.Services Type=IZidooMusicPlaylistMutations)" Category="CodeSchema_Class" Label="IZidooMusicPlaylistMutations" />
+          <ExpandedNode Id="(Namespace=MediaMonkeyZidooSync.Services Type=IZidooMusicPlaylistMutations)" Category="CodeSchema_Class" Label="IZidooMusicPlaylistMutations">
+            <LinkCategory Ref="Represents" />
+          </ExpandedNode>
+        </reference>
+        <reference Id="99f9d290-070f-e576-8580-2c52e014270d" name="IsolatedJournalRecoveryCoordinator">
+          <ArtifactNode Id="(Namespace=MediaMonkeyZidooSync.Services Type=IsolatedJournalRecoveryCoordinator)" Category="CodeSchema_Class" Label="IsolatedJournalRecoveryCoordinator" />
+          <ExpandedNode Id="(Namespace=MediaMonkeyZidooSync.Services Type=IsolatedJournalRecoveryCoordinator)" Category="CodeSchema_Class" Label="IsolatedJournalRecoveryCoordinator">
+            <LinkCategory Ref="Represents" />
+          </ExpandedNode>
+        </reference>
+        <reference Id="696fe86d-c2ce-75c8-cbc3-551578e3d7f3" name="IsolatedJournalSequenceAuditService">
+          <ArtifactNode Id="(Namespace=MediaMonkeyZidooSync.Services Type=IsolatedJournalSequenceAuditService)" Category="CodeSchema_Class" Label="IsolatedJournalSequenceAuditService" />
+          <ExpandedNode Id="(Namespace=MediaMonkeyZidooSync.Services Type=IsolatedJournalSequenceAuditService)" Category="CodeSchema_Class" Label="IsolatedJournalSequenceAuditService">
+            <LinkCategory Ref="Represents" />
+          </ExpandedNode>
+        </reference>
+        <reference Id="dd9ee8fe-0f4f-cc53-c3fe-23ba10d1e1f7" name="IsolatedPlaylistRollbackService">
+          <ArtifactNode Id="(Namespace=MediaMonkeyZidooSync.Services Type=IsolatedPlaylistRollbackService)" Category="CodeSchema_Class" Label="IsolatedPlaylistRollbackService" />
+          <ExpandedNode Id="(Namespace=MediaMonkeyZidooSync.Services Type=IsolatedPlaylistRollbackService)" Category="CodeSchema_Class" Label="IsolatedPlaylistRollbackService">
+            <LinkCategory Ref="Represents" />
+          </ExpandedNode>
+        </reference>
+        <reference Id="d999a3f0-6eaa-d060-51c8-eb4acdfa22c6" name="IsolatedPlaylistSyncService">
+          <ArtifactNode Id="(Namespace=MediaMonkeyZidooSync.Services Type=IsolatedPlaylistSyncService)" Category="CodeSchema_Class" Label="IsolatedPlaylistSyncService" />
+          <ExpandedNode Id="(Namespace=MediaMonkeyZidooSync.Services Type=IsolatedPlaylistSyncService)" Category="CodeSchema_Class" Label="IsolatedPlaylistSyncService">
+            <LinkCategory Ref="Represents" />
+          </ExpandedNode>
+        </reference>
+        <reference Id="3d77e23e-407f-1ff2-4ddd-4c9c0a561df5" name="IsolatedRecoveryAuthorizationService">
+          <ArtifactNode Id="(Namespace=MediaMonkeyZidooSync.Services Type=IsolatedRecoveryAuthorizationService)" Category="CodeSchema_Class" Label="IsolatedRecoveryAuthorizationService" />
+          <ExpandedNode Id="(Namespace=MediaMonkeyZidooSync.Services Type=IsolatedRecoveryAuthorizationService)" Category="CodeSchema_Class" Label="IsolatedRecoveryAuthorizationService">
+            <LinkCategory Ref="Represents" />
+          </ExpandedNode>
+        </reference>
+        <reference Id="cbde540d-4926-d5ec-a0fd-de4dc0bf2a25" name="IsolatedRecoveryDiagnosticsService">
+          <ArtifactNode Id="(Namespace=MediaMonkeyZidooSync.Services Type=IsolatedRecoveryDiagnosticsService)" Category="CodeSchema_Class" Label="IsolatedRecoveryDiagnosticsService" />
+          <ExpandedNode Id="(Namespace=MediaMonkeyZidooSync.Services Type=IsolatedRecoveryDiagnosticsService)" Category="CodeSchema_Class" Label="IsolatedRecoveryDiagnosticsService">
+            <LinkCategory Ref="Represents" />
+          </ExpandedNode>
+        </reference>
+        <reference Id="fbdaf349-2751-cd34-7efd-b85bd6a8d225" name="IsolatedRecoveryEvidenceRecord">
+          <ArtifactNode Id="(Namespace=MediaMonkeyZidooSync.Services Type=IsolatedRecoveryEvidenceRecord)" Category="CodeSchema_Class" Label="IsolatedRecoveryEvidenceRecord" />
+          <ExpandedNode Id="(Namespace=MediaMonkeyZidooSync.Services Type=IsolatedRecoveryEvidenceRecord)" Category="CodeSchema_Class" Label="IsolatedRecoveryEvidenceRecord">
+            <LinkCategory Ref="Represents" />
+          </ExpandedNode>
+        </reference>
+        <reference Id="99ce6058-5673-35f1-fbb5-ceaa85ef8b73" name="IsolatedRecoveryEvidenceStore">
+          <ArtifactNode Id="(Namespace=MediaMonkeyZidooSync.Services Type=IsolatedRecoveryEvidenceStore)" Category="CodeSchema_Class" Label="IsolatedRecoveryEvidenceStore" />
+          <ExpandedNode Id="(Namespace=MediaMonkeyZidooSync.Services Type=IsolatedRecoveryEvidenceStore)" Category="CodeSchema_Class" Label="IsolatedRecoveryEvidenceStore">
+            <LinkCategory Ref="Represents" />
+          </ExpandedNode>
+        </reference>
+        <reference Id="3c7f98c8-1b3b-e2db-815d-526616b6d6f0" name="IsolatedRecoveryExecutionPlanner">
+          <ArtifactNode Id="(Namespace=MediaMonkeyZidooSync.Services Type=IsolatedRecoveryExecutionPlanner)" Category="CodeSchema_Class" Label="IsolatedRecoveryExecutionPlanner" />
+          <ExpandedNode Id="(Namespace=MediaMonkeyZidooSync.Services Type=IsolatedRecoveryExecutionPlanner)" Category="CodeSchema_Class" Label="IsolatedRecoveryExecutionPlanner">
+            <LinkCategory Ref="Represents" />
+          </ExpandedNode>
+        </reference>
+        <reference Id="ff3499f4-9058-122a-172a-424c70822575" name="IsolatedRecoveryPlanReportStore">
+          <ArtifactNode Id="(Namespace=MediaMonkeyZidooSync.Services Type=IsolatedRecoveryPlanReportStore)" Category="CodeSchema_Class" Label="IsolatedRecoveryPlanReportStore" />
+          <ExpandedNode Id="(Namespace=MediaMonkeyZidooSync.Services Type=IsolatedRecoveryPlanReportStore)" Category="CodeSchema_Class" Label="IsolatedRecoveryPlanReportStore">
+            <LinkCategory Ref="Represents" />
+          </ExpandedNode>
+        </reference>
+        <reference Id="a33654de-cf46-91e1-8424-13fef7ab7dc6" name="IsolatedRecoveryReportBrowserService">
+          <ArtifactNode Id="(Namespace=MediaMonkeyZidooSync.Services Type=IsolatedRecoveryReportBrowserService)" Category="CodeSchema_Class" Label="IsolatedRecoveryReportBrowserService" />
+          <ExpandedNode Id="(Namespace=MediaMonkeyZidooSync.Services Type=IsolatedRecoveryReportBrowserService)" Category="CodeSchema_Class" Label="IsolatedRecoveryReportBrowserService">
+            <LinkCategory Ref="Represents" />
+          </ExpandedNode>
+        </reference>
+        <reference Id="e7eb9dc2-a028-961a-6d59-e32aa0ad9a2c" name="IsolatedRestartReconciliationService">
+          <ArtifactNode Id="(Namespace=MediaMonkeyZidooSync.Services Type=IsolatedRestartReconciliationService)" Category="CodeSchema_Class" Label="IsolatedRestartReconciliationService" />
+          <ExpandedNode Id="(Namespace=MediaMonkeyZidooSync.Services Type=IsolatedRestartReconciliationService)" Category="CodeSchema_Class" Label="IsolatedRestartReconciliationService">
+            <LinkCategory Ref="Represents" />
+          </ExpandedNode>
+        </reference>
+        <reference Id="1cbd56ad-0d3b-ee43-92e5-d2ec838c7517" name="IsolatedRestartSafetyAuditService">
+          <ArtifactNode Id="(Namespace=MediaMonkeyZidooSync.Services Type=IsolatedRestartSafetyAuditService)" Category="CodeSchema_Class" Label="IsolatedRestartSafetyAuditService" />
+          <ExpandedNode Id="(Namespace=MediaMonkeyZidooSync.Services Type=IsolatedRestartSafetyAuditService)" Category="CodeSchema_Class" Label="IsolatedRestartSafetyAuditService">
+            <LinkCategory Ref="Represents" />
+          </ExpandedNode>
+        </reference>
+        <reference Id="ce238e65-018a-ca9d-b544-fdf78f3aed40" name="IsolatedRollbackEvidence">
+          <ArtifactNode Id="(Namespace=MediaMonkeyZidooSync.Services Type=IsolatedRollbackEvidence)" Category="CodeSchema_Class" Label="IsolatedRollbackEvidence" />
+          <ExpandedNode Id="(Namespace=MediaMonkeyZidooSync.Services Type=IsolatedRollbackEvidence)" Category="CodeSchema_Class" Label="IsolatedRollbackEvidence">
+            <LinkCategory Ref="Represents" />
+          </ExpandedNode>
+        </reference>
+        <reference Id="328f61d1-5e0c-3608-c3cd-30520b34fa84" name="IsolatedRollbackResult">
+          <ArtifactNode Id="(Namespace=MediaMonkeyZidooSync.Services Type=IsolatedRollbackResult)" Category="CodeSchema_Class" Label="IsolatedRollbackResult" />
+          <ExpandedNode Id="(Namespace=MediaMonkeyZidooSync.Services Type=IsolatedRollbackResult)" Category="CodeSchema_Class" Label="IsolatedRollbackResult">
+            <LinkCategory Ref="Represents" />
+          </ExpandedNode>
+        </reference>
+        <reference Id="1fe0330a-10fa-cdc5-c67c-d3324af5ee1e" name="IsolatedSequenceEvent">
+          <ArtifactNode Id="(Namespace=MediaMonkeyZidooSync.Services Type=IsolatedSequenceEvent)" Category="CodeSchema_Class" Label="IsolatedSequenceEvent" />
+          <ExpandedNode Id="(Namespace=MediaMonkeyZidooSync.Services Type=IsolatedSequenceEvent)" Category="CodeSchema_Class" Label="IsolatedSequenceEvent">
+            <LinkCategory Ref="Represents" />
+          </ExpandedNode>
+        </reference>
+        <reference Id="6e2c9df5-ff29-ca2c-7764-bb7b20b53763" name="IsolatedStartupMode">
+          <ArtifactNode Id="(Namespace=MediaMonkeyZidooSync.Services Type=IsolatedStartupMode)" Category="CodeSchema_Class" Label="IsolatedStartupMode" />
+          <ExpandedNode Id="(Namespace=MediaMonkeyZidooSync.Services Type=IsolatedStartupMode)" Category="CodeSchema_Class" Label="IsolatedStartupMode">
+            <LinkCategory Ref="Represents" />
+          </ExpandedNode>
+        </reference>
+        <reference Id="63a63160-3c1c-1403-743a-e6c4b8b28ff3" name="IsolatedTransactionSequenceStore">
+          <ArtifactNode Id="(Namespace=MediaMonkeyZidooSync.Services Type=IsolatedTransactionSequenceStore)" Category="CodeSchema_Class" Label="IsolatedTransactionSequenceStore" />
+          <ExpandedNode Id="(Namespace=MediaMonkeyZidooSync.Services Type=IsolatedTransactionSequenceStore)" Category="CodeSchema_Class" Label="IsolatedTransactionSequenceStore">
+            <LinkCategory Ref="Represents" />
+          </ExpandedNode>
+        </reference>
+        <reference Id="b4da9473-18c6-594f-cd00-f91fd43cd0ee" name="JournalSequenceAudit">
+          <ArtifactNode Id="(Namespace=MediaMonkeyZidooSync.Services Type=JournalSequenceAudit)" Category="CodeSchema_Class" Label="JournalSequenceAudit" />
+          <ExpandedNode Id="(Namespace=MediaMonkeyZidooSync.Services Type=JournalSequenceAudit)" Category="CodeSchema_Class" Label="JournalSequenceAudit">
+            <LinkCategory Ref="Represents" />
+          </ExpandedNode>
+        </reference>
+        <reference Id="b1402fdc-cced-7761-d94b-ae7d8830e1dc" name="JournalSequenceFinding">
+          <ArtifactNode Id="(Namespace=MediaMonkeyZidooSync.Services Type=JournalSequenceFinding)" Category="CodeSchema_Class" Label="JournalSequenceFinding" />
+          <ExpandedNode Id="(Namespace=MediaMonkeyZidooSync.Services Type=JournalSequenceFinding)" Category="CodeSchema_Class" Label="JournalSequenceFinding">
+            <LinkCategory Ref="Represents" />
+          </ExpandedNode>
+        </reference>
+        <reference Id="87e49cb7-d404-158d-5b57-4e0fbfccff59" name="MediaMonkeyExportTransactionPlan">
+          <ArtifactNode Id="(Namespace=MediaMonkeyZidooSync.Services Type=MediaMonkeyExportTransactionPlan)" Category="CodeSchema_Class" Label="MediaMonkeyExportTransactionPlan" />
+          <ExpandedNode Id="(Namespace=MediaMonkeyZidooSync.Services Type=MediaMonkeyExportTransactionPlan)" Category="CodeSchema_Class" Label="MediaMonkeyExportTransactionPlan">
+            <LinkCategory Ref="Represents" />
+          </ExpandedNode>
+        </reference>
+        <reference Id="f7f1111e-814e-0ad1-da0b-ded315a39eaa" name="MediaMonkeyExportTransactionPlanner">
+          <ArtifactNode Id="(Namespace=MediaMonkeyZidooSync.Services Type=MediaMonkeyExportTransactionPlanner)" Category="CodeSchema_Class" Label="MediaMonkeyExportTransactionPlanner" />
+          <ExpandedNode Id="(Namespace=MediaMonkeyZidooSync.Services Type=MediaMonkeyExportTransactionPlanner)" Category="CodeSchema_Class" Label="MediaMonkeyExportTransactionPlanner">
+            <LinkCategory Ref="Represents" />
+          </ExpandedNode>
+        </reference>
+        <reference Id="ef2f7012-bb5b-64f3-63fe-427e08fac921" name="MediaMonkeyExporterEquivalenceService">
+          <ArtifactNode Id="(Namespace=MediaMonkeyZidooSync.Services Type=MediaMonkeyExporterEquivalenceService)" Category="CodeSchema_Class" Label="MediaMonkeyExporterEquivalenceService" />
+          <ExpandedNode Id="(Namespace=MediaMonkeyZidooSync.Services Type=MediaMonkeyExporterEquivalenceService)" Category="CodeSchema_Class" Label="MediaMonkeyExporterEquivalenceService">
+            <LinkCategory Ref="Represents" />
+          </ExpandedNode>
+        </reference>
+        <reference Id="deba733a-5cab-8999-8dbc-a15e90125c4a" name="MediaMonkeyPlaylistExporter">
+          <ArtifactNode Id="(Namespace=MediaMonkeyZidooSync.Services Type=MediaMonkeyPlaylistExporter)" Category="CodeSchema_Class" Label="MediaMonkeyPlaylistExporter" />
+          <ExpandedNode Id="(Namespace=MediaMonkeyZidooSync.Services Type=MediaMonkeyPlaylistExporter)" Category="CodeSchema_Class" Label="MediaMonkeyPlaylistExporter">
+            <LinkCategory Ref="Represents" />
+          </ExpandedNode>
+        </reference>
+        <reference Id="a8745d3d-6550-c6d1-f500-292a83a615e1" name="NativeInterruptedRecovery">
+          <ArtifactNode Id="(Namespace=MediaMonkeyZidooSync.Services Type=NativeInterruptedRecovery)" Category="CodeSchema_Class" Label="NativeInterruptedRecovery" />
+          <ExpandedNode Id="(Namespace=MediaMonkeyZidooSync.Services Type=NativeInterruptedRecovery)" Category="CodeSchema_Class" Label="NativeInterruptedRecovery">
+            <LinkCategory Ref="Represents" />
+          </ExpandedNode>
+        </reference>
+        <reference Id="3cab1cd8-78a4-2409-ce38-05ac7d788e0f" name="NativePlanInspection">
+          <ArtifactNode Id="(Namespace=MediaMonkeyZidooSync.Services Type=NativePlanInspection)" Category="CodeSchema_Class" Label="NativePlanInspection" />
+          <ExpandedNode Id="(Namespace=MediaMonkeyZidooSync.Services Type=NativePlanInspection)" Category="CodeSchema_Class" Label="NativePlanInspection">
+            <LinkCategory Ref="Represents" />
+          </ExpandedNode>
+        </reference>
+        <reference Id="828ff94c-67a5-e537-4b7e-1c194e2906ca" name="NativePlanInspectionItem">
+          <ArtifactNode Id="(Namespace=MediaMonkeyZidooSync.Services Type=NativePlanInspectionItem)" Category="CodeSchema_Class" Label="NativePlanInspectionItem" />
+          <ExpandedNode Id="(Namespace=MediaMonkeyZidooSync.Services Type=NativePlanInspectionItem)" Category="CodeSchema_Class" Label="NativePlanInspectionItem">
+            <LinkCategory Ref="Represents" />
+          </ExpandedNode>
+        </reference>
+        <reference Id="c73312f8-1d51-1dfe-fc3b-07d2ca041ee0" name="NativePlaylistFolderReconciler">
+          <ArtifactNode Id="(Namespace=MediaMonkeyZidooSync.Services Type=NativePlaylistFolderReconciler)" Category="CodeSchema_Class" Label="NativePlaylistFolderReconciler" />
+          <ExpandedNode Id="(Namespace=MediaMonkeyZidooSync.Services Type=NativePlaylistFolderReconciler)" Category="CodeSchema_Class" Label="NativePlaylistFolderReconciler">
+            <LinkCategory Ref="Represents" />
+          </ExpandedNode>
+        </reference>
+        <reference Id="6f7da2de-e5fe-dd68-7724-d734d6a3451f" name="NativePlaylistStagingCoordinator">
+          <ArtifactNode Id="(Namespace=MediaMonkeyZidooSync.Services Type=NativePlaylistStagingCoordinator)" Category="CodeSchema_Class" Label="NativePlaylistStagingCoordinator" />
+          <ExpandedNode Id="(Namespace=MediaMonkeyZidooSync.Services Type=NativePlaylistStagingCoordinator)" Category="CodeSchema_Class" Label="NativePlaylistStagingCoordinator">
+            <LinkCategory Ref="Represents" />
+          </ExpandedNode>
+        </reference>
+        <reference Id="fef83378-9a29-c97e-3477-3caa4058518d" name="NativePlaylistTransactionService">
+          <ArtifactNode Id="(Namespace=MediaMonkeyZidooSync.Services Type=NativePlaylistTransactionService)" Category="CodeSchema_Class" Label="NativePlaylistTransactionService" />
+          <ExpandedNode Id="(Namespace=MediaMonkeyZidooSync.Services Type=NativePlaylistTransactionService)" Category="CodeSchema_Class" Label="NativePlaylistTransactionService">
+            <LinkCategory Ref="Represents" />
+          </ExpandedNode>
+        </reference>
+        <reference Id="2d6a9161-8837-b021-b31c-b8016a436616" name="NativeProductionRecovery">
+          <ArtifactNode Id="(Namespace=MediaMonkeyZidooSync.Services Type=NativeProductionRecovery)" Category="CodeSchema_Class" Label="NativeProductionRecovery" />
+          <ExpandedNode Id="(Namespace=MediaMonkeyZidooSync.Services Type=NativeProductionRecovery)" Category="CodeSchema_Class" Label="NativeProductionRecovery">
+            <LinkCategory Ref="Represents" />
+          </ExpandedNode>
+        </reference>
+        <reference Id="3689ee40-dccb-c9ad-d69d-3fc8f488da79" name="NativeProductionRunState">
+          <ArtifactNode Id="(Namespace=MediaMonkeyZidooSync.Services Type=NativeProductionRunState)" Category="CodeSchema_Class" Label="NativeProductionRunState" />
+          <ExpandedNode Id="(Namespace=MediaMonkeyZidooSync.Services Type=NativeProductionRunState)" Category="CodeSchema_Class" Label="NativeProductionRunState">
+            <LinkCategory Ref="Represents" />
+          </ExpandedNode>
+        </reference>
+        <reference Id="024718ce-7db5-d6f0-0043-3ec720a1eeb8" name="NativeProductionSyncService">
+          <ArtifactNode Id="(Namespace=MediaMonkeyZidooSync.Services Type=NativeProductionSyncService)" Category="CodeSchema_Class" Label="NativeProductionSyncService" />
+          <ExpandedNode Id="(Namespace=MediaMonkeyZidooSync.Services Type=NativeProductionSyncService)" Category="CodeSchema_Class" Label="NativeProductionSyncService">
+            <LinkCategory Ref="Represents" />
+          </ExpandedNode>
+        </reference>
+        <reference Id="0f057601-ee50-4066-d781-d13c206caf12" name="NativeProductionTransaction">
+          <ArtifactNode Id="(Namespace=MediaMonkeyZidooSync.Services Type=NativeProductionTransaction)" Category="CodeSchema_Class" Label="NativeProductionTransaction" />
+          <ExpandedNode Id="(Namespace=MediaMonkeyZidooSync.Services Type=NativeProductionTransaction)" Category="CodeSchema_Class" Label="NativeProductionTransaction">
+            <LinkCategory Ref="Represents" />
+          </ExpandedNode>
+        </reference>
+        <reference Id="f0c1e9c2-1fff-c12f-5cd6-435ca2277cc3" name="NativeSyncPlanProvider">
+          <ArtifactNode Id="(Namespace=MediaMonkeyZidooSync.Services Type=NativeSyncPlanProvider)" Category="CodeSchema_Class" Label="NativeSyncPlanProvider" />
+          <ExpandedNode Id="(Namespace=MediaMonkeyZidooSync.Services Type=NativeSyncPlanProvider)" Category="CodeSchema_Class" Label="NativeSyncPlanProvider">
+            <LinkCategory Ref="Represents" />
+          </ExpandedNode>
+        </reference>
+        <reference Id="dcc6582f-5c41-397b-2848-14b4b80e4534" name="NativeSyncReadOnlyOrchestrator">
+          <ArtifactNode Id="(Namespace=MediaMonkeyZidooSync.Services Type=NativeSyncReadOnlyOrchestrator)" Category="CodeSchema_Class" Label="NativeSyncReadOnlyOrchestrator" />
+          <ExpandedNode Id="(Namespace=MediaMonkeyZidooSync.Services Type=NativeSyncReadOnlyOrchestrator)" Category="CodeSchema_Class" Label="NativeSyncReadOnlyOrchestrator">
+            <LinkCategory Ref="Represents" />
+          </ExpandedNode>
+        </reference>
+        <reference Id="9b840374-b94c-f248-8bba-5d917738cac9" name="NativeSyncReadOnlyResult">
+          <ArtifactNode Id="(Namespace=MediaMonkeyZidooSync.Services Type=NativeSyncReadOnlyResult)" Category="CodeSchema_Class" Label="NativeSyncReadOnlyResult" />
+          <ExpandedNode Id="(Namespace=MediaMonkeyZidooSync.Services Type=NativeSyncReadOnlyResult)" Category="CodeSchema_Class" Label="NativeSyncReadOnlyResult">
+            <LinkCategory Ref="Represents" />
+          </ExpandedNode>
+        </reference>
+        <reference Id="59b449d0-b0e8-c24f-4db6-3a1c921993f0" name="NativeTransactionRolledBackException">
+          <ArtifactNode Id="(Namespace=MediaMonkeyZidooSync.Services Type=NativeTransactionRolledBackException)" Category="CodeSchema_Class" Label="NativeTransactionRolledBackException" />
+          <ExpandedNode Id="(Namespace=MediaMonkeyZidooSync.Services Type=NativeTransactionRolledBackException)" Category="CodeSchema_Class" Label="NativeTransactionRolledBackException">
+            <LinkCategory Ref="Represents" />
+          </ExpandedNode>
+        </reference>
+        <reference Id="22d7ce9a-82e2-b3a6-705a-0233ac242047" name="NativeZidooConnectivityPowerService">
+          <ArtifactNode Id="(Namespace=MediaMonkeyZidooSync.Services Type=NativeZidooConnectivityPowerService)" Category="CodeSchema_Class" Label="NativeZidooConnectivityPowerService" />
+          <ExpandedNode Id="(Namespace=MediaMonkeyZidooSync.Services Type=NativeZidooConnectivityPowerService)" Category="CodeSchema_Class" Label="NativeZidooConnectivityPowerService">
+            <LinkCategory Ref="Represents" />
+          </ExpandedNode>
+        </reference>
+        <reference Id="bca5ad51-66e3-c7c2-8b14-3efd38b4ef42" name="NativeZidooMusicPlaylistService">
+          <ArtifactNode Id="(Namespace=MediaMonkeyZidooSync.Services Type=NativeZidooMusicPlaylistService)" Category="CodeSchema_Class" Label="NativeZidooMusicPlaylistService" />
+          <ExpandedNode Id="(Namespace=MediaMonkeyZidooSync.Services Type=NativeZidooMusicPlaylistService)" Category="CodeSchema_Class" Label="NativeZidooMusicPlaylistService">
+            <LinkCategory Ref="Represents" />
+          </ExpandedNode>
+        </reference>
+        <reference Id="ba102a82-3b6f-7c09-42c3-373d97adf5c3" name="NativeZidooPlaylistDevice">
+          <ArtifactNode Id="(Namespace=MediaMonkeyZidooSync.Services Type=NativeZidooPlaylistDevice)" Category="CodeSchema_Class" Label="NativeZidooPlaylistDevice" />
+          <ExpandedNode Id="(Namespace=MediaMonkeyZidooSync.Services Type=NativeZidooPlaylistDevice)" Category="CodeSchema_Class" Label="NativeZidooPlaylistDevice">
+            <LinkCategory Ref="Represents" />
+          </ExpandedNode>
+        </reference>
+        <reference Id="e93ea3b0-b578-c570-0725-36fd71fe4632" name="NativeZidooReadiness">
+          <ArtifactNode Id="(Namespace=MediaMonkeyZidooSync.Services Type=NativeZidooReadiness)" Category="CodeSchema_Class" Label="NativeZidooReadiness" />
+          <ExpandedNode Id="(Namespace=MediaMonkeyZidooSync.Services Type=NativeZidooReadiness)" Category="CodeSchema_Class" Label="NativeZidooReadiness">
+            <LinkCategory Ref="Represents" />
+          </ExpandedNode>
+        </reference>
+        <reference Id="225bea89-0fc9-a905-20b1-97cffa8ea007" name="PlaylistJournalEntry">
+          <ArtifactNode Id="(Namespace=MediaMonkeyZidooSync.Services Type=PlaylistJournalEntry)" Category="CodeSchema_Class" Label="PlaylistJournalEntry" />
+          <ExpandedNode Id="(Namespace=MediaMonkeyZidooSync.Services Type=PlaylistJournalEntry)" Category="CodeSchema_Class" Label="PlaylistJournalEntry">
+            <LinkCategory Ref="Represents" />
+          </ExpandedNode>
+        </reference>
+        <reference Id="eb27ff82-9343-b0e7-95d2-c828c9364a2b" name="PlaylistJournalState">
+          <ArtifactNode Id="(Namespace=MediaMonkeyZidooSync.Services Type=PlaylistJournalState)" Category="CodeSchema_Class" Label="PlaylistJournalState" />
+          <ExpandedNode Id="(Namespace=MediaMonkeyZidooSync.Services Type=PlaylistJournalState)" Category="CodeSchema_Class" Label="PlaylistJournalState">
+            <LinkCategory Ref="Represents" />
+          </ExpandedNode>
+        </reference>
+        <reference Id="e3b1c0f5-0c66-abac-0606-f142278b5e94" name="PlaylistParentService">
+          <ArtifactNode Id="(Namespace=MediaMonkeyZidooSync.Services Type=PlaylistParentService)" Category="CodeSchema_Class" Label="PlaylistParentService" />
+          <ExpandedNode Id="(Namespace=MediaMonkeyZidooSync.Services Type=PlaylistParentService)" Category="CodeSchema_Class" Label="PlaylistParentService">
+            <LinkCategory Ref="Represents" />
+          </ExpandedNode>
+        </reference>
+        <reference Id="ff228cf7-0e39-c926-32ac-13b53bda5f89" name="PlaylistRecoveryAssessment">
+          <ArtifactNode Id="(Namespace=MediaMonkeyZidooSync.Services Type=PlaylistRecoveryAssessment)" Category="CodeSchema_Class" Label="PlaylistRecoveryAssessment" />
+          <ExpandedNode Id="(Namespace=MediaMonkeyZidooSync.Services Type=PlaylistRecoveryAssessment)" Category="CodeSchema_Class" Label="PlaylistRecoveryAssessment">
+            <LinkCategory Ref="Represents" />
+          </ExpandedNode>
+        </reference>
+        <reference Id="1a38c88b-9791-1b63-49b3-71b795858379" name="PlaylistRecoveryCoordinator">
+          <ArtifactNode Id="(Namespace=MediaMonkeyZidooSync.Services Type=PlaylistRecoveryCoordinator)" Category="CodeSchema_Class" Label="PlaylistRecoveryCoordinator" />
+          <ExpandedNode Id="(Namespace=MediaMonkeyZidooSync.Services Type=PlaylistRecoveryCoordinator)" Category="CodeSchema_Class" Label="PlaylistRecoveryCoordinator">
+            <LinkCategory Ref="Represents" />
+          </ExpandedNode>
+        </reference>
+        <reference Id="6dd982ea-1674-80f0-eae0-7686b93ad8e1" name="PlaylistRecoveryDisposition">
+          <ArtifactNode Id="(Namespace=MediaMonkeyZidooSync.Services Type=PlaylistRecoveryDisposition)" Category="CodeSchema_Class" Label="PlaylistRecoveryDisposition" />
+          <ExpandedNode Id="(Namespace=MediaMonkeyZidooSync.Services Type=PlaylistRecoveryDisposition)" Category="CodeSchema_Class" Label="PlaylistRecoveryDisposition">
+            <LinkCategory Ref="Represents" />
+          </ExpandedNode>
+        </reference>
+        <reference Id="c04053b7-ade9-5234-e4cb-1b42d277471c" name="PlaylistStagingResult">
+          <ArtifactNode Id="(Namespace=MediaMonkeyZidooSync.Services Type=PlaylistStagingResult)" Category="CodeSchema_Class" Label="PlaylistStagingResult" />
+          <ExpandedNode Id="(Namespace=MediaMonkeyZidooSync.Services Type=PlaylistStagingResult)" Category="CodeSchema_Class" Label="PlaylistStagingResult">
+            <LinkCategory Ref="Represents" />
+          </ExpandedNode>
+        </reference>
+        <reference Id="a0543e05-040e-fdcb-25a9-c80d3d30f98d" name="PlaylistTransactionAction">
+          <ArtifactNode Id="(Namespace=MediaMonkeyZidooSync.Services Type=PlaylistTransactionAction)" Category="CodeSchema_Class" Label="PlaylistTransactionAction" />
+          <ExpandedNode Id="(Namespace=MediaMonkeyZidooSync.Services Type=PlaylistTransactionAction)" Category="CodeSchema_Class" Label="PlaylistTransactionAction">
+            <LinkCategory Ref="Represents" />
+          </ExpandedNode>
+        </reference>
+        <reference Id="575c6c9c-fea9-3d1d-5de9-da5218c5b775" name="PlaylistTransactionJournalService">
+          <ArtifactNode Id="(Namespace=MediaMonkeyZidooSync.Services Type=PlaylistTransactionJournalService)" Category="CodeSchema_Class" Label="PlaylistTransactionJournalService" />
+          <ExpandedNode Id="(Namespace=MediaMonkeyZidooSync.Services Type=PlaylistTransactionJournalService)" Category="CodeSchema_Class" Label="PlaylistTransactionJournalService">
+            <LinkCategory Ref="Represents" />
+          </ExpandedNode>
+        </reference>
+        <reference Id="8a3336f2-b07d-39ec-cafc-e5267627b53a" name="PlaylistTransactionPlanItem">
+          <ArtifactNode Id="(Namespace=MediaMonkeyZidooSync.Services Type=PlaylistTransactionPlanItem)" Category="CodeSchema_Class" Label="PlaylistTransactionPlanItem" />
+          <ExpandedNode Id="(Namespace=MediaMonkeyZidooSync.Services Type=PlaylistTransactionPlanItem)" Category="CodeSchema_Class" Label="PlaylistTransactionPlanItem">
+            <LinkCategory Ref="Represents" />
+          </ExpandedNode>
+        </reference>
+        <reference Id="01724c4b-c65e-65cb-fef6-462651c87da0" name="PlaylistTransactionPreflight">
+          <ArtifactNode Id="(Namespace=MediaMonkeyZidooSync.Services Type=PlaylistTransactionPreflight)" Category="CodeSchema_Class" Label="PlaylistTransactionPreflight" />
+          <ExpandedNode Id="(Namespace=MediaMonkeyZidooSync.Services Type=PlaylistTransactionPreflight)" Category="CodeSchema_Class" Label="PlaylistTransactionPreflight">
+            <LinkCategory Ref="Represents" />
+          </ExpandedNode>
+        </reference>
+        <reference Id="2049aace-2b2a-89f2-8b98-f3b30b853d4a" name="PlaylistTransactionPreflightResult">
+          <ArtifactNode Id="(Namespace=MediaMonkeyZidooSync.Services Type=PlaylistTransactionPreflightResult)" Category="CodeSchema_Class" Label="PlaylistTransactionPreflightResult" />
+          <ExpandedNode Id="(Namespace=MediaMonkeyZidooSync.Services Type=PlaylistTransactionPreflightResult)" Category="CodeSchema_Class" Label="PlaylistTransactionPreflightResult">
+            <LinkCategory Ref="Represents" />
+          </ExpandedNode>
+        </reference>
+        <reference Id="31792645-21fe-6d13-21a5-4aa5f2c39b65" name="PreparedPlaylistCandidate">
+          <ArtifactNode Id="(Namespace=MediaMonkeyZidooSync.Services Type=PreparedPlaylistCandidate)" Category="CodeSchema_Class" Label="PreparedPlaylistCandidate" />
+          <ExpandedNode Id="(Namespace=MediaMonkeyZidooSync.Services Type=PreparedPlaylistCandidate)" Category="CodeSchema_Class" Label="PreparedPlaylistCandidate">
+            <LinkCategory Ref="Represents" />
+          </ExpandedNode>
+        </reference>
+        <reference Id="993189af-e446-bdf0-92eb-8480f1621034" name="RecoveryAuthorizationDecision">
+          <ArtifactNode Id="(Namespace=MediaMonkeyZidooSync.Services Type=RecoveryAuthorizationDecision)" Category="CodeSchema_Class" Label="RecoveryAuthorizationDecision" />
+          <ExpandedNode Id="(Namespace=MediaMonkeyZidooSync.Services Type=RecoveryAuthorizationDecision)" Category="CodeSchema_Class" Label="RecoveryAuthorizationDecision">
+            <LinkCategory Ref="Represents" />
+          </ExpandedNode>
+        </reference>
+        <reference Id="e71fa245-39eb-a688-67db-59ad51de1ae9" name="RecoveryAuthorizationDisposition">
+          <ArtifactNode Id="(Namespace=MediaMonkeyZidooSync.Services Type=RecoveryAuthorizationDisposition)" Category="CodeSchema_Class" Label="RecoveryAuthorizationDisposition" />
+          <ExpandedNode Id="(Namespace=MediaMonkeyZidooSync.Services Type=RecoveryAuthorizationDisposition)" Category="CodeSchema_Class" Label="RecoveryAuthorizationDisposition">
+            <LinkCategory Ref="Represents" />
+          </ExpandedNode>
+        </reference>
+        <reference Id="d5fd5075-9be0-53c2-5fd9-dbe4e256d8ab" name="RecoveryDiagnosticItem">
+          <ArtifactNode Id="(Namespace=MediaMonkeyZidooSync.Services Type=RecoveryDiagnosticItem)" Category="CodeSchema_Class" Label="RecoveryDiagnosticItem" />
+          <ExpandedNode Id="(Namespace=MediaMonkeyZidooSync.Services Type=RecoveryDiagnosticItem)" Category="CodeSchema_Class" Label="RecoveryDiagnosticItem">
+            <LinkCategory Ref="Represents" />
+          </ExpandedNode>
+        </reference>
+        <reference Id="4ac12b15-9d65-9c6e-8d73-ae0e443302b1" name="RecoveryDiagnosticStatus">
+          <ArtifactNode Id="(Namespace=MediaMonkeyZidooSync.Services Type=RecoveryDiagnosticStatus)" Category="CodeSchema_Class" Label="RecoveryDiagnosticStatus" />
+          <ExpandedNode Id="(Namespace=MediaMonkeyZidooSync.Services Type=RecoveryDiagnosticStatus)" Category="CodeSchema_Class" Label="RecoveryDiagnosticStatus">
+            <LinkCategory Ref="Represents" />
+          </ExpandedNode>
+        </reference>
+        <reference Id="f1f12a78-7630-cd30-f9e5-f7b870905e5d" name="RecoveryDiagnosticsSummary">
+          <ArtifactNode Id="(Namespace=MediaMonkeyZidooSync.Services Type=RecoveryDiagnosticsSummary)" Category="CodeSchema_Class" Label="RecoveryDiagnosticsSummary" />
+          <ExpandedNode Id="(Namespace=MediaMonkeyZidooSync.Services Type=RecoveryDiagnosticsSummary)" Category="CodeSchema_Class" Label="RecoveryDiagnosticsSummary">
+            <LinkCategory Ref="Represents" />
+          </ExpandedNode>
+        </reference>
+        <reference Id="0b0b9146-0b3c-4e19-dd98-7fdb5ce083d1" name="RecoveryExecutionPlan">
+          <ArtifactNode Id="(Namespace=MediaMonkeyZidooSync.Services Type=RecoveryExecutionPlan)" Category="CodeSchema_Class" Label="RecoveryExecutionPlan" />
+          <ExpandedNode Id="(Namespace=MediaMonkeyZidooSync.Services Type=RecoveryExecutionPlan)" Category="CodeSchema_Class" Label="RecoveryExecutionPlan">
+            <LinkCategory Ref="Represents" />
+          </ExpandedNode>
+        </reference>
+        <reference Id="280ba6b9-0cc2-544c-d8a8-e63c1934ce4c" name="RecoveryFileReader">
+          <ArtifactNode Id="(Namespace=MediaMonkeyZidooSync.Services Type=RecoveryFileReader)" Category="CodeSchema_Class" Label="RecoveryFileReader" />
+          <ExpandedNode Id="(Namespace=MediaMonkeyZidooSync.Services Type=RecoveryFileReader)" Category="CodeSchema_Class" Label="RecoveryFileReader">
+            <LinkCategory Ref="Represents" />
+          </ExpandedNode>
+        </reference>
+        <reference Id="29c53d05-fc0e-bd93-d29e-ca13046530c6" name="RecoveryPlanDisposition">
+          <ArtifactNode Id="(Namespace=MediaMonkeyZidooSync.Services Type=RecoveryPlanDisposition)" Category="CodeSchema_Class" Label="RecoveryPlanDisposition" />
+          <ExpandedNode Id="(Namespace=MediaMonkeyZidooSync.Services Type=RecoveryPlanDisposition)" Category="CodeSchema_Class" Label="RecoveryPlanDisposition">
+            <LinkCategory Ref="Represents" />
+          </ExpandedNode>
+        </reference>
+        <reference Id="183f54ca-f785-2ce7-9ca8-c4bab6e09f6f" name="RecoveryPlanReport">
+          <ArtifactNode Id="(Namespace=MediaMonkeyZidooSync.Services Type=RecoveryPlanReport)" Category="CodeSchema_Class" Label="RecoveryPlanReport" />
+          <ExpandedNode Id="(Namespace=MediaMonkeyZidooSync.Services Type=RecoveryPlanReport)" Category="CodeSchema_Class" Label="RecoveryPlanReport">
+            <LinkCategory Ref="Represents" />
+          </ExpandedNode>
+        </reference>
+        <reference Id="725c6631-fc2e-d930-6bb3-0cfff1057314" name="RecoveryReportDisplaySummary">
+          <ArtifactNode Id="(Namespace=MediaMonkeyZidooSync.Services Type=RecoveryReportDisplaySummary)" Category="CodeSchema_Class" Label="RecoveryReportDisplaySummary" />
+          <ExpandedNode Id="(Namespace=MediaMonkeyZidooSync.Services Type=RecoveryReportDisplaySummary)" Category="CodeSchema_Class" Label="RecoveryReportDisplaySummary">
+            <LinkCategory Ref="Represents" />
+          </ExpandedNode>
+        </reference>
+        <reference Id="d81b67d0-8d33-fa88-b4b5-9b32b54b74e1" name="RecoveryReportRow">
+          <ArtifactNode Id="(Namespace=MediaMonkeyZidooSync.Services Type=RecoveryReportRow)" Category="CodeSchema_Class" Label="RecoveryReportRow" />
+          <ExpandedNode Id="(Namespace=MediaMonkeyZidooSync.Services Type=RecoveryReportRow)" Category="CodeSchema_Class" Label="RecoveryReportRow">
+            <LinkCategory Ref="Represents" />
+          </ExpandedNode>
+        </reference>
+        <reference Id="1825e00e-7632-b918-22a2-6cb801d94d47" name="RestartEvidenceAssessment">
+          <ArtifactNode Id="(Namespace=MediaMonkeyZidooSync.Services Type=RestartEvidenceAssessment)" Category="CodeSchema_Class" Label="RestartEvidenceAssessment" />
+          <ExpandedNode Id="(Namespace=MediaMonkeyZidooSync.Services Type=RestartEvidenceAssessment)" Category="CodeSchema_Class" Label="RestartEvidenceAssessment">
+            <LinkCategory Ref="Represents" />
+          </ExpandedNode>
+        </reference>
+        <reference Id="9b7b3d0b-7c14-5445-af34-0baaa9a6caf3" name="RestartEvidenceStatus">
+          <ArtifactNode Id="(Namespace=MediaMonkeyZidooSync.Services Type=RestartEvidenceStatus)" Category="CodeSchema_Class" Label="RestartEvidenceStatus" />
+          <ExpandedNode Id="(Namespace=MediaMonkeyZidooSync.Services Type=RestartEvidenceStatus)" Category="CodeSchema_Class" Label="RestartEvidenceStatus">
+            <LinkCategory Ref="Represents" />
+          </ExpandedNode>
+        </reference>
+        <reference Id="ad245950-10cf-3c92-5038-733a2f73d8b5" name="RestartSafetyAudit">
+          <ArtifactNode Id="(Namespace=MediaMonkeyZidooSync.Services Type=RestartSafetyAudit)" Category="CodeSchema_Class" Label="RestartSafetyAudit" />
+          <ExpandedNode Id="(Namespace=MediaMonkeyZidooSync.Services Type=RestartSafetyAudit)" Category="CodeSchema_Class" Label="RestartSafetyAudit">
+            <LinkCategory Ref="Represents" />
+          </ExpandedNode>
+        </reference>
+        <reference Id="26e3a524-c559-42b1-e9c9-53ca24f253de" name="RestartSafetyFinding">
+          <ArtifactNode Id="(Namespace=MediaMonkeyZidooSync.Services Type=RestartSafetyFinding)" Category="CodeSchema_Class" Label="RestartSafetyFinding" />
+          <ExpandedNode Id="(Namespace=MediaMonkeyZidooSync.Services Type=RestartSafetyFinding)" Category="CodeSchema_Class" Label="RestartSafetyFinding">
+            <LinkCategory Ref="Represents" />
+          </ExpandedNode>
+        </reference>
+        <reference Id="4ea03e93-b2d7-da6e-69c2-69a5aac83b8b" name="RunHistoryBrowserService">
+          <ArtifactNode Id="(Namespace=MediaMonkeyZidooSync.Services Type=RunHistoryBrowserService)" Category="CodeSchema_Class" Label="RunHistoryBrowserService" />
+          <ExpandedNode Id="(Namespace=MediaMonkeyZidooSync.Services Type=RunHistoryBrowserService)" Category="CodeSchema_Class" Label="RunHistoryBrowserService">
+            <LinkCategory Ref="Represents" />
+          </ExpandedNode>
+        </reference>
+        <reference Id="79144b60-b685-ee61-4125-2b8f6a03a2ed" name="RunHistoryService">
+          <ArtifactNode Id="(Namespace=MediaMonkeyZidooSync.Services Type=RunHistoryService)" Category="CodeSchema_Class" Label="RunHistoryService" />
+          <ExpandedNode Id="(Namespace=MediaMonkeyZidooSync.Services Type=RunHistoryService)" Category="CodeSchema_Class" Label="RunHistoryService">
+            <LinkCategory Ref="Represents" />
+          </ExpandedNode>
+        </reference>
+        <reference Id="93dbd975-7b52-e6b0-e550-fb80d105cbbf" name="StorageSetupService">
+          <ArtifactNode Id="(Namespace=MediaMonkeyZidooSync.Services Type=StorageSetupService)" Category="CodeSchema_Class" Label="StorageSetupService" />
+          <ExpandedNode Id="(Namespace=MediaMonkeyZidooSync.Services Type=StorageSetupService)" Category="CodeSchema_Class" Label="StorageSetupService">
+            <LinkCategory Ref="Represents" />
+          </ExpandedNode>
+        </reference>
+        <reference Id="85f4a9b0-b38c-e44a-8c36-454092e19767" name="SyncRunner">
+          <ArtifactNode Id="(Namespace=MediaMonkeyZidooSync.Services Type=SyncRunner)" Category="CodeSchema_Class" Label="SyncRunner" />
+          <ExpandedNode Id="(Namespace=MediaMonkeyZidooSync.Services Type=SyncRunner)" Category="CodeSchema_Class" Label="SyncRunner">
+            <LinkCategory Ref="Represents" />
+          </ExpandedNode>
+        </reference>
+        <reference Id="7cf4506e-80d2-2b40-a615-3c1370ee744f" name="SynchronizationWorkflow">
+          <ArtifactNode Id="(Namespace=MediaMonkeyZidooSync.Services Type=SynchronizationWorkflow)" Category="CodeSchema_Class" Label="SynchronizationWorkflow" />
+          <ExpandedNode Id="(Namespace=MediaMonkeyZidooSync.Services Type=SynchronizationWorkflow)" Category="CodeSchema_Class" Label="SynchronizationWorkflow">
+            <LinkCategory Ref="Represents" />
+          </ExpandedNode>
+        </reference>
+        <reference Id="45e05405-7e0c-ab0a-dbdd-1352c94e1a94" name="UiStateDiagnostics">
+          <ArtifactNode Id="(Namespace=MediaMonkeyZidooSync.Services Type=UiStateDiagnostics)" Category="CodeSchema_Class" Label="UiStateDiagnostics" />
+          <ExpandedNode Id="(Namespace=MediaMonkeyZidooSync.Services Type=UiStateDiagnostics)" Category="CodeSchema_Class" Label="UiStateDiagnostics">
+            <LinkCategory Ref="Represents" />
+          </ExpandedNode>
+        </reference>
+        <reference Id="479d3b98-a8f5-82e7-304d-c11bcec2d42e" name="UiStateService">
+          <ArtifactNode Id="(Namespace=MediaMonkeyZidooSync.Services Type=UiStateService)" Category="CodeSchema_Class" Label="UiStateService" />
+          <ExpandedNode Id="(Namespace=MediaMonkeyZidooSync.Services Type=UiStateService)" Category="CodeSchema_Class" Label="UiStateService">
+            <LinkCategory Ref="Represents" />
+          </ExpandedNode>
+        </reference>
+        <reference Id="c6852f06-081c-a822-71bb-c01c5ed65340" name="UserMessages">
+          <ArtifactNode Id="(Namespace=MediaMonkeyZidooSync.Services Type=UserMessages)" Category="CodeSchema_Class" Label="UserMessages" />
+          <ExpandedNode Id="(Namespace=MediaMonkeyZidooSync.Services Type=UserMessages)" Category="CodeSchema_Class" Label="UserMessages">
+            <LinkCategory Ref="Represents" />
+          </ExpandedNode>
+        </reference>
+        <reference Id="c8b316ae-374c-d7d6-428c-8526853a9240" name="ZidooDiscoveryResult">
+          <ArtifactNode Id="(Namespace=MediaMonkeyZidooSync.Services Type=ZidooDiscoveryResult)" Category="CodeSchema_Class" Label="ZidooDiscoveryResult" />
+          <ExpandedNode Id="(Namespace=MediaMonkeyZidooSync.Services Type=ZidooDiscoveryResult)" Category="CodeSchema_Class" Label="ZidooDiscoveryResult">
+            <LinkCategory Ref="Represents" />
+          </ExpandedNode>
+        </reference>
+        <reference Id="3cc92716-d69a-21a0-3e78-5dd746e22923" name="ZidooDiscoveryService">
+          <ArtifactNode Id="(Namespace=MediaMonkeyZidooSync.Services Type=ZidooDiscoveryService)" Category="CodeSchema_Class" Label="ZidooDiscoveryService" />
+          <ExpandedNode Id="(Namespace=MediaMonkeyZidooSync.Services Type=ZidooDiscoveryService)" Category="CodeSchema_Class" Label="ZidooDiscoveryService">
+            <LinkCategory Ref="Represents" />
+          </ExpandedNode>
+        </reference>
+        <reference Id="6d45d1b6-7fd1-e110-77ea-12cd02418746" name="ZidooMusicPlaylistIdentity">
+          <ArtifactNode Id="(Namespace=MediaMonkeyZidooSync.Services Type=ZidooMusicPlaylistIdentity)" Category="CodeSchema_Class" Label="ZidooMusicPlaylistIdentity" />
+          <ExpandedNode Id="(Namespace=MediaMonkeyZidooSync.Services Type=ZidooMusicPlaylistIdentity)" Category="CodeSchema_Class" Label="ZidooMusicPlaylistIdentity">
+            <LinkCategory Ref="Represents" />
+          </ExpandedNode>
+        </reference>
+        <reference Id="3175eb80-4446-00ba-9f73-34af04d02844" name="ZidooPlaylistProtocol">
+          <ArtifactNode Id="(Namespace=MediaMonkeyZidooSync.Services Type=ZidooPlaylistProtocol)" Category="CodeSchema_Class" Label="ZidooPlaylistProtocol" />
+          <ExpandedNode Id="(Namespace=MediaMonkeyZidooSync.Services Type=ZidooPlaylistProtocol)" Category="CodeSchema_Class" Label="ZidooPlaylistProtocol">
+            <LinkCategory Ref="Represents" />
+          </ExpandedNode>
+        </reference>
+        <reference Id="cb9395df-dcb2-e216-6aa2-d5c5506c18a5" name="ZidooPlaylistRecord">
+          <ArtifactNode Id="(Namespace=MediaMonkeyZidooSync.Services Type=ZidooPlaylistRecord)" Category="CodeSchema_Class" Label="ZidooPlaylistRecord" />
+          <ExpandedNode Id="(Namespace=MediaMonkeyZidooSync.Services Type=ZidooPlaylistRecord)" Category="CodeSchema_Class" Label="ZidooPlaylistRecord">
+            <LinkCategory Ref="Represents" />
+          </ExpandedNode>
+        </reference>
+      </references>
+      <dependencyToLayers>
+        <dependencyFromLayerToLayer Id="a0578b30-abc2-8a09-ffb4-c5d5a2c27096" direction="Forward">
+          <layerMoniker Id="9f42ac25-7290-3d29-27a8-36ee2a148f47" />
+        </dependencyFromLayerToLayer>
+      </dependencyToLayers>
+    </layer>
+  </layers>
+</layerModel>

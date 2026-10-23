@@ -1,0 +1,468 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<DirectedGraph GraphDirection="LeftToRight" Layout="Sugiyama" xmlns="http://schemas.microsoft.com/vs/2009/dgml">
+  <Nodes>
+    <Node Id="MediaMonkeyZidooSync.AboutWindow" Label="AboutWindow" Category="Presentation" SourceLocation="../../MediaMonkeyZidooSync/AboutWindow.cs" SourceLineNumber="12" Description="MediaMonkeyZidooSync.AboutWindow" />
+    <Node Id="MediaMonkeyZidooSync.App" Label="App" Category="Presentation" SourceLocation="../../MediaMonkeyZidooSync/App.xaml.cs" SourceLineNumber="22" Description="MediaMonkeyZidooSync.App" />
+    <Node Id="MediaMonkeyZidooSync.ApplicationBranding" Label="ApplicationBranding" Category="Branding" SourceLocation="../../MediaMonkeyZidooSync/ApplicationBranding.cs" SourceLineNumber="10" Description="MediaMonkeyZidooSync.ApplicationBranding" />
+    <Node Id="MediaMonkeyZidooSync.ApplicationBranding.NotifyData" Label="NotifyData" Category="Branding" SourceLocation="../../MediaMonkeyZidooSync/ApplicationBranding.cs" SourceLineNumber="12" Description="MediaMonkeyZidooSync.ApplicationBranding.NotifyData" />
+    <Node Id="MediaMonkeyZidooSync.HelpWindow" Label="HelpWindow" Category="Presentation" SourceLocation="../../MediaMonkeyZidooSync/HelpWindow.xaml.cs" SourceLineNumber="21" Description="MediaMonkeyZidooSync.HelpWindow" />
+    <Node Id="MediaMonkeyZidooSync.MainWindow" Label="MainWindow" Category="Presentation" SourceLocation="../../MediaMonkeyZidooSync/MainWindow.xaml.cs" SourceLineNumber="30" Description="MediaMonkeyZidooSync.MainWindow" />
+    <Node Id="MediaMonkeyZidooSync.MainWindow.SHSTOCKICONINFO" Label="SHSTOCKICONINFO" Category="Presentation" SourceLocation="../../MediaMonkeyZidooSync/MainWindow.xaml.cs" SourceLineNumber="33" Description="MediaMonkeyZidooSync.MainWindow.SHSTOCKICONINFO" />
+    <Node Id="MediaMonkeyZidooSync.Models.AppConfig" Label="AppConfig" Category="Models" SourceLocation="../../MediaMonkeyZidooSync/Models/AppConfig.cs" SourceLineNumber="14" Description="MediaMonkeyZidooSync.Models.AppConfig" />
+    <Node Id="MediaMonkeyZidooSync.Models.ApplicationConfig" Label="ApplicationConfig" Category="Models" SourceLocation="../../MediaMonkeyZidooSync/Models/AppConfig.cs" SourceLineNumber="29" Description="MediaMonkeyZidooSync.Models.ApplicationConfig" />
+    <Node Id="MediaMonkeyZidooSync.Models.GridColumnState" Label="GridColumnState" Category="Models" SourceLocation="../../MediaMonkeyZidooSync/Models/UiState.cs" SourceLineNumber="48" Description="MediaMonkeyZidooSync.Models.GridColumnState" />
+    <Node Id="MediaMonkeyZidooSync.Models.LogEvent" Label="LogEvent" Category="Models" SourceLocation="../../MediaMonkeyZidooSync/Models/LogEvent.cs" SourceLineNumber="35" Description="MediaMonkeyZidooSync.Models.LogEvent" />
+    <Node Id="MediaMonkeyZidooSync.Models.LogLevel" Label="LogLevel" Category="Models" SourceLocation="../../MediaMonkeyZidooSync/Models/LogEvent.cs" SourceLineNumber="17" Description="MediaMonkeyZidooSync.Models.LogLevel" />
+    <Node Id="MediaMonkeyZidooSync.Models.MediaMonkeyConfig" Label="MediaMonkeyConfig" Category="Models" SourceLocation="../../MediaMonkeyZidooSync/Models/AppConfig.cs" SourceLineNumber="76" Description="MediaMonkeyZidooSync.Models.MediaMonkeyConfig" />
+    <Node Id="MediaMonkeyZidooSync.Models.MediaMonkeyExporterDifference" Label="MediaMonkeyExporterDifference" Category="Models" SourceLocation="../../MediaMonkeyZidooSync/Models/MediaMonkeyPlaylistExportModels.cs" SourceLineNumber="41" Description="MediaMonkeyZidooSync.Models.MediaMonkeyExporterDifference" />
+    <Node Id="MediaMonkeyZidooSync.Models.MediaMonkeyExporterEquivalenceResult" Label="MediaMonkeyExporterEquivalenceResult" Category="Models" SourceLocation="../../MediaMonkeyZidooSync/Models/MediaMonkeyPlaylistExportModels.cs" SourceLineNumber="49" Description="MediaMonkeyZidooSync.Models.MediaMonkeyExporterEquivalenceResult" />
+    <Node Id="MediaMonkeyZidooSync.Models.MediaMonkeyMissingEntry" Label="MediaMonkeyMissingEntry" Category="Models" SourceLocation="../../MediaMonkeyZidooSync/Models/MediaMonkeyPlaylistExportModels.cs" SourceLineNumber="20" Description="MediaMonkeyZidooSync.Models.MediaMonkeyMissingEntry" />
+    <Node Id="MediaMonkeyZidooSync.Models.MediaMonkeyPlaylistExportResult" Label="MediaMonkeyPlaylistExportResult" Category="Models" SourceLocation="../../MediaMonkeyZidooSync/Models/MediaMonkeyPlaylistExportModels.cs" SourceLineNumber="64" Description="MediaMonkeyZidooSync.Models.MediaMonkeyPlaylistExportResult" />
+    <Node Id="MediaMonkeyZidooSync.Models.MediaMonkeyPlaylistMapEntry" Label="MediaMonkeyPlaylistMapEntry" Category="Models" SourceLocation="../../MediaMonkeyZidooSync/Models/MediaMonkeyPlaylistExportModels.cs" SourceLineNumber="13" Description="MediaMonkeyZidooSync.Models.MediaMonkeyPlaylistMapEntry" />
+    <Node Id="MediaMonkeyZidooSync.Models.MediaMonkeyPreparedPlaylist" Label="MediaMonkeyPreparedPlaylist" Category="Models" SourceLocation="../../MediaMonkeyZidooSync/Models/MediaMonkeyPlaylistExportModels.cs" SourceLineNumber="35" Description="MediaMonkeyZidooSync.Models.MediaMonkeyPreparedPlaylist" />
+    <Node Id="MediaMonkeyZidooSync.Models.NasConfig" Label="NasConfig" Category="Models" SourceLocation="../../MediaMonkeyZidooSync/Models/AppConfig.cs" SourceLineNumber="59" Description="MediaMonkeyZidooSync.Models.NasConfig" />
+    <Node Id="MediaMonkeyZidooSync.Models.TimingConfig" Label="TimingConfig" Category="Models" SourceLocation="../../MediaMonkeyZidooSync/Models/AppConfig.cs" SourceLineNumber="86" Description="MediaMonkeyZidooSync.Models.TimingConfig" />
+    <Node Id="MediaMonkeyZidooSync.Models.UiState" Label="UiState" Category="Models" SourceLocation="../../MediaMonkeyZidooSync/Models/UiState.cs" SourceLineNumber="11" Description="MediaMonkeyZidooSync.Models.UiState" />
+    <Node Id="MediaMonkeyZidooSync.Models.ZidooConfig" Label="ZidooConfig" Category="Models" SourceLocation="../../MediaMonkeyZidooSync/Models/AppConfig.cs" SourceLineNumber="40" Description="MediaMonkeyZidooSync.Models.ZidooConfig" />
+    <Node Id="MediaMonkeyZidooSync.Services.ApplicationVersionProvider" Label="ApplicationVersionProvider" Category="Services" SourceLocation="../../MediaMonkeyZidooSync/Services/ApplicationVersionProvider.cs" SourceLineNumber="7" Description="MediaMonkeyZidooSync.Services.ApplicationVersionProvider" />
+    <Node Id="MediaMonkeyZidooSync.Services.ConfigurationArchiveEntry" Label="ConfigurationArchiveEntry" Category="Services" SourceLocation="../../MediaMonkeyZidooSync/Services/ConfigurationService.cs" SourceLineNumber="24" Description="MediaMonkeyZidooSync.Services.ConfigurationArchiveEntry" />
+    <Node Id="MediaMonkeyZidooSync.Services.ConfigurationService" Label="ConfigurationService" Category="Services" SourceLocation="../../MediaMonkeyZidooSync/Services/ConfigurationService.cs" SourceLineNumber="30" Description="MediaMonkeyZidooSync.Services.ConfigurationService" />
+    <Node Id="MediaMonkeyZidooSync.Services.DiagnosticReportingService" Label="DiagnosticReportingService" Category="Services" SourceLocation="../../MediaMonkeyZidooSync/Services/DiagnosticReportingService.cs" SourceLineNumber="8" Description="MediaMonkeyZidooSync.Services.DiagnosticReportingService" />
+    <Node Id="MediaMonkeyZidooSync.Services.FrozenM3uContent" Label="FrozenM3uContent" Category="Services" SourceLocation="../../MediaMonkeyZidooSync/Services/FrozenM3uContent.cs" SourceLineNumber="4" Description="MediaMonkeyZidooSync.Services.FrozenM3uContent" />
+    <Node Id="MediaMonkeyZidooSync.Services.FrozenPlaylistFiles" Label="FrozenPlaylistFiles" Category="Services" SourceLocation="../../MediaMonkeyZidooSync/Services/FrozenPlaylistFiles.cs" SourceLineNumber="5" Description="MediaMonkeyZidooSync.Services.FrozenPlaylistFiles" />
+    <Node Id="MediaMonkeyZidooSync.Services.GridSelectionBehavior" Label="GridSelectionBehavior" Category="Presentation" SourceLocation="../../MediaMonkeyZidooSync/Services/GridSelectionBehavior.cs" SourceLineNumber="12" Description="MediaMonkeyZidooSync.Services.GridSelectionBehavior" />
+    <Node Id="MediaMonkeyZidooSync.Services.INativeSyncPlanProvider" Label="INativeSyncPlanProvider" Category="Services" SourceLocation="../../MediaMonkeyZidooSync/Services/INativeSyncPlanProvider.cs" SourceLineNumber="8" Description="MediaMonkeyZidooSync.Services.INativeSyncPlanProvider" />
+    <Node Id="MediaMonkeyZidooSync.Services.IProductionPlaylistDevice" Label="IProductionPlaylistDevice" Category="Services" SourceLocation="../../MediaMonkeyZidooSync/Services/NativeProductionTransaction.cs" SourceLineNumber="8" Description="MediaMonkeyZidooSync.Services.IProductionPlaylistDevice" />
+    <Node Id="MediaMonkeyZidooSync.Services.IZidooMusicPlaylistInventory" Label="IZidooMusicPlaylistInventory" Category="Services" SourceLocation="../../MediaMonkeyZidooSync/Services/NativeZidooMusicPlaylistService.cs" SourceLineNumber="17" Description="MediaMonkeyZidooSync.Services.IZidooMusicPlaylistInventory" />
+    <Node Id="MediaMonkeyZidooSync.Services.IZidooMusicPlaylistMutations" Label="IZidooMusicPlaylistMutations" Category="Services" SourceLocation="../../MediaMonkeyZidooSync/Services/NativeZidooMusicPlaylistService.cs" SourceLineNumber="24" Description="MediaMonkeyZidooSync.Services.IZidooMusicPlaylistMutations" />
+    <Node Id="MediaMonkeyZidooSync.Services.IsolatedJournalRecoveryCoordinator" Label="IsolatedJournalRecoveryCoordinator" Category="Services" SourceLocation="../../MediaMonkeyZidooSync/Services/IsolatedJournalRecoveryCoordinator.cs" SourceLineNumber="9" Description="MediaMonkeyZidooSync.Services.IsolatedJournalRecoveryCoordinator" />
+    <Node Id="MediaMonkeyZidooSync.Services.IsolatedJournalSequenceAuditService" Label="IsolatedJournalSequenceAuditService" Category="Services" SourceLocation="../../MediaMonkeyZidooSync/Services/IsolatedJournalSequenceAuditService.cs" SourceLineNumber="15" Description="MediaMonkeyZidooSync.Services.IsolatedJournalSequenceAuditService" />
+    <Node Id="MediaMonkeyZidooSync.Services.IsolatedPlaylistRollbackService" Label="IsolatedPlaylistRollbackService" Category="Services" SourceLocation="../../MediaMonkeyZidooSync/Services/IsolatedPlaylistRollbackService.cs" SourceLineNumber="15" Description="MediaMonkeyZidooSync.Services.IsolatedPlaylistRollbackService" />
+    <Node Id="MediaMonkeyZidooSync.Services.IsolatedPlaylistSyncService" Label="IsolatedPlaylistSyncService" Category="Services" SourceLocation="../../MediaMonkeyZidooSync/Services/IsolatedPlaylistSyncService.cs" SourceLineNumber="17" Description="MediaMonkeyZidooSync.Services.IsolatedPlaylistSyncService" />
+    <Node Id="MediaMonkeyZidooSync.Services.IsolatedPlaylistSyncService.JournalEntry" Label="JournalEntry" Category="Services" SourceLocation="../../MediaMonkeyZidooSync/Services/IsolatedPlaylistSyncService.cs" SourceLineNumber="165" Description="MediaMonkeyZidooSync.Services.IsolatedPlaylistSyncService.JournalEntry" />
+    <Node Id="MediaMonkeyZidooSync.Services.IsolatedPlaylistSyncService.PlaylistChange" Label="PlaylistChange" Category="Services" SourceLocation="../../MediaMonkeyZidooSync/Services/IsolatedPlaylistSyncService.cs" SourceLineNumber="23" Description="MediaMonkeyZidooSync.Services.IsolatedPlaylistSyncService.PlaylistChange" />
+    <Node Id="MediaMonkeyZidooSync.Services.IsolatedPlaylistSyncService.SyncOutcome" Label="SyncOutcome" Category="Services" SourceLocation="../../MediaMonkeyZidooSync/Services/IsolatedPlaylistSyncService.cs" SourceLineNumber="24" Description="MediaMonkeyZidooSync.Services.IsolatedPlaylistSyncService.SyncOutcome" />
+    <Node Id="MediaMonkeyZidooSync.Services.IsolatedRecoveryAuthorizationService" Label="IsolatedRecoveryAuthorizationService" Category="Services" SourceLocation="../../MediaMonkeyZidooSync/Services/IsolatedRecoveryAuthorizationService.cs" SourceLineNumber="23" Description="MediaMonkeyZidooSync.Services.IsolatedRecoveryAuthorizationService" />
+    <Node Id="MediaMonkeyZidooSync.Services.IsolatedRecoveryDiagnosticsService" Label="IsolatedRecoveryDiagnosticsService" Category="Services" SourceLocation="../../MediaMonkeyZidooSync/Services/IsolatedRecoveryDiagnosticsService.cs" SourceLineNumber="30" Description="MediaMonkeyZidooSync.Services.IsolatedRecoveryDiagnosticsService" />
+    <Node Id="MediaMonkeyZidooSync.Services.IsolatedRecoveryEvidenceRecord" Label="IsolatedRecoveryEvidenceRecord" Category="Services" SourceLocation="../../MediaMonkeyZidooSync/Services/IsolatedRecoveryEvidenceStore.cs" SourceLineNumber="11" Description="MediaMonkeyZidooSync.Services.IsolatedRecoveryEvidenceRecord" />
+    <Node Id="MediaMonkeyZidooSync.Services.IsolatedRecoveryEvidenceStore" Label="IsolatedRecoveryEvidenceStore" Category="Services" SourceLocation="../../MediaMonkeyZidooSync/Services/IsolatedRecoveryEvidenceStore.cs" SourceLineNumber="14" Description="MediaMonkeyZidooSync.Services.IsolatedRecoveryEvidenceStore" />
+    <Node Id="MediaMonkeyZidooSync.Services.IsolatedRecoveryEvidenceStore.EvidenceEnvelope" Label="EvidenceEnvelope" Category="Services" SourceLocation="../../MediaMonkeyZidooSync/Services/IsolatedRecoveryEvidenceStore.cs" SourceLineNumber="83" Description="MediaMonkeyZidooSync.Services.IsolatedRecoveryEvidenceStore.EvidenceEnvelope" />
+    <Node Id="MediaMonkeyZidooSync.Services.IsolatedRecoveryExecutionPlanner" Label="IsolatedRecoveryExecutionPlanner" Category="Services" SourceLocation="../../MediaMonkeyZidooSync/Services/IsolatedRecoveryExecutionPlanner.cs" SourceLineNumber="24" Description="MediaMonkeyZidooSync.Services.IsolatedRecoveryExecutionPlanner" />
+    <Node Id="MediaMonkeyZidooSync.Services.IsolatedRecoveryPlanReportStore" Label="IsolatedRecoveryPlanReportStore" Category="Services" SourceLocation="../../MediaMonkeyZidooSync/Services/IsolatedRecoveryPlanReportStore.cs" SourceLineNumber="16" Description="MediaMonkeyZidooSync.Services.IsolatedRecoveryPlanReportStore" />
+    <Node Id="MediaMonkeyZidooSync.Services.IsolatedRecoveryPlanReportStore.ReportEnvelope" Label="ReportEnvelope" Category="Services" SourceLocation="../../MediaMonkeyZidooSync/Services/IsolatedRecoveryPlanReportStore.cs" SourceLineNumber="80" Description="MediaMonkeyZidooSync.Services.IsolatedRecoveryPlanReportStore.ReportEnvelope" />
+    <Node Id="MediaMonkeyZidooSync.Services.IsolatedRecoveryReportBrowserService" Label="IsolatedRecoveryReportBrowserService" Category="Services" SourceLocation="../../MediaMonkeyZidooSync/Services/IsolatedRecoveryReportBrowserService.cs" SourceLineNumber="13" Description="MediaMonkeyZidooSync.Services.IsolatedRecoveryReportBrowserService" />
+    <Node Id="MediaMonkeyZidooSync.Services.IsolatedRestartReconciliationService" Label="IsolatedRestartReconciliationService" Category="Services" SourceLocation="../../MediaMonkeyZidooSync/Services/IsolatedRestartReconciliationService.cs" SourceLineNumber="22" Description="MediaMonkeyZidooSync.Services.IsolatedRestartReconciliationService" />
+    <Node Id="MediaMonkeyZidooSync.Services.IsolatedRestartSafetyAuditService" Label="IsolatedRestartSafetyAuditService" Category="Services" SourceLocation="../../MediaMonkeyZidooSync/Services/IsolatedRestartSafetyAuditService.cs" SourceLineNumber="22" Description="MediaMonkeyZidooSync.Services.IsolatedRestartSafetyAuditService" />
+    <Node Id="MediaMonkeyZidooSync.Services.IsolatedRollbackEvidence" Label="IsolatedRollbackEvidence" Category="Services" SourceLocation="../../MediaMonkeyZidooSync/Services/IsolatedPlaylistRollbackService.cs" SourceLineNumber="10" Description="MediaMonkeyZidooSync.Services.IsolatedRollbackEvidence" />
+    <Node Id="MediaMonkeyZidooSync.Services.IsolatedRollbackResult" Label="IsolatedRollbackResult" Category="Services" SourceLocation="../../MediaMonkeyZidooSync/Services/IsolatedPlaylistRollbackService.cs" SourceLineNumber="13" Description="MediaMonkeyZidooSync.Services.IsolatedRollbackResult" />
+    <Node Id="MediaMonkeyZidooSync.Services.IsolatedSequenceEvent" Label="IsolatedSequenceEvent" Category="Services" SourceLocation="../../MediaMonkeyZidooSync/Services/IsolatedTransactionSequenceStore.cs" SourceLineNumber="13" Description="MediaMonkeyZidooSync.Services.IsolatedSequenceEvent" />
+    <Node Id="MediaMonkeyZidooSync.Services.IsolatedStartupMode" Label="IsolatedStartupMode" Category="Services" SourceLocation="../../MediaMonkeyZidooSync/Services/IsolatedStartupMode.cs" SourceLineNumber="7" Description="MediaMonkeyZidooSync.Services.IsolatedStartupMode" />
+    <Node Id="MediaMonkeyZidooSync.Services.IsolatedTransactionSequenceStore" Label="IsolatedTransactionSequenceStore" Category="Services" SourceLocation="../../MediaMonkeyZidooSync/Services/IsolatedTransactionSequenceStore.cs" SourceLineNumber="16" Description="MediaMonkeyZidooSync.Services.IsolatedTransactionSequenceStore" />
+    <Node Id="MediaMonkeyZidooSync.Services.IsolatedTransactionSequenceStore.Envelope" Label="Envelope" Category="Services" SourceLocation="../../MediaMonkeyZidooSync/Services/IsolatedTransactionSequenceStore.cs" SourceLineNumber="20" Description="MediaMonkeyZidooSync.Services.IsolatedTransactionSequenceStore.Envelope" />
+    <Node Id="MediaMonkeyZidooSync.Services.JournalSequenceAudit" Label="JournalSequenceAudit" Category="Services" SourceLocation="../../MediaMonkeyZidooSync/Services/IsolatedJournalSequenceAuditService.cs" SourceLineNumber="13" Description="MediaMonkeyZidooSync.Services.JournalSequenceAudit" />
+    <Node Id="MediaMonkeyZidooSync.Services.JournalSequenceFinding" Label="JournalSequenceFinding" Category="Services" SourceLocation="../../MediaMonkeyZidooSync/Services/IsolatedJournalSequenceAuditService.cs" SourceLineNumber="10" Description="MediaMonkeyZidooSync.Services.JournalSequenceFinding" />
+    <Node Id="MediaMonkeyZidooSync.Services.MediaMonkeyExportTransactionPlan" Label="MediaMonkeyExportTransactionPlan" Category="Services" SourceLocation="../../MediaMonkeyZidooSync/Services/MediaMonkeyExportTransactionPlanner.cs" SourceLineNumber="22" Description="MediaMonkeyZidooSync.Services.MediaMonkeyExportTransactionPlan" />
+    <Node Id="MediaMonkeyZidooSync.Services.MediaMonkeyExportTransactionPlanner" Label="MediaMonkeyExportTransactionPlanner" Category="Services" SourceLocation="../../MediaMonkeyZidooSync/Services/MediaMonkeyExportTransactionPlanner.cs" SourceLineNumber="27" Description="MediaMonkeyZidooSync.Services.MediaMonkeyExportTransactionPlanner" />
+    <Node Id="MediaMonkeyZidooSync.Services.MediaMonkeyExporterEquivalenceService" Label="MediaMonkeyExporterEquivalenceService" Category="Services" SourceLocation="../../MediaMonkeyZidooSync/Services/MediaMonkeyExporterEquivalenceService.cs" SourceLineNumber="25" Description="MediaMonkeyZidooSync.Services.MediaMonkeyExporterEquivalenceService" />
+    <Node Id="MediaMonkeyZidooSync.Services.MediaMonkeyPlaylistExporter" Label="MediaMonkeyPlaylistExporter" Category="Services" SourceLocation="../../MediaMonkeyZidooSync/Services/MediaMonkeyPlaylistExporter.cs" SourceLineNumber="29" Description="MediaMonkeyZidooSync.Services.MediaMonkeyPlaylistExporter" />
+    <Node Id="MediaMonkeyZidooSync.Services.MediaMonkeyPlaylistExporter.EntryRow" Label="EntryRow" Category="Services" SourceLocation="../../MediaMonkeyZidooSync/Services/MediaMonkeyPlaylistExporter.cs" SourceLineNumber="32" Description="MediaMonkeyZidooSync.Services.MediaMonkeyPlaylistExporter.EntryRow" />
+    <Node Id="MediaMonkeyZidooSync.Services.MediaMonkeyPlaylistExporter.PlaylistRow" Label="PlaylistRow" Category="Services" SourceLocation="../../MediaMonkeyZidooSync/Services/MediaMonkeyPlaylistExporter.cs" SourceLineNumber="31" Description="MediaMonkeyZidooSync.Services.MediaMonkeyPlaylistExporter.PlaylistRow" />
+    <Node Id="MediaMonkeyZidooSync.Services.MediaMonkeyPlaylistExporter.PreparedPlaylist" Label="PreparedPlaylist" Category="Services" SourceLocation="../../MediaMonkeyZidooSync/Services/MediaMonkeyPlaylistExporter.cs" SourceLineNumber="34" Description="MediaMonkeyZidooSync.Services.MediaMonkeyPlaylistExporter.PreparedPlaylist" />
+    <Node Id="MediaMonkeyZidooSync.Services.NativeInterruptedRecovery" Label="NativeInterruptedRecovery" Category="Services" SourceLocation="../../MediaMonkeyZidooSync/Services/NativeInterruptedRecovery.cs" SourceLineNumber="13" Description="MediaMonkeyZidooSync.Services.NativeInterruptedRecovery" />
+    <Node Id="MediaMonkeyZidooSync.Services.NativeInterruptedRecovery.Intent" Label="Intent" Category="Services" SourceLocation="../../MediaMonkeyZidooSync/Services/NativeInterruptedRecovery.cs" SourceLineNumber="16" Description="MediaMonkeyZidooSync.Services.NativeInterruptedRecovery.Intent" />
+    <Node Id="MediaMonkeyZidooSync.Services.NativeInterruptedRecovery.Pending" Label="Pending" Category="Services" SourceLocation="../../MediaMonkeyZidooSync/Services/NativeInterruptedRecovery.cs" SourceLineNumber="15" Description="MediaMonkeyZidooSync.Services.NativeInterruptedRecovery.Pending" />
+    <Node Id="MediaMonkeyZidooSync.Services.NativePlanInspection" Label="NativePlanInspection" Category="Services" SourceLocation="../../MediaMonkeyZidooSync/Services/NativePlanInspection.cs" SourceLineNumber="14" Description="MediaMonkeyZidooSync.Services.NativePlanInspection" />
+    <Node Id="MediaMonkeyZidooSync.Services.NativePlanInspectionItem" Label="NativePlanInspectionItem" Category="Services" SourceLocation="../../MediaMonkeyZidooSync/Services/NativePlanInspection.cs" SourceLineNumber="9" Description="MediaMonkeyZidooSync.Services.NativePlanInspectionItem" />
+    <Node Id="MediaMonkeyZidooSync.Services.NativePlaylistFolderReconciler" Label="NativePlaylistFolderReconciler" Category="Services" SourceLocation="../../MediaMonkeyZidooSync/Services/NativePlaylistFolderReconciler.cs" SourceLineNumber="9" Description="MediaMonkeyZidooSync.Services.NativePlaylistFolderReconciler" />
+    <Node Id="MediaMonkeyZidooSync.Services.NativePlaylistFolderReconciler.WorkItem" Label="WorkItem" Category="Services" SourceLocation="../../MediaMonkeyZidooSync/Services/NativePlaylistFolderReconciler.cs" SourceLineNumber="11" Description="MediaMonkeyZidooSync.Services.NativePlaylistFolderReconciler.WorkItem" />
+    <Node Id="MediaMonkeyZidooSync.Services.NativePlaylistStagingCoordinator" Label="NativePlaylistStagingCoordinator" Category="Services" SourceLocation="../../MediaMonkeyZidooSync/Services/NativePlaylistStagingCoordinator.cs" SourceLineNumber="27" Description="MediaMonkeyZidooSync.Services.NativePlaylistStagingCoordinator" />
+    <Node Id="MediaMonkeyZidooSync.Services.NativePlaylistTransactionService" Label="NativePlaylistTransactionService" Category="Services" SourceLocation="../../MediaMonkeyZidooSync/Services/NativePlaylistTransactionService.cs" SourceLineNumber="12" Description="MediaMonkeyZidooSync.Services.NativePlaylistTransactionService" />
+    <Node Id="MediaMonkeyZidooSync.Services.NativePlaylistTransactionService.Stage" Label="Stage" Category="Services" SourceLocation="../../MediaMonkeyZidooSync/Services/NativePlaylistTransactionService.cs" SourceLineNumber="14" Description="MediaMonkeyZidooSync.Services.NativePlaylistTransactionService.Stage" />
+    <Node Id="MediaMonkeyZidooSync.Services.NativeProductionRecovery" Label="NativeProductionRecovery" Category="Services" SourceLocation="../../MediaMonkeyZidooSync/Services/NativeProductionRecovery.cs" SourceLineNumber="9" Description="MediaMonkeyZidooSync.Services.NativeProductionRecovery" />
+    <Node Id="MediaMonkeyZidooSync.Services.NativeProductionRunState" Label="NativeProductionRunState" Category="Services" SourceLocation="../../MediaMonkeyZidooSync/Services/NativeProductionRunState.cs" SourceLineNumber="8" Description="MediaMonkeyZidooSync.Services.NativeProductionRunState" />
+    <Node Id="MediaMonkeyZidooSync.Services.NativeProductionSyncService" Label="NativeProductionSyncService" Category="Services" SourceLocation="../../MediaMonkeyZidooSync/Services/NativeProductionSyncService.cs" SourceLineNumber="13" Description="MediaMonkeyZidooSync.Services.NativeProductionSyncService" />
+    <Node Id="MediaMonkeyZidooSync.Services.NativeProductionSyncService.ReviewedChange" Label="ReviewedChange" Category="Services" SourceLocation="../../MediaMonkeyZidooSync/Services/NativeProductionSyncService.cs" SourceLineNumber="68" Description="MediaMonkeyZidooSync.Services.NativeProductionSyncService.ReviewedChange" />
+    <Node Id="MediaMonkeyZidooSync.Services.NativeProductionSyncService.Work" Label="Work" Category="Services" SourceLocation="../../MediaMonkeyZidooSync/Services/NativeProductionSyncService.cs" SourceLineNumber="19" Description="MediaMonkeyZidooSync.Services.NativeProductionSyncService.Work" />
+    <Node Id="MediaMonkeyZidooSync.Services.NativeProductionTransaction" Label="NativeProductionTransaction" Category="Services" SourceLocation="../../MediaMonkeyZidooSync/Services/NativeProductionTransaction.cs" SourceLineNumber="17" Description="MediaMonkeyZidooSync.Services.NativeProductionTransaction" />
+    <Node Id="MediaMonkeyZidooSync.Services.NativeProductionTransaction.Change" Label="Change" Category="Services" SourceLocation="../../MediaMonkeyZidooSync/Services/NativeProductionTransaction.cs" SourceLineNumber="23" Description="MediaMonkeyZidooSync.Services.NativeProductionTransaction.Change" />
+    <Node Id="MediaMonkeyZidooSync.Services.NativeSyncPlanProvider" Label="NativeSyncPlanProvider" Category="Services" SourceLocation="../../MediaMonkeyZidooSync/Services/INativeSyncPlanProvider.cs" SourceLineNumber="14" Description="MediaMonkeyZidooSync.Services.NativeSyncPlanProvider" />
+    <Node Id="MediaMonkeyZidooSync.Services.NativeSyncReadOnlyOrchestrator" Label="NativeSyncReadOnlyOrchestrator" Category="Services" SourceLocation="../../MediaMonkeyZidooSync/Services/NativeSyncReadOnlyOrchestrator.cs" SourceLineNumber="25" Description="MediaMonkeyZidooSync.Services.NativeSyncReadOnlyOrchestrator" />
+    <Node Id="MediaMonkeyZidooSync.Services.NativeSyncReadOnlyResult" Label="NativeSyncReadOnlyResult" Category="Services" SourceLocation="../../MediaMonkeyZidooSync/Services/NativeSyncReadOnlyOrchestrator.cs" SourceLineNumber="11" Description="MediaMonkeyZidooSync.Services.NativeSyncReadOnlyResult" />
+    <Node Id="MediaMonkeyZidooSync.Services.NativeTransactionRolledBackException" Label="NativeTransactionRolledBackException" Category="Services" SourceLocation="../../MediaMonkeyZidooSync/Services/NativeProductionTransaction.cs" SourceLineNumber="247" Description="MediaMonkeyZidooSync.Services.NativeTransactionRolledBackException" />
+    <Node Id="MediaMonkeyZidooSync.Services.NativeZidooConnectivityPowerService" Label="NativeZidooConnectivityPowerService" Category="Services" SourceLocation="../../MediaMonkeyZidooSync/Services/NativeZidooConnectivityPowerService.cs" SourceLineNumber="13" Description="MediaMonkeyZidooSync.Services.NativeZidooConnectivityPowerService" />
+    <Node Id="MediaMonkeyZidooSync.Services.NativeZidooMusicPlaylistService" Label="NativeZidooMusicPlaylistService" Category="Services" SourceLocation="../../MediaMonkeyZidooSync/Services/NativeZidooMusicPlaylistService.cs" SourceLineNumber="32" Description="MediaMonkeyZidooSync.Services.NativeZidooMusicPlaylistService" />
+    <Node Id="MediaMonkeyZidooSync.Services.NativeZidooPlaylistDevice" Label="NativeZidooPlaylistDevice" Category="Services" SourceLocation="../../MediaMonkeyZidooSync/Services/NativeZidooPlaylistDevice.cs" SourceLineNumber="12" Description="MediaMonkeyZidooSync.Services.NativeZidooPlaylistDevice" />
+    <Node Id="MediaMonkeyZidooSync.Services.NativeZidooReadiness" Label="NativeZidooReadiness" Category="Services" SourceLocation="../../MediaMonkeyZidooSync/Services/NativeZidooReadiness.cs" SourceLineNumber="7" Description="MediaMonkeyZidooSync.Services.NativeZidooReadiness" />
+    <Node Id="MediaMonkeyZidooSync.Services.PlaylistJournalEntry" Label="PlaylistJournalEntry" Category="Services" SourceLocation="../../MediaMonkeyZidooSync/Services/PlaylistTransactionJournalService.cs" SourceLineNumber="12" Description="MediaMonkeyZidooSync.Services.PlaylistJournalEntry" />
+    <Node Id="MediaMonkeyZidooSync.Services.PlaylistJournalState" Label="PlaylistJournalState" Category="Services" SourceLocation="../../MediaMonkeyZidooSync/Services/PlaylistTransactionJournalService.cs" SourceLineNumber="10" Description="MediaMonkeyZidooSync.Services.PlaylistJournalState" />
+    <Node Id="MediaMonkeyZidooSync.Services.PlaylistParentService" Label="PlaylistParentService" Category="Services" SourceLocation="../../MediaMonkeyZidooSync/Services/PlaylistParentService.cs" SourceLineNumber="4" Description="MediaMonkeyZidooSync.Services.PlaylistParentService" />
+    <Node Id="MediaMonkeyZidooSync.Services.PlaylistParentService.ParentChoice" Label="ParentChoice" Category="Services" SourceLocation="../../MediaMonkeyZidooSync/Services/PlaylistParentService.cs" SourceLineNumber="5" Description="MediaMonkeyZidooSync.Services.PlaylistParentService.ParentChoice" />
+    <Node Id="MediaMonkeyZidooSync.Services.PlaylistRecoveryAssessment" Label="PlaylistRecoveryAssessment" Category="Services" SourceLocation="../../MediaMonkeyZidooSync/Services/PlaylistRecoveryCoordinator.cs" SourceLineNumber="17" Description="MediaMonkeyZidooSync.Services.PlaylistRecoveryAssessment" />
+    <Node Id="MediaMonkeyZidooSync.Services.PlaylistRecoveryCoordinator" Label="PlaylistRecoveryCoordinator" Category="Services" SourceLocation="../../MediaMonkeyZidooSync/Services/PlaylistRecoveryCoordinator.cs" SourceLineNumber="25" Description="MediaMonkeyZidooSync.Services.PlaylistRecoveryCoordinator" />
+    <Node Id="MediaMonkeyZidooSync.Services.PlaylistRecoveryDisposition" Label="PlaylistRecoveryDisposition" Category="Services" SourceLocation="../../MediaMonkeyZidooSync/Services/PlaylistRecoveryCoordinator.cs" SourceLineNumber="8" Description="MediaMonkeyZidooSync.Services.PlaylistRecoveryDisposition" />
+    <Node Id="MediaMonkeyZidooSync.Services.PlaylistStagingResult" Label="PlaylistStagingResult" Category="Services" SourceLocation="../../MediaMonkeyZidooSync/Services/NativePlaylistStagingCoordinator.cs" SourceLineNumber="19" Description="MediaMonkeyZidooSync.Services.PlaylistStagingResult" />
+    <Node Id="MediaMonkeyZidooSync.Services.PlaylistTransactionAction" Label="PlaylistTransactionAction" Category="Services" SourceLocation="../../MediaMonkeyZidooSync/Services/MediaMonkeyExportTransactionPlanner.cs" SourceLineNumber="16" Description="MediaMonkeyZidooSync.Services.PlaylistTransactionAction" />
+    <Node Id="MediaMonkeyZidooSync.Services.PlaylistTransactionJournalService" Label="PlaylistTransactionJournalService" Category="Services" SourceLocation="../../MediaMonkeyZidooSync/Services/PlaylistTransactionJournalService.cs" SourceLineNumber="19" Description="MediaMonkeyZidooSync.Services.PlaylistTransactionJournalService" />
+    <Node Id="MediaMonkeyZidooSync.Services.PlaylistTransactionPlanItem" Label="PlaylistTransactionPlanItem" Category="Services" SourceLocation="../../MediaMonkeyZidooSync/Services/MediaMonkeyExportTransactionPlanner.cs" SourceLineNumber="19" Description="MediaMonkeyZidooSync.Services.PlaylistTransactionPlanItem" />
+    <Node Id="MediaMonkeyZidooSync.Services.PlaylistTransactionPreflight" Label="PlaylistTransactionPreflight" Category="Services" SourceLocation="../../MediaMonkeyZidooSync/Services/PlaylistTransactionPreflight.cs" SourceLineNumber="15" Description="MediaMonkeyZidooSync.Services.PlaylistTransactionPreflight" />
+    <Node Id="MediaMonkeyZidooSync.Services.PlaylistTransactionPreflightResult" Label="PlaylistTransactionPreflightResult" Category="Services" SourceLocation="../../MediaMonkeyZidooSync/Services/PlaylistTransactionPreflight.cs" SourceLineNumber="11" Description="MediaMonkeyZidooSync.Services.PlaylistTransactionPreflightResult" />
+    <Node Id="MediaMonkeyZidooSync.Services.PreparedPlaylistCandidate" Label="PreparedPlaylistCandidate" Category="Services" SourceLocation="../../MediaMonkeyZidooSync/Services/NativePlaylistStagingCoordinator.cs" SourceLineNumber="15" Description="MediaMonkeyZidooSync.Services.PreparedPlaylistCandidate" />
+    <Node Id="MediaMonkeyZidooSync.Services.RecoveryAuthorizationDecision" Label="RecoveryAuthorizationDecision" Category="Services" SourceLocation="../../MediaMonkeyZidooSync/Services/IsolatedRecoveryAuthorizationService.cs" SourceLineNumber="16" Description="MediaMonkeyZidooSync.Services.RecoveryAuthorizationDecision" />
+    <Node Id="MediaMonkeyZidooSync.Services.RecoveryAuthorizationDisposition" Label="RecoveryAuthorizationDisposition" Category="Services" SourceLocation="../../MediaMonkeyZidooSync/Services/IsolatedRecoveryAuthorizationService.cs" SourceLineNumber="8" Description="MediaMonkeyZidooSync.Services.RecoveryAuthorizationDisposition" />
+    <Node Id="MediaMonkeyZidooSync.Services.RecoveryDiagnosticItem" Label="RecoveryDiagnosticItem" Category="Services" SourceLocation="../../MediaMonkeyZidooSync/Services/IsolatedRecoveryDiagnosticsService.cs" SourceLineNumber="16" Description="MediaMonkeyZidooSync.Services.RecoveryDiagnosticItem" />
+    <Node Id="MediaMonkeyZidooSync.Services.RecoveryDiagnosticStatus" Label="RecoveryDiagnosticStatus" Category="Services" SourceLocation="../../MediaMonkeyZidooSync/Services/IsolatedRecoveryDiagnosticsService.cs" SourceLineNumber="8" Description="MediaMonkeyZidooSync.Services.RecoveryDiagnosticStatus" />
+    <Node Id="MediaMonkeyZidooSync.Services.RecoveryDiagnosticsSummary" Label="RecoveryDiagnosticsSummary" Category="Services" SourceLocation="../../MediaMonkeyZidooSync/Services/IsolatedRecoveryDiagnosticsService.cs" SourceLineNumber="23" Description="MediaMonkeyZidooSync.Services.RecoveryDiagnosticsSummary" />
+    <Node Id="MediaMonkeyZidooSync.Services.RecoveryExecutionPlan" Label="RecoveryExecutionPlan" Category="Services" SourceLocation="../../MediaMonkeyZidooSync/Services/IsolatedRecoveryExecutionPlanner.cs" SourceLineNumber="16" Description="MediaMonkeyZidooSync.Services.RecoveryExecutionPlan" />
+    <Node Id="MediaMonkeyZidooSync.Services.RecoveryFileReader" Label="RecoveryFileReader" Category="Services" SourceLocation="../../MediaMonkeyZidooSync/Services/RecoveryFileReader.cs" SourceLineNumber="10" Description="MediaMonkeyZidooSync.Services.RecoveryFileReader" />
+    <Node Id="MediaMonkeyZidooSync.Services.RecoveryPlanDisposition" Label="RecoveryPlanDisposition" Category="Services" SourceLocation="../../MediaMonkeyZidooSync/Services/IsolatedRecoveryExecutionPlanner.cs" SourceLineNumber="8" Description="MediaMonkeyZidooSync.Services.RecoveryPlanDisposition" />
+    <Node Id="MediaMonkeyZidooSync.Services.RecoveryPlanReport" Label="RecoveryPlanReport" Category="Services" SourceLocation="../../MediaMonkeyZidooSync/Services/IsolatedRecoveryPlanReportStore.cs" SourceLineNumber="12" Description="MediaMonkeyZidooSync.Services.RecoveryPlanReport" />
+    <Node Id="MediaMonkeyZidooSync.Services.RecoveryReportDisplaySummary" Label="RecoveryReportDisplaySummary" Category="Services" SourceLocation="../../MediaMonkeyZidooSync/Services/RecoveryReportDisplaySummary.cs" SourceLineNumber="8" Description="MediaMonkeyZidooSync.Services.RecoveryReportDisplaySummary" />
+    <Node Id="MediaMonkeyZidooSync.Services.RecoveryReportRow" Label="RecoveryReportRow" Category="Services" SourceLocation="../../MediaMonkeyZidooSync/Services/IsolatedRecoveryReportBrowserService.cs" SourceLineNumber="10" Description="MediaMonkeyZidooSync.Services.RecoveryReportRow" />
+    <Node Id="MediaMonkeyZidooSync.Services.RestartEvidenceAssessment" Label="RestartEvidenceAssessment" Category="Services" SourceLocation="../../MediaMonkeyZidooSync/Services/IsolatedRestartReconciliationService.cs" SourceLineNumber="19" Description="MediaMonkeyZidooSync.Services.RestartEvidenceAssessment" />
+    <Node Id="MediaMonkeyZidooSync.Services.RestartEvidenceStatus" Label="RestartEvidenceStatus" Category="Services" SourceLocation="../../MediaMonkeyZidooSync/Services/IsolatedRestartReconciliationService.cs" SourceLineNumber="9" Description="MediaMonkeyZidooSync.Services.RestartEvidenceStatus" />
+    <Node Id="MediaMonkeyZidooSync.Services.RestartSafetyAudit" Label="RestartSafetyAudit" Category="Services" SourceLocation="../../MediaMonkeyZidooSync/Services/IsolatedRestartSafetyAuditService.cs" SourceLineNumber="20" Description="MediaMonkeyZidooSync.Services.RestartSafetyAudit" />
+    <Node Id="MediaMonkeyZidooSync.Services.RestartSafetyFinding" Label="RestartSafetyFinding" Category="Services" SourceLocation="../../MediaMonkeyZidooSync/Services/IsolatedRestartSafetyAuditService.cs" SourceLineNumber="9" Description="MediaMonkeyZidooSync.Services.RestartSafetyFinding" />
+    <Node Id="MediaMonkeyZidooSync.Services.RunHistoryBrowserService" Label="RunHistoryBrowserService" Category="Services" SourceLocation="../../MediaMonkeyZidooSync/Services/RunHistoryBrowserService.cs" SourceLineNumber="9" Description="MediaMonkeyZidooSync.Services.RunHistoryBrowserService" />
+    <Node Id="MediaMonkeyZidooSync.Services.RunHistoryBrowserService.HistoryFile" Label="HistoryFile" Category="Services" SourceLocation="../../MediaMonkeyZidooSync/Services/RunHistoryBrowserService.cs" SourceLineNumber="11" Description="MediaMonkeyZidooSync.Services.RunHistoryBrowserService.HistoryFile" />
+    <Node Id="MediaMonkeyZidooSync.Services.RunHistoryService" Label="RunHistoryService" Category="Services" SourceLocation="../../MediaMonkeyZidooSync/Services/RunHistoryService.cs" SourceLineNumber="12" Description="MediaMonkeyZidooSync.Services.RunHistoryService" />
+    <Node Id="MediaMonkeyZidooSync.Services.RunHistoryService.RunRecord" Label="RunRecord" Category="Services" SourceLocation="../../MediaMonkeyZidooSync/Services/RunHistoryService.cs" SourceLineNumber="14" Description="MediaMonkeyZidooSync.Services.RunHistoryService.RunRecord" />
+    <Node Id="MediaMonkeyZidooSync.Services.StorageSetupService" Label="StorageSetupService" Category="Services" SourceLocation="../../MediaMonkeyZidooSync/Services/StorageSetupService.cs" SourceLineNumber="5" Description="MediaMonkeyZidooSync.Services.StorageSetupService" />
+    <Node Id="MediaMonkeyZidooSync.Services.StorageSetupService.MusicLocation" Label="MusicLocation" Category="Services" SourceLocation="../../MediaMonkeyZidooSync/Services/StorageSetupService.cs" SourceLineNumber="6" Description="MediaMonkeyZidooSync.Services.StorageSetupService.MusicLocation" />
+    <Node Id="MediaMonkeyZidooSync.Services.SyncRunner" Label="SyncRunner" Category="Services" SourceLocation="../../MediaMonkeyZidooSync/Services/SyncRunner.cs" SourceLineNumber="9" Description="MediaMonkeyZidooSync.Services.SyncRunner" />
+    <Node Id="MediaMonkeyZidooSync.Services.SynchronizationWorkflow" Label="SynchronizationWorkflow" Category="Services" SourceLocation="../../MediaMonkeyZidooSync/Services/SynchronizationWorkflow.cs" SourceLineNumber="4" Description="MediaMonkeyZidooSync.Services.SynchronizationWorkflow" />
+    <Node Id="MediaMonkeyZidooSync.Services.UiStateDiagnostics" Label="UiStateDiagnostics" Category="Services" SourceLocation="../../MediaMonkeyZidooSync/Services/UiStateService.cs" SourceLineNumber="99" Description="MediaMonkeyZidooSync.Services.UiStateDiagnostics" />
+    <Node Id="MediaMonkeyZidooSync.Services.UiStateService" Label="UiStateService" Category="Services" SourceLocation="../../MediaMonkeyZidooSync/Services/UiStateService.cs" SourceLineNumber="9" Description="MediaMonkeyZidooSync.Services.UiStateService" />
+    <Node Id="MediaMonkeyZidooSync.Services.UserMessages" Label="UserMessages" Category="Services" SourceLocation="../../MediaMonkeyZidooSync/Services/UserMessages.cs" SourceLineNumber="8" Description="MediaMonkeyZidooSync.Services.UserMessages" />
+    <Node Id="MediaMonkeyZidooSync.Services.WindowsThemeService" Label="WindowsThemeService" Category="Presentation" SourceLocation="../../MediaMonkeyZidooSync/Services/WindowsThemeService.cs" SourceLineNumber="7" Description="MediaMonkeyZidooSync.Services.WindowsThemeService" />
+    <Node Id="MediaMonkeyZidooSync.Services.ZidooDiscoveryResult" Label="ZidooDiscoveryResult" Category="Services" SourceLocation="../../MediaMonkeyZidooSync/Services/ZidooDiscoveryService.cs" SourceLineNumber="21" Description="MediaMonkeyZidooSync.Services.ZidooDiscoveryResult" />
+    <Node Id="MediaMonkeyZidooSync.Services.ZidooDiscoveryService" Label="ZidooDiscoveryService" Category="Services" SourceLocation="../../MediaMonkeyZidooSync/Services/ZidooDiscoveryService.cs" SourceLineNumber="26" Description="MediaMonkeyZidooSync.Services.ZidooDiscoveryService" />
+    <Node Id="MediaMonkeyZidooSync.Services.ZidooDiscoveryService.ByteArrayComparer" Label="ByteArrayComparer" Category="Services" SourceLocation="../../MediaMonkeyZidooSync/Services/ZidooDiscoveryService.cs" SourceLineNumber="171" Description="MediaMonkeyZidooSync.Services.ZidooDiscoveryService.ByteArrayComparer" />
+    <Node Id="MediaMonkeyZidooSync.Services.ZidooMusicPlaylistIdentity" Label="ZidooMusicPlaylistIdentity" Category="Services" SourceLocation="../../MediaMonkeyZidooSync/Services/NativeZidooMusicPlaylistService.cs" SourceLineNumber="14" Description="MediaMonkeyZidooSync.Services.ZidooMusicPlaylistIdentity" />
+    <Node Id="MediaMonkeyZidooSync.Services.ZidooPlaylistProtocol" Label="ZidooPlaylistProtocol" Category="Services" SourceLocation="../../MediaMonkeyZidooSync/Services/ZidooPlaylistProtocol.cs" SourceLineNumber="11" Description="MediaMonkeyZidooSync.Services.ZidooPlaylistProtocol" />
+    <Node Id="MediaMonkeyZidooSync.Services.ZidooPlaylistRecord" Label="ZidooPlaylistRecord" Category="Services" SourceLocation="../../MediaMonkeyZidooSync/Services/ZidooPlaylistProtocol.cs" SourceLineNumber="7" Description="MediaMonkeyZidooSync.Services.ZidooPlaylistRecord" />
+    <Node Id="MediaMonkeyZidooSync.StartupSplash" Label="StartupSplash" Category="Presentation" SourceLocation="../../MediaMonkeyZidooSync/StartupSplash.cs" SourceLineNumber="12" Description="MediaMonkeyZidooSync.StartupSplash" />
+    <Node Id="MediaMonkeyZidooSync.ZidooDiscoveryWindow" Label="ZidooDiscoveryWindow" Category="Presentation" SourceLocation="../../MediaMonkeyZidooSync/ZidooDiscoveryWindow.xaml.cs" SourceLineNumber="13" Description="MediaMonkeyZidooSync.ZidooDiscoveryWindow" />
+  </Nodes>
+  <Links>
+    <Link Source="MediaMonkeyZidooSync.AboutWindow" Target="MediaMonkeyZidooSync.Services.ApplicationVersionProvider" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.App" Target="MediaMonkeyZidooSync.MainWindow" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.App" Target="MediaMonkeyZidooSync.Services.DiagnosticReportingService" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.App" Target="MediaMonkeyZidooSync.Services.IsolatedStartupMode" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.App" Target="MediaMonkeyZidooSync.StartupSplash" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.ApplicationBranding" Target="MediaMonkeyZidooSync.ApplicationBranding.NotifyData" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.MainWindow" Target="MediaMonkeyZidooSync.AboutWindow" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.MainWindow" Target="MediaMonkeyZidooSync.ApplicationBranding" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.MainWindow" Target="MediaMonkeyZidooSync.HelpWindow" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.MainWindow" Target="MediaMonkeyZidooSync.MainWindow.SHSTOCKICONINFO" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.MainWindow" Target="MediaMonkeyZidooSync.Models.AppConfig" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.MainWindow" Target="MediaMonkeyZidooSync.Models.ApplicationConfig" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.MainWindow" Target="MediaMonkeyZidooSync.Models.GridColumnState" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.MainWindow" Target="MediaMonkeyZidooSync.Models.LogEvent" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.MainWindow" Target="MediaMonkeyZidooSync.Models.LogLevel" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.MainWindow" Target="MediaMonkeyZidooSync.Models.MediaMonkeyConfig" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.MainWindow" Target="MediaMonkeyZidooSync.Models.MediaMonkeyExporterDifference" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.MainWindow" Target="MediaMonkeyZidooSync.Models.MediaMonkeyExporterEquivalenceResult" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.MainWindow" Target="MediaMonkeyZidooSync.Models.MediaMonkeyPlaylistExportResult" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.MainWindow" Target="MediaMonkeyZidooSync.Models.NasConfig" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.MainWindow" Target="MediaMonkeyZidooSync.Models.TimingConfig" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.MainWindow" Target="MediaMonkeyZidooSync.Models.UiState" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.MainWindow" Target="MediaMonkeyZidooSync.Models.ZidooConfig" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.MainWindow" Target="MediaMonkeyZidooSync.Services.ApplicationVersionProvider" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.MainWindow" Target="MediaMonkeyZidooSync.Services.ConfigurationArchiveEntry" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.MainWindow" Target="MediaMonkeyZidooSync.Services.ConfigurationService" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.MainWindow" Target="MediaMonkeyZidooSync.Services.DiagnosticReportingService" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.MainWindow" Target="MediaMonkeyZidooSync.Services.GridSelectionBehavior" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.MainWindow" Target="MediaMonkeyZidooSync.Services.IsolatedRecoveryReportBrowserService" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.MainWindow" Target="MediaMonkeyZidooSync.Services.IsolatedStartupMode" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.MainWindow" Target="MediaMonkeyZidooSync.Services.MediaMonkeyExporterEquivalenceService" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.MainWindow" Target="MediaMonkeyZidooSync.Services.MediaMonkeyExportTransactionPlan" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.MainWindow" Target="MediaMonkeyZidooSync.Services.MediaMonkeyExportTransactionPlanner" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.MainWindow" Target="MediaMonkeyZidooSync.Services.MediaMonkeyPlaylistExporter" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.MainWindow" Target="MediaMonkeyZidooSync.Services.NativeProductionRunState" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.MainWindow" Target="MediaMonkeyZidooSync.Services.NativeProductionSyncService" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.MainWindow" Target="MediaMonkeyZidooSync.Services.NativeProductionSyncService.ReviewedChange" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.MainWindow" Target="MediaMonkeyZidooSync.Services.PlaylistParentService" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.MainWindow" Target="MediaMonkeyZidooSync.Services.PlaylistParentService.ParentChoice" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.MainWindow" Target="MediaMonkeyZidooSync.Services.RecoveryReportDisplaySummary" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.MainWindow" Target="MediaMonkeyZidooSync.Services.RecoveryReportRow" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.MainWindow" Target="MediaMonkeyZidooSync.Services.RunHistoryService" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.MainWindow" Target="MediaMonkeyZidooSync.Services.RunHistoryService.RunRecord" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.MainWindow" Target="MediaMonkeyZidooSync.Services.StorageSetupService" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.MainWindow" Target="MediaMonkeyZidooSync.Services.StorageSetupService.MusicLocation" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.MainWindow" Target="MediaMonkeyZidooSync.Services.SynchronizationWorkflow" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.MainWindow" Target="MediaMonkeyZidooSync.Services.SyncRunner" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.MainWindow" Target="MediaMonkeyZidooSync.Services.UiStateService" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.MainWindow" Target="MediaMonkeyZidooSync.Services.UserMessages" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.MainWindow" Target="MediaMonkeyZidooSync.Services.ZidooDiscoveryResult" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.MainWindow" Target="MediaMonkeyZidooSync.Services.ZidooDiscoveryService" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.MainWindow" Target="MediaMonkeyZidooSync.ZidooDiscoveryWindow" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.Models.AppConfig" Target="MediaMonkeyZidooSync.Models.ApplicationConfig" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.Models.AppConfig" Target="MediaMonkeyZidooSync.Models.MediaMonkeyConfig" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.Models.AppConfig" Target="MediaMonkeyZidooSync.Models.NasConfig" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.Models.AppConfig" Target="MediaMonkeyZidooSync.Models.TimingConfig" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.Models.AppConfig" Target="MediaMonkeyZidooSync.Models.ZidooConfig" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.Models.UiState" Target="MediaMonkeyZidooSync.Models.GridColumnState" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.Services.ConfigurationService" Target="MediaMonkeyZidooSync.Models.AppConfig" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.Services.ConfigurationService" Target="MediaMonkeyZidooSync.Models.ApplicationConfig" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.Services.ConfigurationService" Target="MediaMonkeyZidooSync.Models.MediaMonkeyConfig" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.Services.ConfigurationService" Target="MediaMonkeyZidooSync.Models.NasConfig" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.Services.ConfigurationService" Target="MediaMonkeyZidooSync.Models.TimingConfig" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.Services.ConfigurationService" Target="MediaMonkeyZidooSync.Models.ZidooConfig" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.Services.ConfigurationService" Target="MediaMonkeyZidooSync.Services.ConfigurationArchiveEntry" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.Services.ConfigurationService" Target="MediaMonkeyZidooSync.Services.DiagnosticReportingService" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.Services.INativeSyncPlanProvider" Target="MediaMonkeyZidooSync.Models.AppConfig" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.Services.INativeSyncPlanProvider" Target="MediaMonkeyZidooSync.Services.MediaMonkeyExportTransactionPlan" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.Services.IProductionPlaylistDevice" Target="MediaMonkeyZidooSync.Services.ZidooPlaylistRecord" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.Services.IsolatedJournalRecoveryCoordinator" Target="MediaMonkeyZidooSync.Services.IsolatedPlaylistRollbackService" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.Services.IsolatedJournalRecoveryCoordinator" Target="MediaMonkeyZidooSync.Services.IsolatedRollbackEvidence" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.Services.IsolatedJournalRecoveryCoordinator" Target="MediaMonkeyZidooSync.Services.IsolatedRollbackResult" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.Services.IsolatedJournalRecoveryCoordinator" Target="MediaMonkeyZidooSync.Services.PlaylistJournalEntry" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.Services.IsolatedJournalRecoveryCoordinator" Target="MediaMonkeyZidooSync.Services.PlaylistJournalState" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.Services.IsolatedJournalRecoveryCoordinator" Target="MediaMonkeyZidooSync.Services.PlaylistRecoveryCoordinator" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.Services.IsolatedJournalRecoveryCoordinator" Target="MediaMonkeyZidooSync.Services.PlaylistTransactionJournalService" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.Services.IsolatedJournalSequenceAuditService" Target="MediaMonkeyZidooSync.Services.IsolatedRecoveryEvidenceRecord" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.Services.IsolatedJournalSequenceAuditService" Target="MediaMonkeyZidooSync.Services.IsolatedRecoveryEvidenceStore" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.Services.IsolatedJournalSequenceAuditService" Target="MediaMonkeyZidooSync.Services.IsolatedSequenceEvent" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.Services.IsolatedJournalSequenceAuditService" Target="MediaMonkeyZidooSync.Services.IsolatedTransactionSequenceStore" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.Services.IsolatedJournalSequenceAuditService" Target="MediaMonkeyZidooSync.Services.JournalSequenceAudit" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.Services.IsolatedJournalSequenceAuditService" Target="MediaMonkeyZidooSync.Services.JournalSequenceFinding" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.Services.IsolatedJournalSequenceAuditService" Target="MediaMonkeyZidooSync.Services.PlaylistJournalEntry" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.Services.IsolatedJournalSequenceAuditService" Target="MediaMonkeyZidooSync.Services.PlaylistJournalState" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.Services.IsolatedJournalSequenceAuditService" Target="MediaMonkeyZidooSync.Services.PlaylistTransactionJournalService" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.Services.IsolatedPlaylistRollbackService" Target="MediaMonkeyZidooSync.Services.IsolatedRollbackEvidence" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.Services.IsolatedPlaylistRollbackService" Target="MediaMonkeyZidooSync.Services.IsolatedRollbackResult" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.Services.IsolatedPlaylistSyncService" Target="MediaMonkeyZidooSync.Services.IsolatedPlaylistSyncService.JournalEntry" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.Services.IsolatedPlaylistSyncService" Target="MediaMonkeyZidooSync.Services.IsolatedPlaylistSyncService.PlaylistChange" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.Services.IsolatedPlaylistSyncService" Target="MediaMonkeyZidooSync.Services.IsolatedPlaylistSyncService.SyncOutcome" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.Services.IsolatedRecoveryAuthorizationService" Target="MediaMonkeyZidooSync.Services.IsolatedJournalSequenceAuditService" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.Services.IsolatedRecoveryAuthorizationService" Target="MediaMonkeyZidooSync.Services.JournalSequenceAudit" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.Services.IsolatedRecoveryAuthorizationService" Target="MediaMonkeyZidooSync.Services.JournalSequenceFinding" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.Services.IsolatedRecoveryAuthorizationService" Target="MediaMonkeyZidooSync.Services.RecoveryAuthorizationDecision" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.Services.IsolatedRecoveryAuthorizationService" Target="MediaMonkeyZidooSync.Services.RecoveryAuthorizationDisposition" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.Services.IsolatedRecoveryDiagnosticsService" Target="MediaMonkeyZidooSync.Services.IsolatedRecoveryExecutionPlanner" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.Services.IsolatedRecoveryDiagnosticsService" Target="MediaMonkeyZidooSync.Services.JournalSequenceFinding" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.Services.IsolatedRecoveryDiagnosticsService" Target="MediaMonkeyZidooSync.Services.RecoveryAuthorizationDisposition" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.Services.IsolatedRecoveryDiagnosticsService" Target="MediaMonkeyZidooSync.Services.RecoveryDiagnosticItem" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.Services.IsolatedRecoveryDiagnosticsService" Target="MediaMonkeyZidooSync.Services.RecoveryDiagnosticsSummary" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.Services.IsolatedRecoveryDiagnosticsService" Target="MediaMonkeyZidooSync.Services.RecoveryDiagnosticStatus" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.Services.IsolatedRecoveryDiagnosticsService" Target="MediaMonkeyZidooSync.Services.RecoveryExecutionPlan" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.Services.IsolatedRecoveryDiagnosticsService" Target="MediaMonkeyZidooSync.Services.RecoveryPlanDisposition" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.Services.IsolatedRecoveryEvidenceStore" Target="MediaMonkeyZidooSync.Services.IsolatedRecoveryEvidenceRecord" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.Services.IsolatedRecoveryEvidenceStore" Target="MediaMonkeyZidooSync.Services.IsolatedRecoveryEvidenceStore.EvidenceEnvelope" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.Services.IsolatedRecoveryEvidenceStore" Target="MediaMonkeyZidooSync.Services.RecoveryFileReader" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.Services.IsolatedRecoveryExecutionPlanner" Target="MediaMonkeyZidooSync.Services.IsolatedRecoveryAuthorizationService" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.Services.IsolatedRecoveryExecutionPlanner" Target="MediaMonkeyZidooSync.Services.RecoveryAuthorizationDecision" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.Services.IsolatedRecoveryExecutionPlanner" Target="MediaMonkeyZidooSync.Services.RecoveryAuthorizationDisposition" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.Services.IsolatedRecoveryExecutionPlanner" Target="MediaMonkeyZidooSync.Services.RecoveryExecutionPlan" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.Services.IsolatedRecoveryExecutionPlanner" Target="MediaMonkeyZidooSync.Services.RecoveryPlanDisposition" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.Services.IsolatedRecoveryPlanReportStore" Target="MediaMonkeyZidooSync.Services.IsolatedRecoveryPlanReportStore.ReportEnvelope" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.Services.IsolatedRecoveryPlanReportStore" Target="MediaMonkeyZidooSync.Services.RecoveryExecutionPlan" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.Services.IsolatedRecoveryPlanReportStore" Target="MediaMonkeyZidooSync.Services.RecoveryFileReader" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.Services.IsolatedRecoveryPlanReportStore" Target="MediaMonkeyZidooSync.Services.RecoveryPlanReport" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.Services.IsolatedRecoveryReportBrowserService" Target="MediaMonkeyZidooSync.Services.IsolatedRecoveryPlanReportStore" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.Services.IsolatedRecoveryReportBrowserService" Target="MediaMonkeyZidooSync.Services.RecoveryPlanReport" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.Services.IsolatedRecoveryReportBrowserService" Target="MediaMonkeyZidooSync.Services.RecoveryReportRow" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.Services.IsolatedRestartReconciliationService" Target="MediaMonkeyZidooSync.Services.IsolatedRecoveryEvidenceRecord" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.Services.IsolatedRestartReconciliationService" Target="MediaMonkeyZidooSync.Services.IsolatedRecoveryEvidenceStore" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.Services.IsolatedRestartReconciliationService" Target="MediaMonkeyZidooSync.Services.PlaylistJournalEntry" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.Services.IsolatedRestartReconciliationService" Target="MediaMonkeyZidooSync.Services.PlaylistJournalState" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.Services.IsolatedRestartReconciliationService" Target="MediaMonkeyZidooSync.Services.PlaylistRecoveryCoordinator" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.Services.IsolatedRestartReconciliationService" Target="MediaMonkeyZidooSync.Services.PlaylistTransactionJournalService" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.Services.IsolatedRestartReconciliationService" Target="MediaMonkeyZidooSync.Services.RestartEvidenceAssessment" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.Services.IsolatedRestartReconciliationService" Target="MediaMonkeyZidooSync.Services.RestartEvidenceStatus" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.Services.IsolatedRestartSafetyAuditService" Target="MediaMonkeyZidooSync.Services.IsolatedRecoveryEvidenceRecord" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.Services.IsolatedRestartSafetyAuditService" Target="MediaMonkeyZidooSync.Services.IsolatedRecoveryEvidenceStore" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.Services.IsolatedRestartSafetyAuditService" Target="MediaMonkeyZidooSync.Services.IsolatedRestartReconciliationService" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.Services.IsolatedRestartSafetyAuditService" Target="MediaMonkeyZidooSync.Services.PlaylistJournalEntry" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.Services.IsolatedRestartSafetyAuditService" Target="MediaMonkeyZidooSync.Services.PlaylistJournalState" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.Services.IsolatedRestartSafetyAuditService" Target="MediaMonkeyZidooSync.Services.PlaylistTransactionJournalService" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.Services.IsolatedRestartSafetyAuditService" Target="MediaMonkeyZidooSync.Services.RestartEvidenceAssessment" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.Services.IsolatedRestartSafetyAuditService" Target="MediaMonkeyZidooSync.Services.RestartEvidenceStatus" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.Services.IsolatedRestartSafetyAuditService" Target="MediaMonkeyZidooSync.Services.RestartSafetyAudit" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.Services.IsolatedRestartSafetyAuditService" Target="MediaMonkeyZidooSync.Services.RestartSafetyFinding" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.Services.IsolatedTransactionSequenceStore" Target="MediaMonkeyZidooSync.Services.IsolatedSequenceEvent" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.Services.IsolatedTransactionSequenceStore" Target="MediaMonkeyZidooSync.Services.IsolatedTransactionSequenceStore.Envelope" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.Services.IsolatedTransactionSequenceStore" Target="MediaMonkeyZidooSync.Services.RecoveryFileReader" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.Services.IZidooMusicPlaylistInventory" Target="MediaMonkeyZidooSync.Services.ZidooMusicPlaylistIdentity" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.Services.IZidooMusicPlaylistMutations" Target="MediaMonkeyZidooSync.Services.ZidooMusicPlaylistIdentity" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.Services.MediaMonkeyExporterEquivalenceService" Target="MediaMonkeyZidooSync.Models.AppConfig" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.Services.MediaMonkeyExporterEquivalenceService" Target="MediaMonkeyZidooSync.Models.MediaMonkeyExporterDifference" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.Services.MediaMonkeyExporterEquivalenceService" Target="MediaMonkeyZidooSync.Models.MediaMonkeyExporterEquivalenceResult" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.Services.MediaMonkeyExporterEquivalenceService" Target="MediaMonkeyZidooSync.Models.MediaMonkeyPlaylistExportResult" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.Services.MediaMonkeyExporterEquivalenceService" Target="MediaMonkeyZidooSync.Models.MediaMonkeyPreparedPlaylist" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.Services.MediaMonkeyExporterEquivalenceService" Target="MediaMonkeyZidooSync.Models.NasConfig" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.Services.MediaMonkeyExporterEquivalenceService" Target="MediaMonkeyZidooSync.Services.FrozenM3uContent" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.Services.MediaMonkeyExporterEquivalenceService" Target="MediaMonkeyZidooSync.Services.FrozenPlaylistFiles" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.Services.MediaMonkeyExporterEquivalenceService" Target="MediaMonkeyZidooSync.Services.MediaMonkeyPlaylistExporter" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.Services.MediaMonkeyExportTransactionPlanner" Target="MediaMonkeyZidooSync.Models.AppConfig" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.Services.MediaMonkeyExportTransactionPlanner" Target="MediaMonkeyZidooSync.Models.MediaMonkeyPlaylistExportResult" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.Services.MediaMonkeyExportTransactionPlanner" Target="MediaMonkeyZidooSync.Models.MediaMonkeyPreparedPlaylist" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.Services.MediaMonkeyExportTransactionPlanner" Target="MediaMonkeyZidooSync.Models.NasConfig" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.Services.MediaMonkeyExportTransactionPlanner" Target="MediaMonkeyZidooSync.Services.FrozenM3uContent" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.Services.MediaMonkeyExportTransactionPlanner" Target="MediaMonkeyZidooSync.Services.FrozenPlaylistFiles" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.Services.MediaMonkeyExportTransactionPlanner" Target="MediaMonkeyZidooSync.Services.MediaMonkeyExportTransactionPlan" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.Services.MediaMonkeyExportTransactionPlanner" Target="MediaMonkeyZidooSync.Services.MediaMonkeyPlaylistExporter" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.Services.MediaMonkeyExportTransactionPlanner" Target="MediaMonkeyZidooSync.Services.PlaylistTransactionAction" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.Services.MediaMonkeyExportTransactionPlanner" Target="MediaMonkeyZidooSync.Services.PlaylistTransactionPlanItem" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.Services.MediaMonkeyPlaylistExporter" Target="MediaMonkeyZidooSync.Models.AppConfig" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.Services.MediaMonkeyPlaylistExporter" Target="MediaMonkeyZidooSync.Models.ApplicationConfig" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.Services.MediaMonkeyPlaylistExporter" Target="MediaMonkeyZidooSync.Models.MediaMonkeyConfig" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.Services.MediaMonkeyPlaylistExporter" Target="MediaMonkeyZidooSync.Models.MediaMonkeyMissingEntry" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.Services.MediaMonkeyPlaylistExporter" Target="MediaMonkeyZidooSync.Models.MediaMonkeyPlaylistExportResult" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.Services.MediaMonkeyPlaylistExporter" Target="MediaMonkeyZidooSync.Models.MediaMonkeyPlaylistMapEntry" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.Services.MediaMonkeyPlaylistExporter" Target="MediaMonkeyZidooSync.Models.MediaMonkeyPreparedPlaylist" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.Services.MediaMonkeyPlaylistExporter" Target="MediaMonkeyZidooSync.Models.NasConfig" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.Services.MediaMonkeyPlaylistExporter" Target="MediaMonkeyZidooSync.Services.FrozenPlaylistFiles" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.Services.MediaMonkeyPlaylistExporter" Target="MediaMonkeyZidooSync.Services.MediaMonkeyPlaylistExporter.EntryRow" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.Services.MediaMonkeyPlaylistExporter" Target="MediaMonkeyZidooSync.Services.MediaMonkeyPlaylistExporter.PlaylistRow" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.Services.MediaMonkeyPlaylistExporter" Target="MediaMonkeyZidooSync.Services.MediaMonkeyPlaylistExporter.PreparedPlaylist" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.Services.NativeInterruptedRecovery" Target="MediaMonkeyZidooSync.Services.IProductionPlaylistDevice" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.Services.NativeInterruptedRecovery" Target="MediaMonkeyZidooSync.Services.NativeInterruptedRecovery.Intent" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.Services.NativeInterruptedRecovery" Target="MediaMonkeyZidooSync.Services.NativeInterruptedRecovery.Pending" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.Services.NativeInterruptedRecovery" Target="MediaMonkeyZidooSync.Services.NativeProductionTransaction" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.Services.NativeInterruptedRecovery" Target="MediaMonkeyZidooSync.Services.ZidooPlaylistRecord" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.Services.NativePlanInspection" Target="MediaMonkeyZidooSync.Services.NativePlanInspectionItem" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.Services.NativePlanInspection" Target="MediaMonkeyZidooSync.Services.NativePlaylistFolderReconciler.WorkItem" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.Services.NativePlanInspection" Target="MediaMonkeyZidooSync.Services.NativeSyncReadOnlyResult" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.Services.NativePlanInspection" Target="MediaMonkeyZidooSync.Services.PlaylistTransactionAction" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.Services.NativePlaylistFolderReconciler" Target="MediaMonkeyZidooSync.Services.MediaMonkeyExportTransactionPlan" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.Services.NativePlaylistFolderReconciler" Target="MediaMonkeyZidooSync.Services.NativePlaylistFolderReconciler.WorkItem" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.Services.NativePlaylistFolderReconciler" Target="MediaMonkeyZidooSync.Services.PlaylistTransactionAction" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.Services.NativePlaylistFolderReconciler" Target="MediaMonkeyZidooSync.Services.PlaylistTransactionPlanItem" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.Services.NativePlaylistFolderReconciler" Target="MediaMonkeyZidooSync.Services.PlaylistTransactionPreflight" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.Services.NativePlaylistFolderReconciler" Target="MediaMonkeyZidooSync.Services.PlaylistTransactionPreflightResult" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.Services.NativePlaylistStagingCoordinator" Target="MediaMonkeyZidooSync.Models.AppConfig" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.Services.NativePlaylistStagingCoordinator" Target="MediaMonkeyZidooSync.Models.MediaMonkeyPlaylistExportResult" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.Services.NativePlaylistStagingCoordinator" Target="MediaMonkeyZidooSync.Models.MediaMonkeyPreparedPlaylist" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.Services.NativePlaylistStagingCoordinator" Target="MediaMonkeyZidooSync.Services.MediaMonkeyExportTransactionPlan" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.Services.NativePlaylistStagingCoordinator" Target="MediaMonkeyZidooSync.Services.MediaMonkeyExportTransactionPlanner" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.Services.NativePlaylistStagingCoordinator" Target="MediaMonkeyZidooSync.Services.MediaMonkeyPlaylistExporter" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.Services.NativePlaylistStagingCoordinator" Target="MediaMonkeyZidooSync.Services.PlaylistStagingResult" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.Services.NativePlaylistStagingCoordinator" Target="MediaMonkeyZidooSync.Services.PlaylistTransactionAction" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.Services.NativePlaylistStagingCoordinator" Target="MediaMonkeyZidooSync.Services.PlaylistTransactionPlanItem" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.Services.NativePlaylistStagingCoordinator" Target="MediaMonkeyZidooSync.Services.PlaylistTransactionPreflight" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.Services.NativePlaylistStagingCoordinator" Target="MediaMonkeyZidooSync.Services.PlaylistTransactionPreflightResult" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.Services.NativePlaylistStagingCoordinator" Target="MediaMonkeyZidooSync.Services.PreparedPlaylistCandidate" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.Services.NativePlaylistTransactionService" Target="MediaMonkeyZidooSync.Services.NativePlaylistTransactionService.Stage" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.Services.NativeProductionRecovery" Target="MediaMonkeyZidooSync.Services.IProductionPlaylistDevice" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.Services.NativeProductionRecovery" Target="MediaMonkeyZidooSync.Services.ZidooPlaylistRecord" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.Services.NativeProductionRunState" Target="MediaMonkeyZidooSync.Models.AppConfig" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.Services.NativeProductionRunState" Target="MediaMonkeyZidooSync.Models.ApplicationConfig" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.Services.NativeProductionRunState" Target="MediaMonkeyZidooSync.Models.ZidooConfig" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.Services.NativeProductionRunState" Target="MediaMonkeyZidooSync.Services.NativeInterruptedRecovery" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.Services.NativeProductionSyncService" Target="MediaMonkeyZidooSync.Models.AppConfig" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.Services.NativeProductionSyncService" Target="MediaMonkeyZidooSync.Models.ApplicationConfig" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.Services.NativeProductionSyncService" Target="MediaMonkeyZidooSync.Models.MediaMonkeyPlaylistExportResult" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.Services.NativeProductionSyncService" Target="MediaMonkeyZidooSync.Models.MediaMonkeyPlaylistMapEntry" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.Services.NativeProductionSyncService" Target="MediaMonkeyZidooSync.Models.MediaMonkeyPreparedPlaylist" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.Services.NativeProductionSyncService" Target="MediaMonkeyZidooSync.Models.NasConfig" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.Services.NativeProductionSyncService" Target="MediaMonkeyZidooSync.Models.TimingConfig" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.Services.NativeProductionSyncService" Target="MediaMonkeyZidooSync.Models.ZidooConfig" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.Services.NativeProductionSyncService" Target="MediaMonkeyZidooSync.Services.ConfigurationService" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.Services.NativeProductionSyncService" Target="MediaMonkeyZidooSync.Services.FrozenM3uContent" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.Services.NativeProductionSyncService" Target="MediaMonkeyZidooSync.Services.FrozenPlaylistFiles" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.Services.NativeProductionSyncService" Target="MediaMonkeyZidooSync.Services.MediaMonkeyExportTransactionPlan" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.Services.NativeProductionSyncService" Target="MediaMonkeyZidooSync.Services.MediaMonkeyExportTransactionPlanner" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.Services.NativeProductionSyncService" Target="MediaMonkeyZidooSync.Services.MediaMonkeyPlaylistExporter" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.Services.NativeProductionSyncService" Target="MediaMonkeyZidooSync.Services.NativeInterruptedRecovery" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.Services.NativeProductionSyncService" Target="MediaMonkeyZidooSync.Services.NativeInterruptedRecovery.Pending" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.Services.NativeProductionSyncService" Target="MediaMonkeyZidooSync.Services.NativeProductionRecovery" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.Services.NativeProductionSyncService" Target="MediaMonkeyZidooSync.Services.NativeProductionRunState" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.Services.NativeProductionSyncService" Target="MediaMonkeyZidooSync.Services.NativeProductionSyncService.ReviewedChange" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.Services.NativeProductionSyncService" Target="MediaMonkeyZidooSync.Services.NativeProductionSyncService.Work" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.Services.NativeProductionSyncService" Target="MediaMonkeyZidooSync.Services.NativeProductionTransaction" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.Services.NativeProductionSyncService" Target="MediaMonkeyZidooSync.Services.NativeProductionTransaction.Change" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.Services.NativeProductionSyncService" Target="MediaMonkeyZidooSync.Services.NativeTransactionRolledBackException" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.Services.NativeProductionSyncService" Target="MediaMonkeyZidooSync.Services.NativeZidooConnectivityPowerService" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.Services.NativeProductionSyncService" Target="MediaMonkeyZidooSync.Services.NativeZidooPlaylistDevice" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.Services.NativeProductionSyncService" Target="MediaMonkeyZidooSync.Services.NativeZidooReadiness" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.Services.NativeProductionSyncService" Target="MediaMonkeyZidooSync.Services.PlaylistTransactionAction" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.Services.NativeProductionSyncService" Target="MediaMonkeyZidooSync.Services.PlaylistTransactionPlanItem" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.Services.NativeProductionSyncService" Target="MediaMonkeyZidooSync.Services.ZidooPlaylistRecord" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.Services.NativeProductionTransaction" Target="MediaMonkeyZidooSync.Services.IProductionPlaylistDevice" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.Services.NativeProductionTransaction" Target="MediaMonkeyZidooSync.Services.NativeInterruptedRecovery" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.Services.NativeProductionTransaction" Target="MediaMonkeyZidooSync.Services.NativeInterruptedRecovery.Pending" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.Services.NativeProductionTransaction" Target="MediaMonkeyZidooSync.Services.NativeProductionTransaction.Change" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.Services.NativeProductionTransaction" Target="MediaMonkeyZidooSync.Services.NativeTransactionRolledBackException" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.Services.NativeProductionTransaction" Target="MediaMonkeyZidooSync.Services.ZidooPlaylistRecord" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.Services.NativeSyncPlanProvider" Target="MediaMonkeyZidooSync.Models.AppConfig" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.Services.NativeSyncPlanProvider" Target="MediaMonkeyZidooSync.Services.MediaMonkeyExportTransactionPlan" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.Services.NativeSyncPlanProvider" Target="MediaMonkeyZidooSync.Services.MediaMonkeyExportTransactionPlanner" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.Services.NativeSyncReadOnlyOrchestrator" Target="MediaMonkeyZidooSync.Models.AppConfig" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.Services.NativeSyncReadOnlyOrchestrator" Target="MediaMonkeyZidooSync.Services.INativeSyncPlanProvider" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.Services.NativeSyncReadOnlyOrchestrator" Target="MediaMonkeyZidooSync.Services.MediaMonkeyExportTransactionPlan" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.Services.NativeSyncReadOnlyOrchestrator" Target="MediaMonkeyZidooSync.Services.NativePlaylistFolderReconciler" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.Services.NativeSyncReadOnlyOrchestrator" Target="MediaMonkeyZidooSync.Services.NativeSyncReadOnlyResult" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.Services.NativeSyncReadOnlyOrchestrator" Target="MediaMonkeyZidooSync.Services.PlaylistTransactionPlanItem" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.Services.NativeZidooMusicPlaylistService" Target="MediaMonkeyZidooSync.Services.ZidooMusicPlaylistIdentity" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.Services.NativeZidooPlaylistDevice" Target="MediaMonkeyZidooSync.Models.AppConfig" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.Services.NativeZidooPlaylistDevice" Target="MediaMonkeyZidooSync.Models.NasConfig" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.Services.NativeZidooPlaylistDevice" Target="MediaMonkeyZidooSync.Models.ZidooConfig" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.Services.NativeZidooPlaylistDevice" Target="MediaMonkeyZidooSync.Services.ZidooPlaylistProtocol" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.Services.NativeZidooPlaylistDevice" Target="MediaMonkeyZidooSync.Services.ZidooPlaylistRecord" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.Services.PlaylistParentService" Target="MediaMonkeyZidooSync.Services.PlaylistParentService.ParentChoice" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.Services.PlaylistRecoveryCoordinator" Target="MediaMonkeyZidooSync.Services.PlaylistJournalEntry" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.Services.PlaylistRecoveryCoordinator" Target="MediaMonkeyZidooSync.Services.PlaylistJournalState" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.Services.PlaylistRecoveryCoordinator" Target="MediaMonkeyZidooSync.Services.PlaylistRecoveryAssessment" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.Services.PlaylistRecoveryCoordinator" Target="MediaMonkeyZidooSync.Services.PlaylistRecoveryDisposition" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.Services.PlaylistRecoveryCoordinator" Target="MediaMonkeyZidooSync.Services.PlaylistTransactionJournalService" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.Services.PlaylistTransactionJournalService" Target="MediaMonkeyZidooSync.Services.PlaylistJournalEntry" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.Services.PlaylistTransactionJournalService" Target="MediaMonkeyZidooSync.Services.PlaylistJournalState" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.Services.PlaylistTransactionPreflight" Target="MediaMonkeyZidooSync.Services.MediaMonkeyExportTransactionPlan" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.Services.PlaylistTransactionPreflight" Target="MediaMonkeyZidooSync.Services.PlaylistTransactionAction" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.Services.PlaylistTransactionPreflight" Target="MediaMonkeyZidooSync.Services.PlaylistTransactionPlanItem" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.Services.PlaylistTransactionPreflight" Target="MediaMonkeyZidooSync.Services.PlaylistTransactionPreflightResult" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.Services.RecoveryReportDisplaySummary" Target="MediaMonkeyZidooSync.Services.RecoveryReportRow" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.Services.RunHistoryBrowserService" Target="MediaMonkeyZidooSync.Services.RunHistoryBrowserService.HistoryFile" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.Services.RunHistoryService" Target="MediaMonkeyZidooSync.Models.LogEvent" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.Services.RunHistoryService" Target="MediaMonkeyZidooSync.Services.RunHistoryService.RunRecord" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.Services.StorageSetupService" Target="MediaMonkeyZidooSync.Services.StorageSetupService.MusicLocation" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.Services.SyncRunner" Target="MediaMonkeyZidooSync.Models.AppConfig" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.Services.SyncRunner" Target="MediaMonkeyZidooSync.Models.LogEvent" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.Services.SyncRunner" Target="MediaMonkeyZidooSync.Models.LogLevel" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.Services.SyncRunner" Target="MediaMonkeyZidooSync.Services.NativeProductionSyncService" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.Services.SyncRunner" Target="MediaMonkeyZidooSync.Services.NativeProductionSyncService.ReviewedChange" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.Services.SyncRunner" Target="MediaMonkeyZidooSync.Services.NativeSyncReadOnlyOrchestrator" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.Services.SyncRunner" Target="MediaMonkeyZidooSync.Services.NativeSyncReadOnlyResult" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.Services.SyncRunner" Target="MediaMonkeyZidooSync.Services.NativeTransactionRolledBackException" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.Services.UiStateService" Target="MediaMonkeyZidooSync.Models.UiState" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.Services.UiStateService" Target="MediaMonkeyZidooSync.Services.UiStateDiagnostics" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.Services.UserMessages" Target="MediaMonkeyZidooSync.Models.LogEvent" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.Services.UserMessages" Target="MediaMonkeyZidooSync.Models.LogLevel" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.Services.UserMessages" Target="MediaMonkeyZidooSync.Services.NativeTransactionRolledBackException" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.Services.ZidooDiscoveryService" Target="MediaMonkeyZidooSync.Services.ZidooDiscoveryResult" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.Services.ZidooDiscoveryService" Target="MediaMonkeyZidooSync.Services.ZidooDiscoveryService.ByteArrayComparer" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.Services.ZidooPlaylistProtocol" Target="MediaMonkeyZidooSync.Services.ZidooPlaylistRecord" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.ZidooDiscoveryWindow" Target="MediaMonkeyZidooSync.Services.GridSelectionBehavior" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.ZidooDiscoveryWindow" Target="MediaMonkeyZidooSync.Services.ZidooDiscoveryResult" Category="Uses" />
+  </Links>
+  <Categories>
+    <Category Id="Presentation" Label="Presentation" />
+    <Category Id="Services" Label="Services" />
+    <Category Id="Models" Label="Models" />
+    <Category Id="Branding" Label="Branding" />
+    <Category Id="Calls" Label="Calls" />
+    <Category Id="Uses" Label="Uses" />
+    <Category Id="Contains" Label="Contains" />
+    <Category Id="ProjectReference" Label="ProjectReference" />
+    <Category Id="LinkedSource" Label="LinkedSource" />
+  </Categories>
+  <Styles>
+    <Style TargetType="Node">
+      <Condition Expression="HasCategory('Presentation')" />
+      <Setter Property="Background" Value="#FFDCEBFA" />
+    </Style>
+    <Style TargetType="Node">
+      <Condition Expression="HasCategory('Services')" />
+      <Setter Property="Background" Value="#FFDFF2DE" />
+    </Style>
+    <Style TargetType="Node">
+      <Condition Expression="HasCategory('Models')" />
+      <Setter Property="Background" Value="#FFFFEABF" />
+    </Style>
+    <Style TargetType="Node">
+      <Condition Expression="HasCategory('Branding')" />
+      <Setter Property="Background" Value="#FFEBDFF5" />
+    </Style>
+  </Styles>
+</DirectedGraph>

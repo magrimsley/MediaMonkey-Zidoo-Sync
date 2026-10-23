@@ -1,0 +1,60 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<DirectedGraph GraphDirection="LeftToRight" Layout="Sugiyama" xmlns="http://schemas.microsoft.com/vs/2009/dgml">
+  <Nodes>
+    <Node Id="MediaMonkeyZidooSync.MainWindow" Label="MainWindow" Category="Presentation" SourceLocation="../../MediaMonkeyZidooSync/MainWindow.xaml.cs" SourceLineNumber="30" Description="MediaMonkeyZidooSync.MainWindow" />
+    <Node Id="MediaMonkeyZidooSync.Services.MediaMonkeyPlaylistExporter" Label="MediaMonkeyPlaylistExporter" Category="Services" SourceLocation="../../MediaMonkeyZidooSync/Services/MediaMonkeyPlaylistExporter.cs" SourceLineNumber="29" Description="MediaMonkeyZidooSync.Services.MediaMonkeyPlaylistExporter" />
+    <Node Id="MediaMonkeyZidooSync.Services.NativeInterruptedRecovery" Label="NativeInterruptedRecovery" Category="Services" SourceLocation="../../MediaMonkeyZidooSync/Services/NativeInterruptedRecovery.cs" SourceLineNumber="13" Description="MediaMonkeyZidooSync.Services.NativeInterruptedRecovery" />
+    <Node Id="MediaMonkeyZidooSync.Services.NativeProductionRecovery" Label="NativeProductionRecovery" Category="Services" SourceLocation="../../MediaMonkeyZidooSync/Services/NativeProductionRecovery.cs" SourceLineNumber="9" Description="MediaMonkeyZidooSync.Services.NativeProductionRecovery" />
+    <Node Id="MediaMonkeyZidooSync.Services.NativeProductionSyncService" Label="NativeProductionSyncService" Category="Services" SourceLocation="../../MediaMonkeyZidooSync/Services/NativeProductionSyncService.cs" SourceLineNumber="13" Description="MediaMonkeyZidooSync.Services.NativeProductionSyncService" />
+    <Node Id="MediaMonkeyZidooSync.Services.NativeProductionTransaction" Label="NativeProductionTransaction" Category="Services" SourceLocation="../../MediaMonkeyZidooSync/Services/NativeProductionTransaction.cs" SourceLineNumber="17" Description="MediaMonkeyZidooSync.Services.NativeProductionTransaction" />
+    <Node Id="MediaMonkeyZidooSync.Services.NativeZidooConnectivityPowerService" Label="NativeZidooConnectivityPowerService" Category="Services" SourceLocation="../../MediaMonkeyZidooSync/Services/NativeZidooConnectivityPowerService.cs" SourceLineNumber="13" Description="MediaMonkeyZidooSync.Services.NativeZidooConnectivityPowerService" />
+    <Node Id="MediaMonkeyZidooSync.Services.NativeZidooMusicPlaylistService" Label="NativeZidooMusicPlaylistService" Category="Services" SourceLocation="../../MediaMonkeyZidooSync/Services/NativeZidooMusicPlaylistService.cs" SourceLineNumber="32" Description="MediaMonkeyZidooSync.Services.NativeZidooMusicPlaylistService" />
+    <Node Id="MediaMonkeyZidooSync.Services.NativeZidooPlaylistDevice" Label="NativeZidooPlaylistDevice" Category="Services" SourceLocation="../../MediaMonkeyZidooSync/Services/NativeZidooPlaylistDevice.cs" SourceLineNumber="12" Description="MediaMonkeyZidooSync.Services.NativeZidooPlaylistDevice" />
+    <Node Id="MediaMonkeyZidooSync.Services.SyncRunner" Label="SyncRunner" Category="Services" SourceLocation="../../MediaMonkeyZidooSync/Services/SyncRunner.cs" SourceLineNumber="9" Description="MediaMonkeyZidooSync.Services.SyncRunner" />
+    <Node Id="MediaMonkeyZidooSync.Services.SynchronizationWorkflow" Label="SynchronizationWorkflow" Category="Services" SourceLocation="../../MediaMonkeyZidooSync/Services/SynchronizationWorkflow.cs" SourceLineNumber="4" Description="MediaMonkeyZidooSync.Services.SynchronizationWorkflow" />
+  </Nodes>
+  <Links>
+    <Link Source="MediaMonkeyZidooSync.MainWindow" Target="MediaMonkeyZidooSync.Services.MediaMonkeyPlaylistExporter" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.MainWindow" Target="MediaMonkeyZidooSync.Services.NativeProductionSyncService" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.MainWindow" Target="MediaMonkeyZidooSync.Services.SynchronizationWorkflow" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.MainWindow" Target="MediaMonkeyZidooSync.Services.SyncRunner" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.Services.NativeInterruptedRecovery" Target="MediaMonkeyZidooSync.Services.NativeProductionTransaction" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.Services.NativeProductionSyncService" Target="MediaMonkeyZidooSync.Services.MediaMonkeyPlaylistExporter" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.Services.NativeProductionSyncService" Target="MediaMonkeyZidooSync.Services.NativeInterruptedRecovery" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.Services.NativeProductionSyncService" Target="MediaMonkeyZidooSync.Services.NativeProductionRecovery" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.Services.NativeProductionSyncService" Target="MediaMonkeyZidooSync.Services.NativeProductionTransaction" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.Services.NativeProductionSyncService" Target="MediaMonkeyZidooSync.Services.NativeZidooConnectivityPowerService" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.Services.NativeProductionSyncService" Target="MediaMonkeyZidooSync.Services.NativeZidooPlaylistDevice" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.Services.NativeProductionTransaction" Target="MediaMonkeyZidooSync.Services.NativeInterruptedRecovery" Category="Uses" />
+    <Link Source="MediaMonkeyZidooSync.Services.SyncRunner" Target="MediaMonkeyZidooSync.Services.NativeProductionSyncService" Category="Uses" />
+  </Links>
+  <Categories>
+    <Category Id="Presentation" Label="Presentation" />
+    <Category Id="Services" Label="Services" />
+    <Category Id="Models" Label="Models" />
+    <Category Id="Branding" Label="Branding" />
+    <Category Id="Calls" Label="Calls" />
+    <Category Id="Uses" Label="Uses" />
+    <Category Id="Contains" Label="Contains" />
+    <Category Id="ProjectReference" Label="ProjectReference" />
+    <Category Id="LinkedSource" Label="LinkedSource" />
+  </Categories>
+  <Styles>
+    <Style TargetType="Node">
+      <Condition Expression="HasCategory('Presentation')" />
+      <Setter Property="Background" Value="#FFDCEBFA" />
+    </Style>
+    <Style TargetType="Node">
+      <Condition Expression="HasCategory('Services')" />
+      <Setter Property="Background" Value="#FFDFF2DE" />
+    </Style>
+    <Style TargetType="Node">
+      <Condition Expression="HasCategory('Models')" />
+      <Setter Property="Background" Value="#FFFFEABF" />
+    </Style>
+    <Style TargetType="Node">
+      <Condition Expression="HasCategory('Branding')" />
+      <Setter Property="Background" Value="#FFEBDFF5" />
+    </Style>
+  </Styles>
+</DirectedGraph>

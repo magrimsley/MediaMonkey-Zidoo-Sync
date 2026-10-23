@@ -13,3 +13,5 @@ Private diagnostics, frozen PowerShell, historical source packages and installer
 Cleanup removes only specifically inventoried source files whose preserved content has been independently verified. Files that changed, new files outside the snapshot, active installed-product source packages and final user-facing reports are retained. No live application data, MediaMonkey database or NAS files belong to this cleanup.
 
 The [C# source index](SOURCE-INDEX.md) inventories production source, offline test projects and manual/legacy tools. The public solution exposes these sources as Solution Items while building only the application project. Historical installer dependencies must be checked after each install/uninstall: RC10 original files were removed after uninstall, and Windows now references the production MSI at its original download location. Keep the current production source installer available.
+
+Both solutions now include the native dependency-validation project and an Architecture Maps folder. See [architecture maps](Architecture/README.md). The application build runs Microsoft's dependency analyzer; the modeling project provides the Visual Studio designer.

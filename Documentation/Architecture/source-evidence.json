@@ -1,0 +1,292 @@
+{
+  "SourceFiles": 65,
+  "Types": 141,
+  "TypeDependencies": 291,
+  "Calls": 529,
+  "Layers": [
+    "Branding",
+    "Models",
+    "Presentation",
+    "Services"
+  ],
+  "LayerDependencies": [
+    {
+      "From": "Presentation",
+      "To": "Branding"
+    },
+    {
+      "From": "Presentation",
+      "To": "Models"
+    },
+    {
+      "From": "Presentation",
+      "To": "Services"
+    },
+    {
+      "From": "Services",
+      "To": "Models"
+    }
+  ],
+  "Sources": [
+    {
+      "Path": "MediaMonkeyZidooSync/AboutWindow.cs",
+      "SHA256": "76156A0D96ECBC7EA369F1CAC0BC381B2D913005FCFC1AD8EB072D3CF50406BF"
+    },
+    {
+      "Path": "MediaMonkeyZidooSync/App.xaml.cs",
+      "SHA256": "0263F6AC8FF2722B37991F81724AB4D09FD7911EE52FC526DE67A2A8D6B83960"
+    },
+    {
+      "Path": "MediaMonkeyZidooSync/ApplicationBranding.cs",
+      "SHA256": "A9E3E01C203E64682F52CA35240FBADEFDA6994CE12352E945E46D6EB8E53E6F"
+    },
+    {
+      "Path": "MediaMonkeyZidooSync/HelpWindow.xaml.cs",
+      "SHA256": "5B6B0FCEDFE7B6E9BC136A8386E8D8DA4C4B55866CE137B64348371A514740ED"
+    },
+    {
+      "Path": "MediaMonkeyZidooSync/MainWindow.xaml.cs",
+      "SHA256": "7440D17E9235F65D12A62FBA59140EBA6E8474CBF20480D140480F7EB35669C6"
+    },
+    {
+      "Path": "MediaMonkeyZidooSync/Models/AppConfig.cs",
+      "SHA256": "DC81DB8BA4B95DBCCF7B075E4B0FDC4BBAD9E5B6F432A79E65550836289F3BA7"
+    },
+    {
+      "Path": "MediaMonkeyZidooSync/Models/LogEvent.cs",
+      "SHA256": "F5D8A8B2F9D862C7CA481F7018A8B1230242D8CF49389D207910609DBFB636B7"
+    },
+    {
+      "Path": "MediaMonkeyZidooSync/Models/MediaMonkeyPlaylistExportModels.cs",
+      "SHA256": "31A828A1940BC9D2F5F749E9E63DAFDE57197EAFEB7E9407B397BB42AA0870EF"
+    },
+    {
+      "Path": "MediaMonkeyZidooSync/Models/UiState.cs",
+      "SHA256": "8F91AC18131305F209899353EFF34969145A34664ABF578B12886C4665C956BF"
+    },
+    {
+      "Path": "MediaMonkeyZidooSync/Services/ApplicationVersionProvider.cs",
+      "SHA256": "3EE17E126691F3EB9A9969DADCC86E0179B7CA94FBF6AC11ACF67F4144C5FA5B"
+    },
+    {
+      "Path": "MediaMonkeyZidooSync/Services/ConfigurationService.cs",
+      "SHA256": "0D59D261327E12DFEE30460179D6BA4243F91B3AF8165EF34C8C9C58701B7166"
+    },
+    {
+      "Path": "MediaMonkeyZidooSync/Services/DiagnosticReportingService.cs",
+      "SHA256": "669D2287EADD983FCCE8D99AB0EF2D1A77B431D8C58BA6DA2CC1247B084D30FD"
+    },
+    {
+      "Path": "MediaMonkeyZidooSync/Services/FrozenM3uContent.cs",
+      "SHA256": "771C7CBE6CA42BE32851318415960BBACAD50BF6B4FE6321B811F84259A97908"
+    },
+    {
+      "Path": "MediaMonkeyZidooSync/Services/FrozenPlaylistFiles.cs",
+      "SHA256": "C74BA1C54C83AE7E8601D1C04FDCFB29460CF36BC32A0686C4AE1A83838CBB8A"
+    },
+    {
+      "Path": "MediaMonkeyZidooSync/Services/GridSelectionBehavior.cs",
+      "SHA256": "896723679AFB806B4D00416C038846E62AE2225DCE302D24CFBFCEC63B8CECF3"
+    },
+    {
+      "Path": "MediaMonkeyZidooSync/Services/INativeSyncPlanProvider.cs",
+      "SHA256": "413FEF77A9F9C59E4CE45EBE603D22F602D00E18B368386B45D07179A39C0FED"
+    },
+    {
+      "Path": "MediaMonkeyZidooSync/Services/IsolatedJournalRecoveryCoordinator.cs",
+      "SHA256": "9F7E062FDADC3A651E5B25BD7507B6955214E8BCD48D4260A504135550BDF2E2"
+    },
+    {
+      "Path": "MediaMonkeyZidooSync/Services/IsolatedJournalSequenceAuditService.cs",
+      "SHA256": "19AC79A417B9BEFBD540079FC384340E15E078F8B8D6E3FD45F3204AB75570E8"
+    },
+    {
+      "Path": "MediaMonkeyZidooSync/Services/IsolatedPlaylistRollbackService.cs",
+      "SHA256": "35A18D30AECC3150698FA2742AFF065C9129710AE2517B282A373817CDD59200"
+    },
+    {
+      "Path": "MediaMonkeyZidooSync/Services/IsolatedPlaylistSyncService.cs",
+      "SHA256": "5E4C2D9CC41918C58C5734D9C19CED490228385B0CD382EA96A727EDA2F4D0C3"
+    },
+    {
+      "Path": "MediaMonkeyZidooSync/Services/IsolatedRecoveryAuthorizationService.cs",
+      "SHA256": "F224EB70863C6ADE61CDCFC1FB5ADB426F26E13CA293E8A4F54C1C8794EA5055"
+    },
+    {
+      "Path": "MediaMonkeyZidooSync/Services/IsolatedRecoveryDiagnosticsService.cs",
+      "SHA256": "213BCBFCBE25D9767957669A6EEB6244EB28C17601F7C1701B2E1D34838763FE"
+    },
+    {
+      "Path": "MediaMonkeyZidooSync/Services/IsolatedRecoveryEvidenceStore.cs",
+      "SHA256": "1E4284E982440184B96CF88B07FAF52A60D031F7593D4F90C06653E06236F76B"
+    },
+    {
+      "Path": "MediaMonkeyZidooSync/Services/IsolatedRecoveryExecutionPlanner.cs",
+      "SHA256": "5E1992EB1A13AFFD8DEAC4439CD900091B47F81D52D9AA5420D4167F894639CF"
+    },
+    {
+      "Path": "MediaMonkeyZidooSync/Services/IsolatedRecoveryPlanReportStore.cs",
+      "SHA256": "5F33466CA0ADE27238250FC59857D7D5798C6F90440B29AEADEAE281CF9AC355"
+    },
+    {
+      "Path": "MediaMonkeyZidooSync/Services/IsolatedRecoveryReportBrowserService.cs",
+      "SHA256": "22F42CA66AA4FB922CD724411FB6631AF43D9170C20DB2D99CEBEDB362ED660D"
+    },
+    {
+      "Path": "MediaMonkeyZidooSync/Services/IsolatedRestartReconciliationService.cs",
+      "SHA256": "4EF91E58401219D9458E3D07A1072A07EA32154138B38A937B564FC95A39F3EC"
+    },
+    {
+      "Path": "MediaMonkeyZidooSync/Services/IsolatedRestartSafetyAuditService.cs",
+      "SHA256": "DD3F957ED5724F95CA905AD8FFB848D67E880D4CF364B937EEAC971C98CADFE6"
+    },
+    {
+      "Path": "MediaMonkeyZidooSync/Services/IsolatedStartupMode.cs",
+      "SHA256": "57D8AE1416FEDD10A44A25E25FE615DC4D6DFBF9679E08E3684F6F64FD486CEA"
+    },
+    {
+      "Path": "MediaMonkeyZidooSync/Services/IsolatedTransactionSequenceStore.cs",
+      "SHA256": "0763FD6D0BF7ABBF304A6BE858BF923C1DA3D22A7E9311D8E28D89140BF35DBB"
+    },
+    {
+      "Path": "MediaMonkeyZidooSync/Services/MediaMonkeyExporterEquivalenceService.cs",
+      "SHA256": "2AB72BA24AC3422B3A4E6B2DEAC65A44352769A178730AAD9C49E3306EB9EDFA"
+    },
+    {
+      "Path": "MediaMonkeyZidooSync/Services/MediaMonkeyExportTransactionPlanner.cs",
+      "SHA256": "7EE6B77AA05737562E0F83A4941B371C408F25D5CD241B4FEADB440D3F175FE7"
+    },
+    {
+      "Path": "MediaMonkeyZidooSync/Services/MediaMonkeyPlaylistExporter.cs",
+      "SHA256": "7DBE6B0DB28995C67169C3102C6265B7162DA79FABAB0E56C9BBA05F1F2204EE"
+    },
+    {
+      "Path": "MediaMonkeyZidooSync/Services/NativeInterruptedRecovery.cs",
+      "SHA256": "8ED61376542B0A4E5F9CD0C00F979009B1F198F171892A7AA547872C6F77774A"
+    },
+    {
+      "Path": "MediaMonkeyZidooSync/Services/NativePlanInspection.cs",
+      "SHA256": "90D79C55546CC8C474DBE6A35EF4E3926EEF4FE09C3EC2D21233A51D0F478E2C"
+    },
+    {
+      "Path": "MediaMonkeyZidooSync/Services/NativePlaylistFolderReconciler.cs",
+      "SHA256": "04D97DA19AEAFE5825BD45F74E6649D59CEB68C56BDD18D69127994343A4FAEC"
+    },
+    {
+      "Path": "MediaMonkeyZidooSync/Services/NativePlaylistStagingCoordinator.cs",
+      "SHA256": "ACC199EE0016F8BB7777CA2E45EDBF5DC233B5281888249431C72EE911387819"
+    },
+    {
+      "Path": "MediaMonkeyZidooSync/Services/NativePlaylistTransactionService.cs",
+      "SHA256": "0AE669226DF4406DC34BBBACCAC3155B328C9F6CB37FA578B2E72CC32290D595"
+    },
+    {
+      "Path": "MediaMonkeyZidooSync/Services/NativeProductionRecovery.cs",
+      "SHA256": "D44046CA4F66502EDFC3269F60524983F07BF291A90FCE9B71CA4D233CB9DCE8"
+    },
+    {
+      "Path": "MediaMonkeyZidooSync/Services/NativeProductionRunState.cs",
+      "SHA256": "E61E2909BE9EC9676F7A9657A8FD139216E4B51634233C7B82D6D2B3F890AD76"
+    },
+    {
+      "Path": "MediaMonkeyZidooSync/Services/NativeProductionSyncService.cs",
+      "SHA256": "2842CA91035C5E7CC5C911E65436ABD970BB19D02EDC6FFCD0417081054EFF4F"
+    },
+    {
+      "Path": "MediaMonkeyZidooSync/Services/NativeProductionTransaction.cs",
+      "SHA256": "3E79361E0DA2AC7D6717593228CC3758B6AACA803115043545A22A92F7276AC6"
+    },
+    {
+      "Path": "MediaMonkeyZidooSync/Services/NativeSyncReadOnlyOrchestrator.cs",
+      "SHA256": "D729893EF179DE362E5475767AB7E64E1E7023D9E660239CE79FEE396BBAECA3"
+    },
+    {
+      "Path": "MediaMonkeyZidooSync/Services/NativeZidooConnectivityPowerService.cs",
+      "SHA256": "1592E5DB6D107BAA0D69F274857B883A9AFD5A15DCA4C33376D258EB1FB1A2C4"
+    },
+    {
+      "Path": "MediaMonkeyZidooSync/Services/NativeZidooMusicPlaylistService.cs",
+      "SHA256": "79DEA61EC502A1EA749C822D0052C19D56CAEAD52E9F97C93A35AD237ACDF1F4"
+    },
+    {
+      "Path": "MediaMonkeyZidooSync/Services/NativeZidooPlaylistDevice.cs",
+      "SHA256": "CFD41136FB5AF8FC0B88AB48049B25372FF3D8131B2A97764426C568874E82BD"
+    },
+    {
+      "Path": "MediaMonkeyZidooSync/Services/NativeZidooReadiness.cs",
+      "SHA256": "5CDCC024BCEBF789E8A1E40F63294CDE5A0535E6981D542E773369F7785161A0"
+    },
+    {
+      "Path": "MediaMonkeyZidooSync/Services/PlaylistParentService.cs",
+      "SHA256": "8310161B805CE3310193F8AEB0BEA322752E2EBC0E446AF622F5B1856B8FCA03"
+    },
+    {
+      "Path": "MediaMonkeyZidooSync/Services/PlaylistRecoveryCoordinator.cs",
+      "SHA256": "337CE96CE3146B2700460425A5B1D190D16013E33148EA3644E5EC905B3A80FD"
+    },
+    {
+      "Path": "MediaMonkeyZidooSync/Services/PlaylistTransactionJournalService.cs",
+      "SHA256": "2B4E6BF138CF194ACD10D3A7F50C5A4A27F91C4C5C7A1A460B7BCDE5884DF805"
+    },
+    {
+      "Path": "MediaMonkeyZidooSync/Services/PlaylistTransactionPreflight.cs",
+      "SHA256": "21E0A7871502D36E721D7CCCED53A791D0C2AF2FC57E90712420C458507E3452"
+    },
+    {
+      "Path": "MediaMonkeyZidooSync/Services/RecoveryFileReader.cs",
+      "SHA256": "418EC65A0F1BAB4F0572E1137A25C96122CD3B08F175F7CBA847B6DB91EDC751"
+    },
+    {
+      "Path": "MediaMonkeyZidooSync/Services/RecoveryReportDisplaySummary.cs",
+      "SHA256": "3CC23084E2BC4BFAC047F934BDE648D5FBCDF3FFF6383FB49914FE9E0E34DF42"
+    },
+    {
+      "Path": "MediaMonkeyZidooSync/Services/RunHistoryBrowserService.cs",
+      "SHA256": "2B43D18E519AB75D9D6DA836C091E6AA023676EAE6DCD45F07430F970C7ECFC3"
+    },
+    {
+      "Path": "MediaMonkeyZidooSync/Services/RunHistoryService.cs",
+      "SHA256": "9604679D8D76380E19A46E2FBB0172F457882FE0EA9FA15AE0D26DC01A76A18F"
+    },
+    {
+      "Path": "MediaMonkeyZidooSync/Services/StorageSetupService.cs",
+      "SHA256": "8395B8DBCE265D8988FDB6B0E4A855E3A1856C3FD9B7C4DFDACA08E763CAAEA9"
+    },
+    {
+      "Path": "MediaMonkeyZidooSync/Services/SynchronizationWorkflow.cs",
+      "SHA256": "84C7D58D06D79A76B1910FEC6DEC2FE1F8363E15CA7CC18B7C90C7873BCF3E3C"
+    },
+    {
+      "Path": "MediaMonkeyZidooSync/Services/SyncRunner.cs",
+      "SHA256": "32DCAE6DEE11936110EC54853F77BF410A9F0DDCF247544018136324E7139698"
+    },
+    {
+      "Path": "MediaMonkeyZidooSync/Services/UiStateService.cs",
+      "SHA256": "55EFF3C5B1C9BFA9C8473BBB2DF14526DA46EA829596B3DECE0D756F54CEB792"
+    },
+    {
+      "Path": "MediaMonkeyZidooSync/Services/UserMessages.cs",
+      "SHA256": "0A5231793D1F8EDCFD9EEB6BFC5B8A2D3886E4D114E802149BE8F10819275B1D"
+    },
+    {
+      "Path": "MediaMonkeyZidooSync/Services/WindowsThemeService.cs",
+      "SHA256": "55661951E3180DED692A67973AEF293A61FDBD7F71F0E1EB28A797E93F81976A"
+    },
+    {
+      "Path": "MediaMonkeyZidooSync/Services/ZidooDiscoveryService.cs",
+      "SHA256": "94DEBD2616BE986F27D1396D17FBCF230E7A81C243A92A9B3D8DC684B92033CD"
+    },
+    {
+      "Path": "MediaMonkeyZidooSync/Services/ZidooPlaylistProtocol.cs",
+      "SHA256": "8BE756E448C6E8A207C4B533962F4789F0E38B6CEC770A33D93FE9EC78AE5CBC"
+    },
+    {
+      "Path": "MediaMonkeyZidooSync/StartupSplash.cs",
+      "SHA256": "03B66B14152DA0B88E86F11628EFFE6024F5F2AEF4614CCD555AA7112E424FA0"
+    },
+    {
+      "Path": "MediaMonkeyZidooSync/ZidooDiscoveryWindow.xaml.cs",
+      "SHA256": "6FA5B69E43AB1D8AB714EEE1F4EDDF85FAD1DEF129F389BD14C3CD983A1F8B3E"
+    }
+  ]
+}

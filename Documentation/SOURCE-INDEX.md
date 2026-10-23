@@ -1,6 +1,6 @@
 # C# source and project index
 
-This index covers all 93 tracked C# files and 13 C# project definitions. It describes source organization and build membership; it is not a claim that every method has complete XML/API documentation. Generated bin/obj files, archived source snapshots and local evidence are not production source.
+This index covers all 94 C# files and 14 C# project definitions in the current source inventory. It describes source organization and build membership; it is not a claim that every method has complete XML/API documentation. Generated bin/obj files, archived source snapshots and local evidence are not production source.
 
 Production behavior and recovery contracts: [architecture](../ARCHITECTURE.md). Build and test entry points: [testing guide](../AUTOMATED_TESTING_README.md). Local/private evidence: [project files](PROJECT-FILES.md).
 
@@ -197,3 +197,7 @@ Application XAML: [App.xaml](../MediaMonkeyZidooSync/App.xaml), [HelpWindow.xaml
 The application project specifies packaged configuration, artwork, notices and documentation. `global.json` pins the SDK. `.github/workflows/build.yml` lists the automated offline CI steps. The MSI revision is separate from the application semantic version. See [release 1.1](../RELEASE-1.1.md).
 
 Update this index when adding or removing tracked C# files/projects. Historical alpha/RC notes remain historical records; the production release and current-status introduction identify the current supported state.
+
+## Architecture map generator
+
+[ArchitectureMaps.csproj](Architecture/Tools/ArchitectureMaps.csproj) and [Program.cs](Architecture/Tools/Program.cs) generate compiler-resolved DGML snapshots. They are development tools, not production application source. See [usage and limits](Architecture/README.md).

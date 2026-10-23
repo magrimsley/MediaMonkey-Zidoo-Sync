@@ -151,12 +151,31 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "C# Source and Project Index
 		..\WpfWorkflowTests\WpfWorkflowTests.csproj = ..\WpfWorkflowTests\WpfWorkflowTests.csproj
 	EndProjectSection
 EndProject
+Project("{F088123C-0E9E-452A-89E6-6BA2F21D5CAC}") = "MM Zidoo Sync Dependency Validation", "..\Documentation\Architecture\MMZidooSync.Architecture.modelproj", "{82363327-5062-40D7-B361-5F048D3A5F20}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Architecture Maps", "Architecture Maps", "{E3985034-3555-4CBA-901B-0213CEEB5D75}"
+	ProjectSection(SolutionItems) = preProject
+		..\Documentation\Architecture\README.md = ..\Documentation\Architecture\README.md
+		..\Documentation\Architecture\Layers.dgml = ..\Documentation\Architecture\Layers.dgml
+		..\Documentation\Architecture\Synchronization.dgml = ..\Documentation\Architecture\Synchronization.dgml
+		..\Documentation\Architecture\SynchronizationCalls.dgml = ..\Documentation\Architecture\SynchronizationCalls.dgml
+		..\Documentation\Architecture\Types.dgml = ..\Documentation\Architecture\Types.dgml
+		..\Documentation\Architecture\Calls.dgml = ..\Documentation\Architecture\Calls.dgml
+		..\Documentation\Architecture\Projects.dgml = ..\Documentation\Architecture\Projects.dgml
+		..\Documentation\Architecture\source-evidence.json = ..\Documentation\Architecture\source-evidence.json
+		..\Documentation\Architecture\validation-result.json = ..\Documentation\Architecture\validation-result.json
+		..\Documentation\Architecture\Tools\ArchitectureMaps.csproj = ..\Documentation\Architecture\Tools\ArchitectureMaps.csproj
+		..\Documentation\Architecture\Tools\Program.cs = ..\Documentation\Architecture\Tools\Program.cs
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{82363327-5062-40D7-B361-5F048D3A5F20}.Debug|Any CPU.ActiveCfg = Debug|AnyCPU
+		{82363327-5062-40D7-B361-5F048D3A5F20}.Release|Any CPU.ActiveCfg = Release|AnyCPU
 		{B0D3A890-F375-419E-9993-B071942B10F3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{B0D3A890-F375-419E-9993-B071942B10F3}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B0D3A890-F375-419E-9993-B071942B10F3}.Release|Any CPU.ActiveCfg = Release|Any CPU

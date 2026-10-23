@@ -1,0 +1,44 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<DirectedGraph GraphDirection="LeftToRight" Layout="Sugiyama" xmlns="http://schemas.microsoft.com/vs/2009/dgml">
+  <Nodes>
+    <Node Id="Branding" Label="Branding" Category="Branding" />
+    <Node Id="Models" Label="Models" Category="Models" />
+    <Node Id="Presentation" Label="Presentation" Category="Presentation" />
+    <Node Id="Services" Label="Services" Category="Services" />
+  </Nodes>
+  <Links>
+    <Link Source="Presentation" Target="Branding" Category="Uses" />
+    <Link Source="Presentation" Target="Models" Category="Uses" />
+    <Link Source="Presentation" Target="Services" Category="Uses" />
+    <Link Source="Services" Target="Models" Category="Uses" />
+  </Links>
+  <Categories>
+    <Category Id="Presentation" Label="Presentation" />
+    <Category Id="Services" Label="Services" />
+    <Category Id="Models" Label="Models" />
+    <Category Id="Branding" Label="Branding" />
+    <Category Id="Calls" Label="Calls" />
+    <Category Id="Uses" Label="Uses" />
+    <Category Id="Contains" Label="Contains" />
+    <Category Id="ProjectReference" Label="ProjectReference" />
+    <Category Id="LinkedSource" Label="LinkedSource" />
+  </Categories>
+  <Styles>
+    <Style TargetType="Node">
+      <Condition Expression="HasCategory('Presentation')" />
+      <Setter Property="Background" Value="#FFDCEBFA" />
+    </Style>
+    <Style TargetType="Node">
+      <Condition Expression="HasCategory('Services')" />
+      <Setter Property="Background" Value="#FFDFF2DE" />
+    </Style>
+    <Style TargetType="Node">
+      <Condition Expression="HasCategory('Models')" />
+      <Setter Property="Background" Value="#FFFFEABF" />
+    </Style>
+    <Style TargetType="Node">
+      <Condition Expression="HasCategory('Branding')" />
+      <Setter Property="Background" Value="#FFEBDFF5" />
+    </Style>
+  </Styles>
+</DirectedGraph>

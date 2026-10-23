@@ -1,0 +1,21 @@
+{
+  "date": "2026-10-23",
+  "visualStudio": "Enterprise 2022 17.14.41",
+  "analyzer": "Microsoft.DependencyValidation.Analyzers 0.11.0",
+  "positiveApplicationBuild": "PASS: 0 warnings, 0 errors",
+  "negativeProbe": "PASS: Models AppConfig referencing Services SyncRunner rejected with DV0001",
+  "probeRestoration": "Original AppConfig.cs bytes restored in finally; subsequent build passed",
+  "frozenReferences": {
+    "files": 39,
+    "mismatches": 0
+  },
+  "runtimeStackCapture": false,
+  "liveDeviceCommands": false,
+  "visualDesignerRenderingVerified": false,
+  "publicSolutionBuild": "PASS: 0 warnings, 0 errors",
+  "localSolutionBuild": "PASS after renaming duplicate root Packaging solution folder to Local Packaging Archive; no archive paths or GUIDs changed",
+  "releaseApplicationBuild": "PASS: 0 warnings, 0 errors",
+  "graphIntegrity": "PASS: six DGML maps, zero dangling links",
+  "deterministicRegeneration": "PASS: identical DGML and source evidence hashes",
+  "repositoryPolicy": "PASS"
+}

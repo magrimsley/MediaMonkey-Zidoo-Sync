@@ -48,3 +48,7 @@ Thirty new stateful fake-device scenarios cover newest/name/reverse/stale-prefer
 Alpha.60.18.5: after the documented sort prerequisite, Back then Right returns directly to the first grid tile, as visually confirmed October 19. Removes the added second app launch/home anchor. This prerequisite remains an explicit extension; frozen scripts remain unchanged. Full live acceptance remains required.
 
 Alpha.60.18.6: post-delete refresh reuses the frozen Focus app-open/3s/identity/home anchor before wrapper inventory verification. Observed Up20/Down2 alone remains inside grid or tracks. This composes existing script mechanics to establish required starting context; immutable wrapper refresh itself does not include app-open. Targeting sort/direct return unchanged. Fresh acceptance required.
+
+## Visual Studio architecture maps
+
+[Architecture maps and dependency validation](Documentation/Architecture/README.md) describes the six DGML snapshots, native layer diagram, enforced build boundaries and runtime call-stack limits.

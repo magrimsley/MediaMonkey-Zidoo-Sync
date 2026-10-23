@@ -35,6 +35,11 @@
     <Content Include="..\ThirdPartyNotices\**\*" Link="ThirdPartyNotices\%(RecursiveDir)%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
     <Content Include="..\LICENSE;..\THIRD-PARTY-NOTICES.md;..\ARTWORK-PROVENANCE.md;..\artwork-inventory.json;..\DONATIONS.md;..\CONFIGURATION_JSON_REFERENCE.md" Link="%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
   </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.DependencyValidation.Analyzers" Version="0.11.0" PrivateAssets="all" />
+    <AdditionalFiles Include="..\Documentation\Architecture\DependencyValidation.layerdiagram" Link="Architecture\DependencyValidation.layerdiagram" />
+  </ItemGroup>
+  <PropertyGroup>
+    <WarningsAsErrors>$(WarningsAsErrors);DV0001;DV1001;DV1002;DV1003;DV2001;DV2002;DV3001;DV9001</WarningsAsErrors>
+  </PropertyGroup>
 </Project>
-
-
